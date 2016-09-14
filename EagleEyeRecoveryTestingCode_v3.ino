@@ -219,10 +219,10 @@ void loop(void)
         EagleEyeData.print(" meters");
         EagleEyeData.println("");
       }
-    }
-    else{
-      saftey_counter = 0;  /* reset to zero */
-      //Serial.print("the saftey counter has been reset to zero");
+      else{
+        saftey_counter = 0;  /* reset to zero */
+        //Serial.print("the saftey counter has been reset to zero");      
+      }
     }
 
     if (not chute_deploy and chute_enable and current.Alt <= 293 and saftey_counter>=4) { /*6096m == 20,000 feet*/
