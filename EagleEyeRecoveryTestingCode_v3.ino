@@ -9,7 +9,7 @@
   Date:      Version:        Developer:        Description:
   6/25/16    1.0             James Wingerter   Initial Build.
   7/10/16    1.1             James Wingerter   added sd memory, motor control, parachute deployment
- *                                                                                                     *
+ *9/14/16    1.2             James Wingerter/Jarod Danner - added saftey count to 4                                                                                                     *
  *                                                                                                     *
  *                                                                                                     *
 */
@@ -219,13 +219,13 @@ void loop(void)
         EagleEyeData.print(" meters");
         EagleEyeData.println("");
       }
-      else{
+      else if(current.Alt <= 295){
         saftey_counter = 0;  /* reset to zero */
         //Serial.print("the saftey counter has been reset to zero");      
       }
     }
 
-    if (not chute_deploy and chute_enable and current.Alt <= 293 and saftey_counter>=4) { /*6096m == 20,000 feet*/
+    if (not chute_deploy and chute_enable and current.Alt <= 293) { /*6096m == 20,000 feet*/
       //myservo.write(180); //open the servo to 180 degrees
       digitalWrite(RELAY1, LOW); /*This is close the circuit providing power the chute deployment system*/
       chute_deploy = true;
