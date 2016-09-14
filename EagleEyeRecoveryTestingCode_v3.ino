@@ -30,6 +30,8 @@ time_t start;
 time_t current_time;
 File EagleEyeData;      /* File used to store the flight data. Data will be written/saved to this file during flight operations  */
 int secondcount = 1;      /* use this count to keep track of time for writing to the file */
+int saftey_counter = 0;   /* counter that must reach 4  before deployment */
+
 
 int value = 0;        /* set values you need to zero*/
 //************
@@ -207,16 +209,23 @@ void loop(void)
     
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
     if (not chute_enable and current.Alt >= 295) {  /*9144 m == 30,000 feet*/
-      chute_enable = true;
-      Serial.print("chute enabled at ");
-      Serial.print(current.Alt);
-      EagleEyeData.print("chute enabled at ");
-      EagleEyeData.print(current.Alt);
-      EagleEyeData.print(" meters");
-      EagleEyeData.println("");
+      saftey_counter = saftey_counter + 1;               /* Increment the saftey_counter by 1 until */
+      if (saftey_counter >= 4){
+        chute_enable = true;
+        Serial.print("chute enabled at ");
+        Serial.print(current.Alt);
+        EagleEyeData.print("chute enabled at ");
+        EagleEyeData.print(current.Alt);
+        EagleEyeData.print(" meters");
+        EagleEyeData.println("");
+      }
+    }
+    else{
+      saftey_counter = 0;  /* reset to zero */
+      //Serial.print("the saftey counter has been reset to zero");
     }
 
-    if (not chute_deploy and chute_enable and current.Alt <= 293) { /*6096m == 20,000 feet*/
+    if (not chute_deploy and chute_enable and current.Alt <= 293 and saftey_counter>=4) { /*6096m == 20,000 feet*/
       //myservo.write(180); //open the servo to 180 degrees
       digitalWrite(RELAY1, LOW); /*This is close the circuit providing power the chute deployment system*/
       chute_deploy = true;
