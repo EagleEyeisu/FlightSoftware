@@ -9,9 +9,9 @@
   Date:      Version:        Developer:        Description:
   6/25/16    1.0             James Wingerter   Initial Build.
   7/10/16    1.1             James Wingerter   added sd memory, motor control, parachute deployment
- *9/14/16    1.2             James Wingerter/Jarod Danner - added saftey count to 4                                                                                                     *
- *                                                                                                     *
- *                                                                                                     *
+ *9/14/16    1.2             James Wingerter/Jarod Danner - added saftey count to 4                   *
+ *9/19/16    1.3             Jared Danner      changed variables to print real numbers                *
+ *                                                                                                    *
 */
 #include <Time.h>
 #include <TimeLib.h>
@@ -47,9 +47,9 @@ int pos = 0;    // variable to store the servo position for ESC
 #define RELAY1  6
 
 struct flight_data {
-  int pressure;
-  int temperature;
-  int Alt;
+  float pressure;
+  float temperature;
+  float Alt;
 };
 
 /*****************************/
@@ -66,6 +66,7 @@ void setSpeed(int speed) {
 }
 
 /************************The setup() method initializes the main hardwars components. Only runs once, or until everything is initialized********************/
+/***********************************************************************************************************************************************************/
 void setup() {
   ESC.attach(9);    /* attatch the ESC to digital pin 9 on the arduino */
   arm();
@@ -117,7 +118,7 @@ void setup() {
 
 /********* method used to store Data to SD card storage***************/
 
-void storeData(int Pressure, int Temperature, int Altitude) {
+void storeData(float Pressure, float Temperature, float Altitude) {
   /*****Write Recorded data to SD Card File every second******/
   /*TODO: Replace secondcount with now() */
   current_time = now();
@@ -142,7 +143,6 @@ void storeData(int Pressure, int Temperature, int Altitude) {
 
 
 /****** used to calculate flight data and return values in a struct, which will be called in the main loop ******/
-
 struct flight_data getData() {
   /* Get a new sensor event */
   sensors_event_t event;
@@ -176,7 +176,7 @@ struct flight_data getData() {
 
   /* Then convert the atmospheric pressure, SLP (Sea level pressue) and temp to altitude    */
   /* Update this next line with the current SLP for better results                  */
-  float seaLevelPressure = 1008.8;  /***CHANGE TO DES MOINES AIRPORT VALUES*** OR Wherever the launch takes place*/
+  float seaLevelPressure = 1014.8;  /***CHANGE TO DES MOINES AIRPORT VALUES*** OR Wherever the launch takes place*/
   Serial.print("Altitude:    ");
   Serial.print(bmp.pressureToAltitude(seaLevelPressure, event.pressure, temperature));
   float pressure = event.pressure;
@@ -208,24 +208,24 @@ void loop(void)
     /*****Parachute Deployment (using servo)***********/
     
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
-    if (not chute_enable and current.Alt >= 295) {  /*9144 m == 30,000 feet*/
+    if (not chute_enable and current.Alt >= 287) {  /*9144 m == 30,000 feet*/
       saftey_counter = saftey_counter + 1;               /* Increment the saftey_counter by 1 until */
       if (saftey_counter >= 4){
         chute_enable = true;
-        Serial.print("chute enabled at ");
+        Serial.print("chute enabled at ");  
         Serial.print(current.Alt);
+        Serial.print(" meters \n");
         EagleEyeData.print("chute enabled at ");
-        EagleEyeData.print(current.Alt);
-        EagleEyeData.print(" meters");
-        EagleEyeData.println("");
+        EagleEyeData.print(current.Alt); 
+        EagleEyeData.print(" meters \n");
       }
-      else if(current.Alt <= 295){
+      else if(current.Alt <= 287){
         saftey_counter = 0;  /* reset to zero */
         //Serial.print("the saftey counter has been reset to zero");      
       }
     }
-
-    if (not chute_deploy and chute_enable and current.Alt <= 293) { /*6096m == 20,000 feet*/
+ 
+    if (not chute_deploy and chute_enable and current.Alt <= 283) { /*6096m == 20,000 feet*/
       //myservo.write(180); //open the servo to 180 degrees
       digitalWrite(RELAY1, LOW); /*This is close the circuit providing power the chute deployment system*/
       chute_deploy = true;
@@ -290,6 +290,3 @@ void loop(void)
   delay(1000);  /*delay 1 second before reading the next value*/
 
 }
-
-
-
