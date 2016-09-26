@@ -1,5 +1,4 @@
 
-
 /*                        EAGLE EYE PROPRIETARY INFORMATION                                           *
  *                                                                                                     *
   Purpose: Primary software for use on EAGLE EYE rotor craft. Controls and
@@ -10,7 +9,7 @@
   6/25/16    1.0             James Wingerter   Initial Build.
   7/10/16    1.1             James Wingerter   added sd memory, motor control, parachute deployment
  *9/14/16    1.2             James Wingerter/Jarod Danner - added saftey count to 4                                                                                                     *
- *                                                                                                     *
+ *9/26/16    1.3             James Wingerter   Data recording fix                                      *
  *                                                                                                     *
 */
 #include <Time.h>
@@ -100,42 +99,42 @@ void setup() {
   pinMode(RELAY1, OUTPUT);
 
   /************* initialize SD Card reader********/
-//  Serial.begin(9600);
-//  Serial.print("Initializing SD card...");
+  Serial.begin(9600);
+  Serial.print("Initializing SD card...");
   // On the Ethernet Shield, CS is pin 4. It's set as an output by default.
   // Note that even if it's not used as the CS pin, the hardware SS pin
   // (10 on most Arduino boards, 53 on the Mega) must be left as an output
   // or the SD library functions will not work.
-//  pinMode(10, OUTPUT);
+  pinMode(10, OUTPUT);
 //
-//  if (!SD.begin(10)) {
-//    Serial.println("initialization failed!");
-//    return;
-//  }
+  if (!SD.begin(10)) {
+    Serial.println("initialization failed!");
+    return;
+  }
   Serial.println("initialization done.");
 }
 
 /********* method used to store Data to SD card storage***************/
 
-//void storeData(int Pressure, int Temperature, int Altitude) {
-//  /*****Write Recorded data to SD Card File every second******/
-//  /*TODO: Replace secondcount with now() */
-//  current_time = now();
-//  EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
-//  /*EagleEyeData.print(secondcount);*/
-//  EagleEyeData.print(current_time);
-//  EagleEyeData.print(", ");
-//  EagleEyeData.print(Altitude);
+void storeData(int Pressure, int Temperature, int Altitude) {
+  /*****Write Recorded data to SD Card File every second******/
+  /*TODO: Replace secondcount with now() */
+  current_time = now();
+  EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+  /*EagleEyeData.print(secondcount);*/
+  EagleEyeData.print(current_time);
+  EagleEyeData.print(", ");
+  EagleEyeData.print(Altitude);
 //
-//  EagleEyeData.print(", ");
-//  EagleEyeData.print(Pressure);
+  EagleEyeData.print(", ");
+  EagleEyeData.print(Pressure);
 //
-//  EagleEyeData.print(", ");
-//  EagleEyeData.print(Temperature);
-//  EagleEyeData.println("");
-//
-//  EagleEyeData.close();   /* flush() physically saves the data to the card, so that the data will be retrievble even if the Arduino gets damaged.  */
-//}
+  EagleEyeData.print(", ");
+  EagleEyeData.print(Temperature);
+  EagleEyeData.println("");
+
+  EagleEyeData.close();   /* flush() physically saves the data to the card, so that the data will be retrievble even if the Arduino gets damaged.  */
+}
 
 
 
@@ -203,42 +202,42 @@ void loop(void)
     struct flight_data current = getData();
 
     /*Record data to the SD card*/
-//    storeData(current.pressure, current.temperature, current.Alt);
+    storeData(current.pressure, current.temperature, current.Alt);
 
     /*****Parachute Deployment (using servo)***********/
     
-//    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
-    if (not chute_enable and current.Alt >= 287) {  /*9144 m == 30,000 feet*/
+    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+    if (not chute_enable and current.Alt >= 279) {  /*9144 m == 30,000 feet*/
       saftey_counter = saftey_counter + 1;               /* Increment the saftey_counter by 1 until */
       if (saftey_counter >= 4){
         chute_enable = true;
         Serial.print("chute enabled at ");
         Serial.print(current.Alt);
         Serial.print(" meters \n");
-//        EagleEyeData.print("chute enabled at ");
-//        EagleEyeData.print(current.Alt);
-//        EagleEyeData.print(" meters \n");
+        EagleEyeData.print("chute enabled at ");
+        EagleEyeData.print(current.Alt);
+        EagleEyeData.print(" meters \n");
       }
-      else if(current.Alt <= 287){
+      else if(current.Alt <= 279){
         saftey_counter = 0;  /* reset to zero */
         //Serial.print("the saftey counter has been reset to zero");      
       }
     }
 
-    if (not chute_deploy and chute_enable and current.Alt <= 283) { /*6096m == 20,000 feet*/
+    if (not chute_deploy and chute_enable and current.Alt <= 277) { /*6096m == 20,000 feet*/
       //myservo.write(180); //open the servo to 180 degrees
-      digitalWrite(RELAY1, LOW); /*This is close the circuit providing power the chute deployment system*/
+      //digitalWrite(RELAY1, LOW); /*This is close the circuit providing power the chute deployment system*/
       chute_deploy = true;
       Serial.print("chute deployed at ");
       Serial.print(current.Alt);
-      delay(2000);
+      //delay(2000);
       digitalWrite(RELAY1, HIGH); /*run the current for 2 seconds? then open the circuit and stop the current*/
-//      EagleEyeData.print("chute deployed at ");
-//      EagleEyeData.print(current.Alt);
-//      EagleEyeData.print(" meters");
-//      EagleEyeData.println("");
+      EagleEyeData.print("chute deployed at ");
+      EagleEyeData.print(current.Alt);
+      EagleEyeData.print(" meters");
+      EagleEyeData.println("");
     }
-//    EagleEyeData.close();   /* flush() physically saves the data to the card, so that the data will be retrievble even if the Arduino gets damaged.  */
+    EagleEyeData.close();   /* flush() physically saves the data to the card, so that the data will be retrievble even if the Arduino gets damaged.  */
     
     
   
