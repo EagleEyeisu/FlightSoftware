@@ -29,24 +29,29 @@ void loop() {
 
 int speed; //Implements speed variable
 
-for(speed = 0; speed <= 70; speed += 5) { //Cycles speed up to 70% power for 1 second
+//setSpeed(100);
+//delay(5000);
+setSpeed(5);
+delay(8000);
+
+for(speed = 0; speed <= 70; speed += 1) { //Cycles speed up to 70% power at (delay) second per step
 
 setSpeed(speed); //Creates variable for speed to be used in in for loop
 
-delay(1000);
+delay(200);
 
 }
 
 delay(4000); //Stays on for 4 seconds
 
-for(speed = 70; speed > 0; speed -= 5) { // Cycles speed down to 0% power for 1 second
+for(speed = 70; speed > 0; speed -= 1) { // Cycles speed down to 0% power at (delay) second per step
 
-setSpeed(speed); delay(1000);
+setSpeed(speed); delay(200);
 
 }
 
 setSpeed(0); //Sets speed variable to zero no matter what
 
-delay(1000); //Turns off for 1 second
+delay(1000); //Turns off for 1 second before lopping through again.
 
 }
