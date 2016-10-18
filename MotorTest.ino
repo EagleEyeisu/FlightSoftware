@@ -1,57 +1,70 @@
-#include <Servo.h>
+/*                        EAGLE EYE PROPRIETARY INFORMATION                          *
+ *                                                                                   *
+ * Purpose: Primary software for use on EAGLE EYE rotor craft. Controls and          *
+ *          maintains motor speed, deploys parachute, reads and records atmospheric  *
+ *          data.                                                                    *
+ *                                                                                   *
+ * Date:      Version:        Developer:                    Description:             *     
+ * 10/17/16   1.0             Jared Danner/Wesley Carlton   Initial Build.           *                                                                                      *
+*/
 
-//This code can be used for any purpose.
+/********************General Over View**************************
+ * The approach we took was to use the ESC exactly the same as *
+ * if we were using an actual servo motor and not a brushless  *
+ * motor. This is why below we convert the angle to an angle   *
+ * before telling the ESC what to do.                          *
+ ***************************************************************/
+#include <Servo.h> 
 
-Servo ESC1;
+Servo ESC1; //Creates an Servo object
 
-int pos = 0; //Sets position variable
-
-void arm(){
-
-setSpeed(0); //Sets speed variable delay(1000);
-
-}
-
-void setSpeed(int speed){
-
-int angle = map(speed, 0, 100, 0, 180); //Sets servo positions to different speeds ESC1.write(angle);
-  ESC1.write(angle);           /*use 180 because the arduino thinks its controlling an actual servo, so 180 degrees*/
-
-}
-
+/*
+ * Function used during the setup process  
+ * to attach the ESC to the appropriate pin 
+ * number on the Arduino
+ */
 void setup() {
-
-ESC1.attach(9); //Adds ESC to certain pin. arm();
-
+  ESC1.attach(9); //Adds ESC to certain pin. arm();
 }
 
+/*
+ * Function is used in throttling up and down
+ * the ESC's output power to the motor. The
+ * function takes an input value and turns 
+ * that number into an angle measure between
+ * 0 and 180.
+ */
+void setSpeed(int speed){
+  int angle = map(speed, 0, 100, 0, 180); //Porportionatly turns speed value of 0-100 into an angle measure between 0-180.
+  ESC1.write(angle);                      //Pushes that angle measure to the ESC
+}
+
+/********************Main Program****************************
+ * The program's core begins below where it sets the speed  *                       
+ * of the ESC to 0% throttle. It than proceeds to increment *
+ * the throttle up until it achieves 70% throttle. When     *
+ * completed, the program than slowly increments the        *
+ * throttle power sent to the ESC/motor back to 0.          *
+ ************************************************************/
 void loop() {
+  int speed; //Creates speed variable
 
-int speed; //Implements speed variable
+  //setSpeed(100); //Used to set throttle range of ESC
+  //delay(5000);   //Used to set throttle range of ESC
+  setSpeed(5);     //Begins program by sending what is eqivalent to 0% throttle.
+  delay(8000);     
 
-//setSpeed(100);
-//delay(5000);
-setSpeed(5);
-delay(8000);
+  for(speed = 0; speed <= 70; speed += 1) { //Cycles speed up to 70% power with appropriate time delay.
+    setSpeed(speed);                        //Calls function setSpeed (above) and passes the variable speed to it.
+    delay(200);                             //Delays the program for one fifth of a second.
+  }
+  
+  delay(4000);                              //Holds at 70% power for 4 seconds.
 
-for(speed = 0; speed <= 70; speed += 1) { //Cycles speed up to 70% power at (delay) second per step
+  for(speed = 70; speed > 0; speed -= 1) {  //Cycles speed down to 0% power with appropriate time delay.
+    setSpeed(speed);                        //Calls function setSpeed (above) and passes the variable speed to it.
+    delay(200);                             //Delays the program for one fifth of a second.
+  }
 
-setSpeed(speed); //Creates variable for speed to be used in in for loop
-
-delay(200);
-
-}
-
-delay(4000); //Stays on for 4 seconds
-
-for(speed = 70; speed > 0; speed -= 1) { // Cycles speed down to 0% power at (delay) second per step
-
-setSpeed(speed); delay(200);
-
-}
-
-setSpeed(0); //Sets speed variable to zero no matter what
-
-delay(1000); //Turns off for 1 second before lopping through again.
-
+  delay(1000); //Delays program for 1 second until the loop() starts over again.
 }
