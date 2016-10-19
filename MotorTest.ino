@@ -5,8 +5,8 @@
  *          data.                                                                    *
  *                                                                                   *
  * Date:      Version:        Developer:                    Description:             *     
- * 10/17/16   1.0             Jared Danner/Wesley Carlton   Initial Build.           *                                                                                      *
-*/
+ * 10/17/16   1.0             Jared Danner/Wesley Carleton  Initial Build.           *                                                                                      *
+ */
 
 /********************General Over View***************************
  * The approach we took was to use the ESC exactly the same as  *
