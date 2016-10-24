@@ -24,6 +24,7 @@ Servo ESC1; //Creates an Servo object
  */
 void setup() {
   ESC1.attach(9); //Adds ESC to certain pin. arm();
+  Serial.begin(9600);// Starts the out put to the serial monitor.
 }
 
 /********************Main Program****************************
@@ -43,6 +44,7 @@ void loop() {
 
   for(speed = 0; speed <= 126; speed += 1) {  //Cycles speed up to 70% power with appropriate time delay.
     ESC1.write(speed);                        //Calls function setSpeed (above) and passes the variable speed to it.
+    Serial.println(speed);                    //Prints speed variable to the serial monitor.
     delay(500);                               //Delays the program for one fifth of a second.
   }
   
@@ -50,6 +52,7 @@ void loop() {
 
   for(speed = 126; speed > 0; speed -= 1) {   //Cycles speed down to 0% power with appropriate time delay.
     ESC1.write(speed);                        //Calls function setSpeed (above) and passes the variable speed to it.
+    Serial.println(speed);                    //Prints speed variable to the serial monitor.
     delay(500);                               //Delays the program for one fifth of a second.
   }
 
