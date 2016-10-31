@@ -46,7 +46,7 @@ void setup() {
   boolean detected = false;
   while(not detected){
     if(!bmp.begin()){ //There was a problem detecting the BMP085 ... check your connections
-      Serial.print("Ooops, no BMP085 detected ... Check your wiring or I2C ADDR!");
+      Serial.println("Ooops, no BMP085 detected ... Check your wiring or I2C ADDR!");
       delay(250);
     }
     else{
@@ -66,8 +66,8 @@ void setup() {
    *(10 on most Arduino boards, 53 on the Mega) must be left as an output
    *or the SD library functions will not work. 
    */
-  pinMode(22, OUTPUT);
-  if(!SD.begin(22)){
+  pinMode(53, OUTPUT);
+  if(!SD.begin(53)){
     Serial.println("initialization failed!");
     return;
   }
