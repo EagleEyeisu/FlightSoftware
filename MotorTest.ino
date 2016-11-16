@@ -64,7 +64,7 @@ void loop(){
       delay(4000);                             //Holds at 70% power for 4 seconds. If shut down signal is not given.
     }
     
-    maxSpeedReached = speed;                   //Assigns maximum speed reached during throttle up;
+    maxSpeedReached = speed-1;                   //Assigns maximum speed reached during throttle up;
     for(speed = maxSpeedReached; speed >= 16; speed -= 1) {  //Cycles speed down to 0% power with appropriate time delay.
       ESC1.write(speed);                                     //Calls function setSpeed (above) and passes the variable speed to it.
       Serial.println(speed);                                 //Prints speed variable to the serial monitor.
