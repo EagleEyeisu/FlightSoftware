@@ -5,7 +5,8 @@
  *          data.                                                                    *
  *                                                                                   *
  * Date:      Version:        Developer:                    Description:             *     
- * 10/17/16   1.0             Jared Danner/Wesley Carleton  Initial Build.           *                                                                                      *
+ * 10/17/16   1.0             Jared Danner/Wesley Carleton  Initial Build.           *                                                                                      
+ * 11/16/16   1.1             Jared Danner                  Included Saftey ShutOff  *
  */
 
 /********************General Over View***************************
@@ -33,28 +34,46 @@ void setup() {
  * completed, the program than slowly increments the        *
  * throttle power sent to the ESC/motor back to 0.          *
  ************************************************************/
-void loop() {
+void loop(){
+  int speed;              //Creates speed variable.
+  //ESC1.write(180);      //Used to set throttle range of ESC.
+  //Serial.println("180");
+  //delay(5000);          //Used to set throttle range of ESC.
+  ESC1.write(8);          //Begins program by sending what is eqivalent to 0% throttle.
+  delay(8000);
   
-  int speed; //Creates speed variable
-//ESC1.write(180); //Used to set throttle range of ESC
-//Serial.println("180");
-//delay(5000);   //Used to set throttle range of ESC
-  ESC1.write(8);   //Begins program by sending what is eqivalent to 0% throttle.
-  delay(8000);   
+  char killSwitch = 'k';  //Predefined character to intiate program shutdown.
+  boolean shutOff = false;//True or false value that is triggered when the appropriate character is entered.
+  char inputSignal;       //Used to hold character for shut down.
+  int maxSpeedReached;    //Maximum speed reached during throttle up.
+  
+  inputSignal = Serial.read();                 //Reads input.
+  if(inputSignal!=killSwitch){                 //Checks to see if shut down signal has been given.
+    for(speed = 16; speed <= 126; speed += 1){ //Cycles speed up to 70% power with appropriate time delay.
+      inputSignal = Serial.read();             //Reads in user input if given.
+      if(inputSignal==killSwitch){             //If correct input is given 'k' program starts to shut down.
+        shutOff = true;                        //Shut off value is set true.
+        break;                                 //Breaks throttle up loop.
+      }
+      ESC1.write(speed);                       //Calls function setSpeed (above) and passes the variable speed to it.
+      Serial.println(speed);                   //Prints speed variable to the serial monitor.
+      delay(500);                              //Delays the program for one fifth of a second.
+    }
     
-  for(speed = 16; speed <= 126; speed += 1) {  //Cycles speed up to 70% power with appropriate time delay.
-    ESC1.write(speed);                         //Calls function setSpeed (above) and passes the variable speed to it.
-    Serial.println(speed);                     //Prints speed variable to the serial monitor.
-    delay(500);                                //Delays the program for one fifth of a second.
+    if(!shutOff){                              //Checks to see if shut down signal has been given.
+      delay(4000);                             //Holds at 70% power for 4 seconds. If shut down signal is not given.
+    }
+    
+    maxSpeedReached = speed;                   //Assigns maximum speed reached during throttle up;
+    for(speed = maxSpeedReached; speed >= 16; speed -= 1) {  //Cycles speed down to 0% power with appropriate time delay.
+      ESC1.write(speed);                                     //Calls function setSpeed (above) and passes the variable speed to it.
+      Serial.println(speed);                                 //Prints speed variable to the serial monitor.
+      delay(500);                                            //Delays the program for one fifth of a second.
+    }
   }
   
-  delay(4000);                                  //Holds at 70% power for 4 seconds.
-  
-  for(speed = 126; speed >= 16; speed -= 1) {  //Cycles speed down to 0% power with appropriate time delay.
-    ESC1.write(speed);                         //Calls function setSpeed (above) and passes the variable speed to it.
-    Serial.println(speed);                     //Prints speed variable to the serial monitor.
-    delay(500);                                //Delays the program for one fifth of a second.
-  }
+ delay(10000000); //Delays program for a long time until the loop() starts over again.
+}
 
  delay(1000); //Delays program for 1 second until the loop() starts over again.
 }
