@@ -17,18 +17,19 @@
  ****************************************************************/
 #include <Servo.h> 
 
-//5% = 940
-//10% = 990
-//15% = 1040
-//20% = 1090
-//25% = 1140
-//30% = 1190
-//35% = 1240
-//40% = 1290
-//45% = 1340
-//50% = 1390
+//1% = 880
+//5% = 930
+//10% = 980
+//15% = 1030
+//20% = 1080
+//25% = 1130
+//30% = 1180
+//35% = 1230
+//40% = 1280
+//45% = 1330
+//50% = 1380
 
-#define MAX_SIGNAL 1190     //Change to desired max power. Percentages given right above
+#define MAX_SIGNAL 1180     //Change to desired max power. Percentages given right above
 #define MIN_SIGNAL 700      //Dont't touch
 #define MOTOR_PIN 9         //Don't touch unless switching to MEGA than change to 53
 
@@ -86,7 +87,7 @@ void loop(){
       delay(FULL_POWER_DELAY);                 //Holds at full power for 4 seconds. If shut down signal is not given.
     }
     
-    maxSpeedReached = speed;                   //Assigns maximum speed reached during throttle up;
+    maxSpeedReached = speed-INCREMENT_AMOUNT;                //Assigns maximum speed reached during throttle up;
     for(speed=maxSpeedReached;speed>=MIN_SIGNAL;speed-=INCREMENT_AMOUNT){  //Cycles speed down to 0% power with appropriate time delay.
       motor.writeMicroseconds(speed);                        //Calls function setSpeed (above) and passes the variable speed to it.
       Serial.println(speed);                                 //Prints speed variable to the serial monitor.
