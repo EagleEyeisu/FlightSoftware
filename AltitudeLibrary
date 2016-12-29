@@ -4,55 +4,40 @@
  *          maintains motor speed, deploys parachute, reads and records atmospheric  *
  *          data.                                                                    *
  *                                                                                   *
- * Date:      Version:        Developer:                    Description:             *     
- * 11/15/16   1.0             Jared Danner                  Initial Build.           *                                                                                      *
+ * Date:      Version:        Developer:                  Description:               *     
+ * 11/15/16   1.0             Jared Danner                Initial Build.             *  
+ * 12/28/16   1.1             Jared Danner                Updated and changed output *
+ *                                                        from ft to m.              *
  */
-
-#include <SD.h>
 
 void setup() {
   Serial.begin(9600);
-  pinMode(10, OUTPUT);
-  if (!SD.begin(10)) {
-    Serial.println("initialization failed!");
-  }
-  else{
-      Serial.println("initialization done.");
-  }
 }
 
 void loop() {
-  double pressure = 11.06 / 10.0;
+  double pressure = 11.06 / 10.0;    //Input desired pressure in kPa.
   double alt;
   double leftTop;
   double rightTop;
   double bottom;
   double topTotal;
-  File EagleEyeData;
-  EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
 
-  while(pressure < 376.5){                      //ABOVE 25,000m
+  if(pressure < 376.5){                           //ABOVE 25,000m
     leftTop = -47454.8;
     rightTop = pow(pressure, 0.087812) - 1.65374;
     bottom = pow(pressure, 0.087812);
     topTotal = leftTop * rightTop;
     alt = (topTotal / bottom) ;
-    EagleEyeData.println("alt");
-    Serial.println("alt");
   }
-  while(670.5 > pressure && pressure > 376.5){  //ABOVE 11,000m and BELOW 25,000m
+  else if(670.5 > pressure && pressure > 376.5){  //ABOVE 11,000m and BELOW 25,000m
     rightTop = -6369.43;
     leftTop = log(pressure) - 4.85016;
     alt =  leftTop * rightTop;
-    EagleEyeData.println("alt");
-    Serial.println("alt");
   }
-  while(pressure > 670.5){                      //BELOW 11,000m
+  else{                                           //BELOW 11,000m    (pressure > 670.5)
     leftTop = 44397.5;
     rightTop = 18437 * pow(pressure, 0.190259);
     alt = leftTop - rightTop;
-    EagleEyeData.println("alt");
-    Serial.println("alt");
   }
-  EagleEyeData.close();
+  Serial.println(alt*.3048);
 }
