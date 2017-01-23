@@ -1,0 +1,261 @@
+/*******************************EAGLE EYE PROPRIETARY INFORMATION***************************************
+ *                                                                                                     *
+ *Purpose: Primary software for use on EAGLE EYE rotor craft. Controls and                             *
+ *         maintains motor speed, deploys parachute, reads and records atmospheric                     *
+ *         data.                                                                                       *
+ *                                                                                                     *
+ *Date:      Version:        Developer:        Description:                                            *
+ *6/25/16    1.0             James Wingerter   Initial Build.                                          *
+ *7/10/16    1.1             James Wingerter   Added sd memory, motor control, parachute deployment    *
+ *9/14/16    1.2             James Wingerter/Jared Danner - aAded saftey count to 4                    *
+ *9/19/16    1.3             Jared Danner      Changed variables to print real numbers                 *                                                                                                     
+ *12/26/16   2.0             Jared Danner      Complete Rebuild to Include Motor, Altitude, and other  *
+ *                                             Adjustments.                                            *
+ *******************************************************************************************************/
+
+//LIBRARIES
+/****MOTOR*******/
+#include <Servo.h>
+
+/****ALTITUDE****/
+#include <SD.h>
+
+/****FLIGHT******/
+#include <TimeLib.h>
+#include <Wire.h>
+#include <Adafruit_Sensor.h>
+#include <Adafruit_BMP085_U.h>
+
+
+//CONSTANT VARIABLES
+/****PINS********/
+#define RELAY1  28    //Parachute Digital Pin to IN1
+
+/****MOTOR*******/
+//1% = 880       30% = 1180
+//5% = 930       35% = 1230
+//10% = 980      40% = 1280
+//15% = 1030     45% = 1330
+//20% = 1080     50% = 1380
+//25% = 1130     
+#define MAX_SIGNAL 1180     //Change to desired max power. Percentages given right above
+#define MIN_SIGNAL 700      //Dont't touch
+#define MOTOR_PIN 53        //Don't touch unless switching to UNO than change to 9
+
+#define INCREMENT_AMOUNT 10    //Don't touch
+#define START_DELAY 7000       //Don't touch
+#define INCREMENT_DELAY 320    //Don't touch
+#define FULL_POWER_DELAY 4000  //Changes how long you want to the motor to stay at a contant rate once you are at full power
+
+Servo motor;                   //Creates an Servo object used to control motor.
+int speed;                     //Speed variable
+
+/****SENSORS*****/
+Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);   //Don't touch
+
+/****SD CARD*****/
+File EagleEyeData;             //File used to store the flight data. Data will be written/saved to this file during flight operations
+
+/****PARACHUTE***/
+boolean chute_enable = false;  //Status of chute readiness.
+boolean chute_deploy = false;  //Status of chute deployment.
+int saftey_counter = 0;        //Saftey counter.
+
+/****MISC********/
+time_t current_time;           //Time of events.
+
+
+//PROGRAM START
+/*
+ * Holds data values of Pressure, Altitude, and Temperature
+ */
+struct flight_data {
+  float pressure;
+  float altitude;
+  float temperature;
+};
+
+/*
+ * Method initializes the main hardware components. Only runs once, or until everything is initialized
+ */
+void setup() {
+  
+  Serial.begin(9600); //9600 baud, used for printing to monitor
+  Serial.println("Testing Pressure Sensor.");
+
+  /****Initialize the Altimeter****/
+  if(!bmp.begin()){ //BMP085 Error, check connection
+    Serial.println("Test Failed. (No BMP085 detected, check connections)");
+    delay(1000000);
+  }
+  else{
+    Serial.println("Test Successful.\n");
+  }
+  
+  /****Parachute deployment Initialize****/
+  //Set all the pins low so they do not toggle on Reset or Power on!
+  digitalWrite(RELAY1, HIGH);  //Sends a LOW signal
+  pinMode(RELAY1, OUTPUT);     //Sets RELAY1 as output pin.
+  Serial.println("Parachute Online\n");
+
+  /****Initialize SD Card reader****/
+  Serial.println("Testing SD card.");
+  /*
+   * On the Ethernet Shield, CS is pin 4. It's set as an output by default.
+   * Note that even if it's not used as the CS pin, the hardware SS pin
+   * (10 on most Arduino boards, 53 on the Mega) must be left as an output
+   * or the SD library functions will not work. 
+   */
+  pinMode(53, OUTPUT);
+  if(!SD.begin(53)){
+    Serial.println("Test Failed.");
+    delay(1000000);
+  }
+  else{
+    Serial.println("Test Successful.\n");
+  }
+  
+  /****Initialize Motor Pin****/
+  motor.attach(MOTOR_PIN);    //Attaches ESC to Arduino
+  Serial.println("Motor Online\n");
+}
+
+/*
+ * MAIN PROGRAM CODE. 
+ */
+void loop(void){
+  
+  /****Get a new sensor event****/
+  sensors_event_t event;
+  bmp.getEvent(&event);
+  
+  /****Display results in hpa****/
+  if(event.pressure){
+    struct flight_data current = getData();
+    
+    /****Record to SD card****/
+    storeData(current.pressure, current.temperature, current.altitude);
+
+    /****Parachute Deployment****/
+    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+    if(not chute_enable and current.altitude >= 9144){    //9144 m == 30,000 feet
+       saftey_counter = saftey_counter + 1;          //Increment the saftey_counter by 1 until
+      if(saftey_counter >= 4){
+        chute_enable = true;
+        Serial.print("\nchute enabled at ");  
+        Serial.print(current.altitude);
+        Serial.println(" meters ");
+        EagleEyeData.print("chute enabled at ");
+        EagleEyeData.print(current.altitude); 
+        EagleEyeData.println(" meters ");
+      }
+      else if(current.altitude <= 9144){  //Resets saftey counter to 0
+        saftey_counter = 0;
+        Serial.println("Saftey reset to 0.");
+        EagleEyeData.println("Saftey reset to 0.");   
+      }
+    }
+    if(not chute_deploy and chute_enable and current.altitude <= 6096){  //6096m == 20,000 feet
+      digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
+      chute_deploy = true;
+      Serial.print("chute deployed at ");
+      Serial.print(current.altitude);
+      delay(2000);
+      digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
+      EagleEyeData.print("chute deployed at ");
+      EagleEyeData.print(current.altitude);
+      EagleEyeData.println(" meters");
+    }
+    EagleEyeData.close();
+  }
+  else{
+    Serial.println("Sensor Error.");
+    delay(1000000);
+  }
+  delay(1000);  //One second delay between recordings
+}
+
+/*
+ * Used to calculate flight data and return values in a struct, which will be called in the main loop.
+ */
+struct flight_data getData(){
+  /****Get a new sensor event****/
+  sensors_event_t event;
+  bmp.getEvent(&event);
+  
+  /****Display atmospheric pressue in hPa****/
+  Serial.print("Pressure:    ");
+  Serial.print(event.pressure);
+  Serial.println(" hPa ");
+   
+  /****First we get the current temperature from the BMP180****/
+  float temperature;
+  bmp.getTemperature(&temperature);
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C ");
+
+  /****Calculate Altitude from Pressure****/
+  float altitude = getAlt(event.pressure);
+  Serial.print("Altitude:    ");
+  Serial.print(altitude);
+  Serial.println(" ft\n");
+
+  /****Save current Temp, Alt, and Pressure to our data struct****/
+  flight_data data;
+  data.pressure = event.pressure;
+  data.temperature = temperature;
+  data.altitude = altitude;
+  return data;
+}
+
+/*
+ * Method used to store Data to SD card storage
+ */
+void storeData(float Pressure, float Temperature, float Altitude){
+  /****Write Recorded data to SD Card File every second****/
+  current_time = now();
+  EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+  EagleEyeData.print(current_time);
+  EagleEyeData.print(", ");
+  EagleEyeData.print(Altitude);
+
+  EagleEyeData.print(", ");
+  EagleEyeData.print(Pressure);
+
+  EagleEyeData.print(", ");
+  EagleEyeData.println(Temperature);
+  EagleEyeData.close();
+}
+
+/*
+ * Method used to derive Altitude from Pressure.
+ * Initally hPa, than converted to mPa for calculations.
+ */
+int getAlt(float inPressure){
+  float pressure = inPressure/10.0;
+  float alt;
+  float leftTop;
+  float rightTop;      //All variables used to calculate altitude
+  float bottom;
+  float topTotal;
+
+  if(pressure < 37.65){                           //ABOVE 25,000m
+    leftTop = -47454.8;
+    rightTop = pow(pressure, 0.087812) - 1.65374;
+    bottom = pow(pressure, 0.087812);
+    topTotal = leftTop * rightTop;
+    alt = (topTotal / bottom);
+  }
+  else if(67.05 > pressure && pressure > 37.65){  //ABOVE 11,000m and BELOW 25,000m
+    rightTop = -6369.43;
+    leftTop = log(pressure) - 4.85016;
+    alt =  leftTop * rightTop;
+  }
+  else{                                           //BELOW 11,000m (Pressure > 67.05)
+    leftTop = 44397.5;
+    rightTop = 18437 * pow(pressure, 0.190259);
+    alt = leftTop - rightTop;
+  }
+  return alt*3.28; //Conversion from feet to meters
+}
