@@ -9,8 +9,7 @@
  *7/10/16    1.1             James Wingerter   Added sd memory, motor control, parachute deployment    *
  *9/14/16    1.2             James Wingerter/Jared Danner - aAded saftey count to 4                    *
  *9/19/16    1.3             Jared Danner      Changed variables to print real numbers                 *                                                                                                     
- *12/26/16   2.0             Jared Danner      Complete Rebuild to Include Motor, Altitude, and other  *
- *                                             Adjustments.                                            *
+ *12/26/16   2.0             Jared Danner      Complete Rebuild. Will update when finished.                                        *
  *******************************************************************************************************/
 
 //LIBRARIES
@@ -43,33 +42,46 @@
 #define MOTOR_PIN 53        //Don't touch unless switching to UNO than change to 9
 
 #define INCREMENT_AMOUNT 10    //Don't touch
-#define START_DELAY 7000       //Don't touch
 #define INCREMENT_DELAY 320    //Don't touch
 #define FULL_POWER_DELAY 4000  //Changes how long you want to the motor to stay at a contant rate once you are at full power
 
-Servo motor;                   //Creates an Servo object used to control motor.
-int speed;                     //Speed variable
+Servo motor;                     //Creates an Servo object used to control motor.
+int speed;                       //Speed variable
+int speedPrevious;               //Holds the speed value that the previous cycle 
+boolean spin_Up = true;          //True if spin up cycle was reached.
+boolean cycle_Up = false;        //True while motor needs to throttle upward.
+boolean cycle_Down = false;      //True while motor needs to throttle down.
+boolean motor_Complete = false;  //True when motor cycle is complete. 
+boolean motor_Start = false;     //Triggers the beginning of the motor process.
+boolean break_Status = false;    //Status of break.
 
 /****SENSORS*****/
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);   //Don't touch
 
 /****SD CARD*****/
-File EagleEyeData;             //File used to store the flight data. Data will be written/saved to this file during flight operations
+File EagleEyeData;                  //File used to store the flight data. Data will be written/saved to this file during flight operations
 
 /****PARACHUTE***/
-boolean chute_enable = false;  //Status of chute readiness.
-boolean chute_deploy = false;  //Status of chute deployment.
-int saftey_counter = 0;        //Saftey counter.
+boolean chute_enable = false;       //Status of chute readiness.
+boolean chute_deploy = false;       //Status of chute deployment.
+int saftey_counter = 0;             //Saftey counter.
+int PARACHUTE_ARM_HEIGHT = 9144;    //9144 m == 30,000 feet
+int PARACHUTE_DEPLOY_HEIGHT = 6096;  //6096m == 20,000 feet
+
+/****COMMUNICATION****/
+boolean HABET_Connection = true; //Status for Connection to HABET.
+byte IN[] = {B0000,B0001,B0010,B0011,B0100,B0101,B0110,B0111,B1000,B1001}; //Event Log from LoRa.
+boolean sent = false;
+int MEGA_ADDRESS = 1;          //I2C Comm address for MEGA.
+int LORA_ADDRESS = 2;          //I2C Comm address for LoRa.
 
 /****MISC********/
 time_t current_time;           //Time of events.
 
-
-//PROGRAM START
 /*
  * Holds data values of Pressure, Altitude, and Temperature
  */
-struct flight_data {
+struct flight_data{
   float pressure;
   float altitude;
   float temperature;
@@ -79,104 +91,197 @@ struct flight_data {
  * Method initializes the main hardware components. Only runs once, or until everything is initialized
  */
 void setup() {
-  
   Serial.begin(9600); //9600 baud, used for printing to monitor
-  Serial.println("Testing Pressure Sensor.");
 
   /****Initialize the Altimeter****/
   if(!bmp.begin()){ //BMP085 Error, check connection
-    Serial.println("Test Failed. (No BMP085 detected, check connections)");
-    delay(1000000);
+    Serial.println("Pressure Sensor Offline.");
+    delay(10000000);
   }
   else{
-    Serial.println("Test Successful.\n");
+    Serial.println("Pressure Sensor Online.");
   }
   
   /****Parachute deployment Initialize****/
   //Set all the pins low so they do not toggle on Reset or Power on!
   digitalWrite(RELAY1, HIGH);  //Sends a LOW signal
   pinMode(RELAY1, OUTPUT);     //Sets RELAY1 as output pin.
-  Serial.println("Parachute Online\n");
+  Serial.println("Parachute Online.");
 
   /****Initialize SD Card reader****/
-  Serial.println("Testing SD card.");
-  /*
-   * On the Ethernet Shield, CS is pin 4. It's set as an output by default.
-   * Note that even if it's not used as the CS pin, the hardware SS pin
-   * (10 on most Arduino boards, 53 on the Mega) must be left as an output
-   * or the SD library functions will not work. 
-   */
-  pinMode(53, OUTPUT);
-  if(!SD.begin(53)){
-    Serial.println("Test Failed.");
-    delay(1000000);
-  }
-  else{
-    Serial.println("Test Successful.\n");
-  }
+  Serial.println("SD Card Online.");
   
   /****Initialize Motor Pin****/
   motor.attach(MOTOR_PIN);    //Attaches ESC to Arduino
-  Serial.println("Motor Online\n");
+  Serial.println("Motor Online.");
+
+  /****Initialize I2C Comms****/
+  Wire.begin(MEGA_ADDRESS); //MEGA ADDRESS ->(1)<-
+  Serial.println("Comms Address Set.\n\n");
 }
 
 /*
  * MAIN PROGRAM CODE. 
  */
 void loop(void){
-  
-  /****Get a new sensor event****/
   sensors_event_t event;
   bmp.getEvent(&event);
   
-  /****Display results in hpa****/
   if(event.pressure){
-    struct flight_data current = getData();
-    
-    /****Record to SD card****/
-    storeData(current.pressure, current.temperature, current.altitude);
-
-    /****Parachute Deployment****/
-    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
-    if(not chute_enable and current.altitude >= 9144){    //9144 m == 30,000 feet
-       saftey_counter = saftey_counter + 1;          //Increment the saftey_counter by 1 until
-      if(saftey_counter >= 4){
-        chute_enable = true;
-        Serial.print("\nchute enabled at ");  
-        Serial.print(current.altitude);
-        Serial.println(" meters ");
-        EagleEyeData.print("chute enabled at ");
-        EagleEyeData.print(current.altitude); 
-        EagleEyeData.println(" meters ");
-      }
-      else if(current.altitude <= 9144){  //Resets saftey counter to 0
-        saftey_counter = 0;
-        Serial.println("Saftey reset to 0.");
-        EagleEyeData.println("Saftey reset to 0.");   
-      }
-    }
-    if(not chute_deploy and chute_enable and current.altitude <= 6096){  //6096m == 20,000 feet
-      digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
-      chute_deploy = true;
-      Serial.print("chute deployed at ");
-      Serial.print(current.altitude);
-      delay(2000);
-      digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
-      EagleEyeData.print("chute deployed at ");
-      EagleEyeData.print(current.altitude);
-      EagleEyeData.println(" meters");
-    }
-    EagleEyeData.close();
+    flight_data current = getData(); //Updates altitude, pressure, and tempurature.
+    communication(current.altitude,false,0);  //Cheks for incoming communication from LoRA.
+    storeData(current.pressure, current.temperature, current.altitude);  //Store Data to SD Card.
+    parachute(current.altitude);  //Handles all things parachute.
+    motor_Function(current.altitude);      //Handles motor function.
   }
   else{
     Serial.println("Sensor Error.");
-    delay(1000000);
   }
-  delay(1000);  //One second delay between recordings
+  if(cycle_Up || cycle_Down){
+    if(spin_Up || motor_Complete){
+      delay(1000);
+    }
+    else{
+      delay(300);
+    }
+  }
+  else{
+    delay(1000);  //One second delay between recordings
+  }
 }
 
 /*
- * Used to calculate flight data and return values in a struct, which will be called in the main loop.
+ * Motor Control System
+ */
+void motor_Function(float Altitude){
+  if(chute_deploy == false){
+    if(HABET_Connection == false){
+      if(motor_Complete == false){
+        if(!motor_Start){
+          motor_Start = true;
+          cycle_Up = true;
+          speedPrevious = MIN_SIGNAL;
+          communication(Altitude,true,10);
+        }
+        else if(cycle_Up){       //CYCLING UP
+          if(speed>=MAX_SIGNAL){ //Checks to see if motor has met desired throttle.
+            cycle_Up == false;
+            spin_Up == true;
+            cycle_Down == true;
+            speed = MAX_SIGNAL;
+          }
+          else if(speed<MAX_SIGNAL){    
+            for(speed=speedPrevious;speed<=speedPrevious+70;speed+=INCREMENT_AMOUNT){
+              if(speed==850){
+                communication(Altitude,true,12);
+                break_Status = false;
+              }
+              if(speed<=MAX_SIGNAL){
+              motor.writeMicroseconds(speed);
+              delay(100);
+              }
+            }
+            speedPrevious = speed;
+          }
+       }
+       else if(cycle_Down){ //CYCLING DOWN
+          if(speed<=850){   //DONT TOUCH - Makes sure break is off but the motor has stopped spinning. 
+            cycle_Down == false;
+            motor_Complete == true;
+            communication(Altitude,true,11);
+          }
+          else if(speed>MIN_SIGNAL){    //Checks to see if motor has stopped.
+            for(speed=speedPrevious;speed>=speedPrevious-70;speed-=INCREMENT_AMOUNT){
+              if(speed>=MIN_SIGNAL){
+                motor.writeMicroseconds(speed);
+                delay(100);
+              }
+            }
+            speedPrevious = speed;
+          }
+        }
+      }
+      else if(!chute_deploy && chute_enable && !break_Status && Altitude <= PARACHUTE_DEPLOY_HEIGHT+300){ //<-number value is used to determine at what height above parachute deployment we need to turn the break on. WILL CHANGE
+        motor.writeMicroseconds(700); //Break turns on
+        break_Status = true;
+        communication(Altitude,true,14);
+      }
+    }
+  }
+}
+
+/*
+ * Handles Event Logging. From LoRa and MEGA.
+ */
+void communication(float Altitude, boolean Motor, int motor_Event){
+  if(Wire.available() && Motor == false){
+    byte a[1];
+    int i = 0;
+    a[i] = Wire.read();
+    EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
+    EagleEyeData.println();
+    EagleEyeData.print(a[i]);
+    EagleEyeData.print("  ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.print("  ");
+    EagleEyeData.println(current_time = now());
+    EagleEyeData.close();
+  }
+  else if(Motor){
+    EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
+    EagleEyeData.println();
+    EagleEyeData.print(motor_Event);
+    EagleEyeData.print("  ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.print("  ");
+    EagleEyeData.println(current_time = now());
+    EagleEyeData.close();
+  }
+}
+ 
+/**
+ * All parachute functions/decisions/everything.
+ */
+void parachute(float Altitude){
+  if(!chute_enable && Altitude >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
+    saftey_counter++;
+    if(saftey_counter >= 4){
+      chute_enable = true;
+      Serial.print("Chute enabled at ");  
+      Serial.print(Altitude);
+      Serial.println(" meters ");
+      EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+      EagleEyeData.print("Chute enabled at ");
+      EagleEyeData.print(Altitude); 
+      EagleEyeData.println(" meters ");
+      EagleEyeData.close();
+    }
+    else if(Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
+      saftey_counter = 0;
+      Serial.println("Saftey reset to 0.");
+      EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+      EagleEyeData.println("Saftey reset to 0."); 
+      EagleEyeData.close();  
+    }
+  }
+  if(!chute_deploy && chute_enable && break_Status && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
+    digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
+    chute_deploy = true;
+    Serial.print("Chute deployed at ");
+    Serial.print(Altitude);
+    Serial.println(" meters");
+    delay(2000);
+    digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
+    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+    EagleEyeData.print("Chute deployed at ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.println(" meters");
+    EagleEyeData.close();
+  }
+}
+
+/*
+ * Updates values to current conditions.
  */
 struct flight_data getData(){
   /****Get a new sensor event****/
@@ -215,7 +320,7 @@ struct flight_data getData(){
 void storeData(float Pressure, float Temperature, float Altitude){
   /****Write Recorded data to SD Card File every second****/
   current_time = now();
-  EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+  EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
   EagleEyeData.print(current_time);
   EagleEyeData.print(", ");
   EagleEyeData.print(Altitude);
