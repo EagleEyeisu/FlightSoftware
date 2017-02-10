@@ -1,0 +1,137 @@
+/*******************************EAGLE EYE PROPRIETARY INFORMATION***************************************
+ *                                                                                                     *
+ *Purpose: Primary software for use on LoRa Transmiter. Handles incoming/outgoing radio signals,       *
+ *                 stores and transmits GPS location of craft, works as backup parachute deployment    *
+ *                 and becomes the crafts HQ if the mega were to fail.                                 *
+ *                                                                                                     *
+ *Date:      Version:        Developer:        Description:                                            *
+ *2/9/17     1.0             Jared Danner      Initial Build.                                          *
+ *******************************************************************************************************/
+
+//LIBRARIES
+/****ALTITUDE****/
+#include <SD.h>
+
+/****FLIGHT******/
+#include <TimeLib.h>
+#include <Wire.h>
+
+//CONSTANT VARIABLES
+/****PINS********/
+#define RELAY1  28    //Parachute Digital Pin to IN1
+
+/****SD CARD*****/
+File EagleEyeData;    //File used to store the flight data. Data will be written/saved to this file during flight operations
+
+/****PARACHUTE***/
+boolean chute_enable = false;       //Status of chute readiness.
+boolean chute_deploy = false;       //Status of chute deployment.
+int saftey_counter = 0;             //Saftey counter.
+int PARACHUTE_ARM_HEIGHT = 9144;    //9144 m == 30,000 feet
+int PARACHUTE_DEPLOY_HEIGHT = 6096;  //6096m == 20,000 feet
+
+/****COMMUNICATION****/
+boolean HABET_Connection = true; //Status for Connection to HABET.
+byte IN[] = {B0000,B0001,B0010,B0011,B0100,B0101,B0110,B0111,B1000,B1001}; //Event Log from LoRa.
+boolean sent = false;
+int MEGA_ADDRESS = 1;          //I2C Comm address for MEGA.
+int LORA_ADDRESS = 2;          //I2C Comm address for LoRa.
+boolean DISPATCH_SIGNAL = true;
+
+/****COMMAND****/
+boolean COMMAND_CENTER = false;
+boolean no_Response = false;
+
+/****MISC********/
+time_t current_time;           //Time of events.
+
+/*
+ * Holds data values of Pressure, Altitude, and Temperature
+ */
+struct flight_data{
+  float altitude;
+};
+
+void setup() {
+  Serial.begin(9600);
+
+  /****Parachute deployment Initialize****/
+  //Set all the pins low so they do not toggle on Reset or Power on!
+  digitalWrite(RELAY1, HIGH);  //Sends a LOW signal
+  pinMode(RELAY1, OUTPUT);     //Sets RELAY1 as output pin.
+  Serial.println("Parachute Online.");
+
+  /****Initialize GPS Module****/
+
+  /****Initialize SD Card reader****/
+  Serial.println("SD Card Online.");
+
+  /****Initialize I2C Comms****/
+  Wire.begin(LORA_ADDRESS);    //Setting the address for this board.
+  Serial.println("Comms Address Set.\n\n");
+}
+
+void loop() {
+  flight_data current = GPSData();                   //Updates altitude.
+  communication(current.altitude,DISPATCH_SIGNAL,0); //Sends Events to Mega & Logs Events.
+  storeData(current.altitude);                       //Handles all things parachute.
+  parachute(current.altitude);                       //THIS
+  
+  delay(1000);
+}
+
+/*
+ * Responsible for updating and recieving information directly from GPS.
+ */
+struct flight_data GPSData(){
+  //GPS FUNCTION
+}
+
+/*
+ * Used to store Data to SD card storage
+ */
+void storeData(float Altitude){
+  EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
+  EagleEyeData.print(current_time = now());
+  EagleEyeData.print(", ");
+  EagleEyeData.print(Altitude);
+  EagleEyeData.close();
+}
+
+/**
+ * Handles Event Logging. Sends MEGA milestone updates/errors.
+ *  LORA EVENTS
+ *  0 - Chute Disabled
+ *  1 - Chute Enabled
+ *  2 - Chute Deployed
+ *  3 - GPS Offline
+ *  4 - Detached
+ *  5 - Abort Detach
+ *  6 - Radio Connection Lost
+ */
+void communication(float Altitude, boolean Send, int LoRa_Event){
+  if(Send){
+    Wire.beginTransmission(1);
+    Serial.println("Event sent to Mega");
+    Wire.write(IN[LoRa_Event]);
+    Wire.endTransmission();
+    EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
+    EagleEyeData.println();
+    EagleEyeData.print(a[i]);
+    EagleEyeData.print(" <-Sent to Mega at ALT: ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(current_time = now());
+    EagleEyeData.close();
+  }
+  else{
+    EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
+    EagleEyeData.println();
+    EagleEyeData.print(a[i]);
+    EagleEyeData.print(" <-Event Logged at ALT: ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(current_time = now());
+    EagleEyeData.close();
+  }
+}
