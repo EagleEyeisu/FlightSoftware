@@ -8,7 +8,7 @@
  *6/25/16    1.0             James Wingerter   Initial Build.                                          *
  *7/10/16    1.1             James Wingerter   Added sd memory, motor control, parachute deployment    *
  *9/14/16    1.2             James Wingerter/Jared Danner - aAded saftey count to 4                    *
- *9/19/16    1.3             Jared Danner      Changed variables to print real numbers                 *                                                                                                     
+ *9/19/16    1.3             Jared Danner      Changed variables to print real numbers                 *
  *12/26/16   2.0             Jared Danner      Complete Rebuild. Will update when finished.            *
  *******************************************************************************************************/
 
@@ -116,7 +116,7 @@ void setup() {
   Serial.println("Motor Online.");
 
   /****Initialize I2C Comms****/
-  Wire.begin(MEGA_ADDRESS); //MEGA ADDRESS ->(1)<-
+  Wire.begin(MEGA_ADDRESS);  //Setting the address for this board.
   Serial.println("Comms Address Set.\n\n");
 }
 
@@ -128,11 +128,11 @@ void loop(void){
   bmp.getEvent(&event);
   
   if(event.pressure){
-    flight_data current = getData(); //Updates altitude, pressure, and tempurature.
-    communication(current.altitude,false,0);  //Cheks for incoming communication from LoRA.
-    storeData(current.pressure, current.temperature, current.altitude);  //Store Data to SD Card.
-    parachute(current.altitude);  //Handles all things parachute.
-    motor_Function(current.altitude);      //Handles motor function.
+    flight_data current = getData();                                      //Updates altitude, pressure, and tempurature.
+    communication(current.altitude,false,0);                              //Checks for incoming communication from LoRA.
+    store_Data(current.pressure, current.temperature, current.altitude);  //Store Data to SD Card.
+    parachute(current.altitude);                                          //Handles all things parachute.
+    motor_Function(current.altitude);                                     //Handles motor function.
   }
   else{
     Serial.println("Sensor Error.");
@@ -213,7 +213,7 @@ void motor_Function(float Altitude){
 /*
  * Handles Event Logging. From LoRa and MEGA.
  */
-void communication(float Altitude, boolean Motor, int motor_Event){
+void communication(float Altitude, boolean Motor, int System_Event){
   if(Wire.available() && Motor == false){
     byte a[1];
     int i = 0;
@@ -221,19 +221,19 @@ void communication(float Altitude, boolean Motor, int motor_Event){
     EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
     EagleEyeData.println();
     EagleEyeData.print(a[i]);
-    EagleEyeData.print("  ");
+    EagleEyeData.print(" <-LoRa Event Logged at ALT: ");
     EagleEyeData.print(Altitude);
-    EagleEyeData.print("  ");
+    EagleEyeData.print(" at flight TIME: ");
     EagleEyeData.println(current_time = now());
     EagleEyeData.close();
   }
   else if(Motor){
     EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
     EagleEyeData.println();
-    EagleEyeData.print(motor_Event);
-    EagleEyeData.print("  ");
+    EagleEyeData.print(System_Event);
+    EagleEyeData.print(" <-Mega Event Logged at ALT: ");
     EagleEyeData.print(Altitude);
-    EagleEyeData.print("  ");
+    EagleEyeData.print(" at flight TIME: ");
     EagleEyeData.println(current_time = now());
     EagleEyeData.close();
   }
@@ -315,13 +315,11 @@ struct flight_data getData(){
 }
 
 /*
- * Method used to store Data to SD card storage
+ * Used to store Data to SD card storage
  */
-void storeData(float Pressure, float Temperature, float Altitude){
-  /****Write Recorded data to SD Card File every second****/
-  current_time = now();
+void store_Data(float Pressure, float Temperature, float Altitude){
   EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
-  EagleEyeData.print(current_time);
+  EagleEyeData.print(current_time = now());
   EagleEyeData.print(", ");
   EagleEyeData.print(Altitude);
 
