@@ -11,9 +11,10 @@
 //LIBRARIES
 /****ALTITUDE****/
 #include <SD.h>
+#include <Adafruit_GPS.h>
+#include <SoftwareSerial.h>
 
 /****FLIGHT******/
-#include <TimeLib.h>
 #include <Wire.h>
 
 //CONSTANT VARIABLES
@@ -33,17 +34,16 @@ int PARACHUTE_DEPLOY_HEIGHT = 6096;  //6096m == 20,000 feet
 /****COMMUNICATION****/
 boolean HABET_Connection = true; //Status for Connection to HABET.
 byte IN[] = {B0000,B0001,B0010,B0011,B0100,B0101,B0110,B0111,B1000,B1001}; //Event Log from LoRa.
-boolean sent = false;
-int MEGA_ADDRESS = 1;          //I2C Comm address for MEGA.
-int LORA_ADDRESS = 2;          //I2C Comm address for LoRa.
 boolean DISPATCH_SIGNAL = true;
+String NMEA1;                  //Variable for first NMEA sentence.
+String NMEA2;                  //Variable for second NMEA sentence.
+char c;                        //To read characters coming from the GPS.
+SoftwareSerial mySerial(3,2);  //NEED TO UPDATE WIRES FOR MEGA.
+Adafruit_GPS GPS(&mySerial);   //Create the GPS Object.
 
 /****COMMAND****/
 boolean COMMAND_CENTER = false;
 boolean no_Response = false;
-
-/****MISC********/
-time_t current_time;           //Time of events.
 
 /*
  * Holds data values of Pressure, Altitude, and Temperature
@@ -52,8 +52,8 @@ struct flight_data{
   float altitude;
 };
 
-void setup() {
-  Serial.begin(9600);
+void setup(){
+  Serial.begin(4800);
 
   /****Parachute deployment Initialize****/
   //Set all the pins low so they do not toggle on Reset or Power on!
@@ -62,39 +62,145 @@ void setup() {
   Serial.println("Parachute Online.");
 
   /****Initialize GPS Module****/
-
+  GPS.begin(9600);
+  GPS.sendCommand("$PGCMD,33,0*6D");            //Turn off antenna update nuisance data
+  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA); //Request RMC and GGA Sentences only
+  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);    //Set update rate to 1 hz
+  
   /****Initialize SD Card reader****/
   Serial.println("SD Card Online.");
 
   /****Initialize I2C Comms****/
-  Wire.begin(LORA_ADDRESS);    //Setting the address for this board.
+  Wire.begin(2);    //Setting the address for this board.
   Serial.println("Comms Address Set.\n\n");
 }
 
 void loop() {
-  flight_data current = GPSData();                   //Updates altitude.
-  communication(current.altitude,DISPATCH_SIGNAL,0); //Sends Events to Mega & Logs Events.
-  storeData(current.altitude);                       //Handles all things parachute.
-  parachute(current.altitude);                       //THIS
-  
+  flight_data current = GPSData();                                //Updates altitude using GPS.
+  RADIO_Comm();                                                   //Habet communication.
+  MEGA_Comm(current.altitude,DISPATCH_SIGNAL,0);                  //Sends Events to Mega & Logs Events.
+  storeData(current.altitude); //Stores Data to SD Card.
+  parachute(current.altitude);                                    
   delay(1000);
+}
+
+/*
+ * Radio Communication into and out of the LoRa.
+ */
+void RADIO_Comm(){
+  
+}
+/*
+ * Handles all parachute functions.
+ */
+void parachute(float Altitude){
+  if(!chute_enable && Altitude >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
+    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+    saftey_counter++;
+    if(saftey_counter >= 4){
+      chute_enable = true;
+      Serial.print("Chute enabled at ");  
+      Serial.print(Altitude);
+      EagleEyeData.print("Chute enabled at: ");
+      EagleEyeData.println(Altitude); 
+      
+    }
+    else if(Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
+      saftey_counter = 0;
+      Serial.println("Saftey reset to 0.");
+      EagleEyeData.println("Saftey reset to 0.");  
+    }
+  }
+  if(!chute_deploy && chute_enable && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
+    digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
+    chute_deploy = true;
+    Serial.print("Chute deployed at: ");
+    Serial.println(Altitude);
+    delay(2000);
+    digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
+    EagleEyeData.print("Chute deployed at: ");
+    EagleEyeData.println(Altitude);
+  }
+  EagleEyeData.close();
 }
 
 /*
  * Responsible for updating and recieving information directly from GPS.
  */
 struct flight_data GPSData(){
-  //GPS FUNCTION
+  clearGPS();
+  while(!GPS.newNMEAreceived()) {       //Loop until you have a good NMEA sentence
+    c=GPS.read();
+  }
+  NMEA1=GPS.lastNMEA();
+  while(!GPS.newNMEAreceived()) {       //Loop until you have a good NMEA sentence
+    c=GPS.read();
+  }
+  NMEA2=GPS.lastNMEA();
+
+  float Alt;
+  if(NMEA1[3]=='G'){
+    Alt = parse_GPS(NMEA1);
+  }
+  else if(NMEA2[3]=='G'){
+    Alt = parse_GPS(NMEA2);
+  }
+  flight_data data;
+  data.altitude = Alt;
+  return data;
+}
+
+/*
+ * Parses GPS strings to find altitude.
+ */
+float parse_GPS(String NMEA){
+  int T_GoalNumber = 2;
+  boolean T_Goal = false;
+  int C = 0;
+  String two = "                   ";
+  int t = 0;
+  for(int i=0;i<120;i++){
+    if(NMEA[i]==','){
+      C++;
+    }
+    else if(C==T_GoalNumber){
+      if(NMEA[i]!=','){
+        two[t] = NMEA[i];
+        t++;
+      }
+    }
+  }
+  char arr[20];
+  for(int i=0;i<20;i++){
+    arr[i]=two[i];
+  }
+  float temp_Alt = atof(arr);
+  Serial.println(temp_Alt);
+  return temp_Alt;
+}
+
+/*
+ * Submethod used to clear the GPS's data to make way for new data.
+ */
+void clearGPS(){
+  while(!GPS.newNMEAreceived()) {   //Loop until you have a good NMEA sentence
+    c=GPS.read();
+  }
+  while(!GPS.newNMEAreceived()) {   //Loop until you have a good NMEA sentence
+    c=GPS.read();
+  }
+  while(!GPS.newNMEAreceived()) {   //Loop until you have a good NMEA sentence
+    c=GPS.read();
+  }
 }
 
 /*
  * Used to store Data to SD card storage
  */
 void storeData(float Altitude){
-  EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
-  EagleEyeData.print(current_time = now());
-  EagleEyeData.print(", ");
-  EagleEyeData.print(Altitude);
+  EagleEyeData = SD.open("NMEA.txt", FILE_WRITE);
+  EagleEyeData.println(NMEA1);
+  EagleEyeData.println(NMEA2);
   EagleEyeData.close();
 }
 
@@ -109,29 +215,22 @@ void storeData(float Altitude){
  *  5 - Abort Detach
  *  6 - Radio Connection Lost
  */
-void communication(float Altitude, boolean Send, int LoRa_Event){
+void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event){
+  EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
   if(Send){
     Wire.beginTransmission(1);
     Serial.println("Event sent to Mega");
     Wire.write(IN[LoRa_Event]);
     Wire.endTransmission();
-    EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
-    EagleEyeData.println();
-    EagleEyeData.print(a[i]);
+    EagleEyeData.print(IN[LoRa_Event]);
     EagleEyeData.print(" <-Sent to Mega at ALT: ");
-    EagleEyeData.print(Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(current_time = now());
-    EagleEyeData.close();
   }
   else{
-    EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
-    EagleEyeData.println();
-    EagleEyeData.print(a[i]);
+    EagleEyeData.print(IN[LoRa_Event]);
     EagleEyeData.print(" <-Event Logged at ALT: ");
-    EagleEyeData.print(Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(current_time = now());
-    EagleEyeData.close();
   }
+  EagleEyeData.print(Altitude);
+  EagleEyeData.print(" at flight TIME: ");
+  EagleEyeData.close();
+}
 }
