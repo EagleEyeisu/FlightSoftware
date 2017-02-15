@@ -335,7 +335,7 @@ void store_Data(float Pressure, float Temperature, float Altitude){
  * Method used to derive Altitude from Pressure.
  * Initally hPa, than converted to mPa for calculations.
  */
-int getAlt(float inPressure){
+float getAlt(float inPressure){
   float pressure = inPressure/10.0;
   float alt;
   float leftTop;
