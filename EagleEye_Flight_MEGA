@@ -61,6 +61,7 @@ Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);   //Don't touch
 
 /****SD CARD*****/
 File EagleEyeData;                  //File used to store the flight data. Data will be written/saved to this file during flight operations
+#define SD_PIN = 10;                //CHANGE THIS TO MEGA OR FEATHER 
 
 /****PARACHUTE***/
 boolean chute_enable = false;       //Status of chute readiness.
@@ -111,6 +112,7 @@ void setup() {
 
   /****Initialize SD Card reader****/
   Serial.println("SD Card Online.");
+  pinMode(SD_PIN, OUTPUT);
   
   /****Initialize Motor Pin****/
   motor.attach(MOTOR_PIN);    //Attaches ESC to Arduino
