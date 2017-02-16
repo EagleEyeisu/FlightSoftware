@@ -23,6 +23,7 @@
 
 /****SD CARD*****/
 File EagleEyeData;    //File used to store the flight data. Data will be written/saved to this file during flight operations
+#define SD_PIN = 10;  //CHANGE THIS TO MEGA OR FEATHER 
 
 /****PARACHUTE***/
 boolean chute_enable = false;       //Status of chute readiness.
@@ -53,7 +54,7 @@ struct flight_data{
 };
 
 void setup(){
-  Serial.begin(4800);
+  Serial.begin(115200);
 
   /****Parachute deployment Initialize****/
   //Set all the pins low so they do not toggle on Reset or Power on!
@@ -69,6 +70,7 @@ void setup(){
   
   /****Initialize SD Card reader****/
   Serial.println("SD Card Online.");
+  pinMode(SD_PIN, OUTPUT);
 
   /****Initialize I2C Comms****/
   Wire.begin(2);    //Setting the address for this board.
@@ -79,9 +81,8 @@ void loop() {
   flight_data current = GPSData();                                //Updates altitude using GPS.
   RADIO_Comm();                                                   //Habet communication.
   MEGA_Comm(current.altitude,DISPATCH_SIGNAL,0);                  //Sends Events to Mega & Logs Events.
-  storeData(current.altitude); //Stores Data to SD Card.
+  storeData(current.altitude);                                    //Stores Data to SD Card.
   parachute(current.altitude);                                    
-  delay(1000);
 }
 
 /*
@@ -100,10 +101,9 @@ void parachute(float Altitude){
     if(saftey_counter >= 4){
       chute_enable = true;
       Serial.print("Chute enabled at ");  
-      Serial.print(Altitude);
+      Serial.println(Altitude);
       EagleEyeData.print("Chute enabled at: ");
       EagleEyeData.println(Altitude); 
-      
     }
     else if(Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
       saftey_counter = 0;
@@ -137,7 +137,7 @@ struct flight_data GPSData(){
     c=GPS.read();
   }
   NMEA2=GPS.lastNMEA();
-
+  
   float Alt;
   if(NMEA1[3]=='G'){
     Alt = parse_GPS(NMEA1);
@@ -154,7 +154,7 @@ struct flight_data GPSData(){
  * Parses GPS strings to find altitude.
  */
 float parse_GPS(String NMEA){
-  int T_GoalNumber = 2;
+  int T_GoalNumber = 9;   //9th comma in the NMEA sentense signals the beginning of the altitude value.
   boolean T_Goal = false;
   int C = 0;
   String two = "                   ";
@@ -198,9 +198,15 @@ void clearGPS(){
  * Used to store Data to SD card storage
  */
 void storeData(float Altitude){
+  //Stores GPS data
   EagleEyeData = SD.open("NMEA.txt", FILE_WRITE);
   EagleEyeData.println(NMEA1);
   EagleEyeData.println(NMEA2);
+  EagleEyeData.close();
+  //Stores Altitude data
+  EagleEyeData = SD.open("Flight.txt", FILE_WRITE);
+  EagleEyeData.print("ALT: ");
+  EagleEyeData.println(Altitude);
   EagleEyeData.close();
 }
 
@@ -219,7 +225,7 @@ void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
   if(Send){
     Wire.beginTransmission(1);
-    Serial.println("Event sent to Mega");
+    //Serial.println("Event sent to Mega");
     Wire.write(IN[LoRa_Event]);
     Wire.endTransmission();
     EagleEyeData.print(IN[LoRa_Event]);
@@ -232,5 +238,4 @@ void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event){
   EagleEyeData.print(Altitude);
   EagleEyeData.print(" at flight TIME: ");
   EagleEyeData.close();
-}
 }
