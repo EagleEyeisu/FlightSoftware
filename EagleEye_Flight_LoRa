@@ -15,6 +15,8 @@
 #include <SoftwareSerial.h>
 
 /****FLIGHT******/
+float Alts[10];
+boolean Touchdown = false;
 #include <Wire.h>
 
 //CONSTANT VARIABLES
@@ -83,6 +85,26 @@ void loop() {
   storeData(current.Altitude,current.Latitude,current.Longitude,current.Speed,current.Time); //Stores Data to SD Card.
   parachute(current.Altitude);  
   smartdelay(1000);                                                 //Delays in the GPS data collection, not at end of cycle                              
+  TouchDown(current.Altitude);
+}
+/*
+ * Checks to see if touchdown has occured.
+ */
+void TouchDown(float Alt){
+  Alts[20] = 0;
+  for(int i=19;i>0;i++){
+    Alts[i] = Alts[i+1];
+  }
+  Alts[0] = Alt;
+  float sum;
+  for(int i=0;i<20;i++){
+    sum += Alts[i];
+  }
+  float result = sum/20.0;
+  if(result<Alt+5 && result>Alt-5){
+    TouchDown = true;
+    MEGA_Comm(Alt,DISPATCH_SIGNAL,7);
+  }
 }
 
 /*
@@ -202,6 +224,7 @@ void storeData(float Alt, float Lon, float Lat, float Spe, unsigned long Time){
  *  4 - Detached
  *  5 - Abort Detach
  *  6 - Radio Connection Lost
+ *  7 - TouchDown
  */
 void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
