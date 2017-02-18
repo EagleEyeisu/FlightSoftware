@@ -113,6 +113,11 @@ void setup() {
   /****Initialize SD Card reader****/
   Serial.println("SD Card Online.");
   pinMode(SD_PIN, OUTPUT);
+  if (!SD.begin(SD_PIN)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
   
   /****Initialize Motor Pin****/
   motor.attach(MOTOR_PIN);    //Attaches ESC to Arduino
@@ -368,4 +373,3 @@ float getAlt(float inPressure){
   }
   return alt*3.28; //Conversion from feet to meters
 }
-
