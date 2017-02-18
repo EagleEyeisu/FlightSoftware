@@ -331,13 +331,13 @@ struct flight_data getData(){
 void store_Data(float Pressure, float Temperature, float Altitude){
   EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
   EagleEyeData.print(current_time = now());
-  EagleEyeData.print(", ");
+  EagleEyeData.print(",");
   EagleEyeData.print(Altitude);
 
-  EagleEyeData.print(", ");
+  EagleEyeData.print(",");
   EagleEyeData.print(Pressure);
 
-  EagleEyeData.print(", ");
+  EagleEyeData.print(",");
   EagleEyeData.println(Temperature);
   EagleEyeData.close();
 }
