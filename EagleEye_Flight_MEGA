@@ -40,7 +40,7 @@
 //25% = 1130     
 #define MAX_SIGNAL 1180     //Change to desired max power. Percentages given right above
 #define MIN_SIGNAL 700      //Dont't touch
-#define MOTOR_PIN 53        //Don't touch unless switching to UNO than change to 9
+#define MOTOR_PIN 49        //Don't touch unless switching to UNO than change to 9
 
 #define INCREMENT_AMOUNT 10    //Don't touch
 #define INCREMENT_DELAY 320    //Don't touch
@@ -61,7 +61,7 @@ Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);   //Don't touch
 
 /****SD CARD*****/
 File EagleEyeData;                  //File used to store the flight data. Data will be written/saved to this file during flight operations
-#define SD_PIN 10;                  //CHANGE THIS TO MEGA OR FEATHER 
+#define SD_PIN 53                   //CHANGE THIS TO MEGA OR FEATHER 
 
 /****PARACHUTE***/
 boolean chute_enable = false;       //Status of chute readiness.
@@ -207,7 +207,7 @@ void motor_Function(float Altitude){
       else if(!chute_deploy && chute_enable && !break_Status && Altitude <= PARACHUTE_DEPLOY_HEIGHT+300){ //<-number value is used to determine at what height above parachute deployment we need to turn the break on. WILL CHANGE
         motor.writeMicroseconds(700); //Break turns on
         break_Status = true;
-        communication(Altitude,true,14);
+        communication(Altitude,true,12);
       }
     }
   }
@@ -215,6 +215,9 @@ void motor_Function(float Altitude){
 
 /*
  * Handles Event Logging. From LoRa and MEGA.
+ *  Motor Start - 10
+ *  Brake Off   - 11
+ *  Brake On    - 12
  */
 void communication(float Altitude, boolean Motor, int System_Event){
   if(Wire.available() && Motor == false){
@@ -365,3 +368,4 @@ float getAlt(float inPressure){
   }
   return alt*3.28; //Conversion from feet to meters
 }
+
