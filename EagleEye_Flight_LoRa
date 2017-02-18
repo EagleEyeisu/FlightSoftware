@@ -70,6 +70,11 @@ void setup(){
   /****Initialize SD Card reader****/
   Serial.println("SD Card Online.");
   pinMode(SD_PIN, OUTPUT);
+  if (!SD.begin(SD_PIN)) {
+    Serial.println("initialization failed!");
+    return;
+  }
+  Serial.println("initialization done.");
 
   /****Initialize I2C Comms****/
   Wire.begin(2);    //Setting the address for this board.
@@ -92,7 +97,7 @@ void loop() {
  */
 void TouchDown(float Alt){
   Alts[20] = 0;
-  for(int i=19;i>0;i++){
+  for(int i=19;i>0;i--){
     Alts[i] = Alts[i+1];
   }
   Alts[0] = Alt;
@@ -102,7 +107,7 @@ void TouchDown(float Alt){
   }
   float result = sum/20.0;
   if(result<Alt+5 && result>Alt-5){
-    TouchDown = true;
+    Touchdown = true;
     MEGA_Comm(Alt,DISPATCH_SIGNAL,7);
   }
 }
