@@ -42,6 +42,7 @@ String NMEA = "                                                    "; //Variable
 char c;                           //To read characters coming from the GPS.
 TinyGPS gps;                      //Object that the GPS information is saved to.
 SoftwareSerial ss(3, 2);          //Reads GPS and is attached to the correct pins.
+int Fixed_Lost = 0;
 
 /****COMMAND****/
 boolean COMMAND_CENTER = false;
