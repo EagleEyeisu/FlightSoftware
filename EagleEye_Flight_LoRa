@@ -15,9 +15,11 @@
 #include <SoftwareSerial.h>
 
 /****FLIGHT******/
-float Alts[10];
+float Alts[20];
 boolean Touchdown = false;
 #include <Wire.h>
+float AltPrevious, LatPrevious, LonPrevious, SpePrevious;  //These are the previous values(the last known GPS Data), they are used incase the GPS Signal stops.
+unsigned long TimePrevious;
 
 //CONSTANT VARIABLES
 /****PINS********/
@@ -87,29 +89,39 @@ void setup(){
 
 void loop() {
   flight_data current = GPSData();                                  //Updates altitude using GPS.
-  RADIO_Comm();                                                     //Habet communication.
+  RADIO_Comm();                                                     //Radio communication.
   storeData(current.Altitude,current.Latitude,current.Longitude,current.Speed,current.Time); //Stores Data to SD Card.
-  parachute(current.Altitude);  
-  smartdelay(1000);                                                 //Delays in the GPS data collection, not at end of cycle                              
-  TouchDown(current.Altitude);
+  parachute(current.Altitude,current.Time);                         //Parachute functions such as enable, deploy, and saftey checks.
+  smartdelay(1000);                                                 //Delays in the GPS data collection, not at end of cycle.
+  TouchDown(current.Altitude,current.Time);                         //Signals Touchdown signal to MEGA and LoRa if true.
+  MEGA_Comm(current.Altitude,DISPATCH_SIGNAL,4,current.Time);//TEST
 }
 /*
  * Checks to see if touchdown has occured.
  */
-void TouchDown(float Alt){
+void TouchDown(float Alt, unsigned long Time){
   Alts[20] = 0;
-  for(int i=19;i>0;i--){
+  int i;
+  for(i=19;i>0;i--){
     Alts[i] = Alts[i+1];
   }
   Alts[0] = Alt;
-  float sum;
-  for(int i=0;i<20;i++){
-    sum += Alts[i];
+  boolean fullArr = true;
+  for(i=0;i<20;i++){
+    if(Alts[i]==0.0){
+      fullArr = false;
+    }
   }
-  float result = sum/20.0;
-  if(result<Alt+5 && result>Alt-5){
-    Touchdown = true;
-    MEGA_Comm(Alt,DISPATCH_SIGNAL,7);
+  if(fullArr == true){
+    float sum;
+    for(i=0;i<20;i++){
+      sum += Alts[i];
+    }
+    float result = sum/20.0;
+    if(result>Alt-5.0 && result<Alt+5.0){
+      Touchdown = true;
+      MEGA_Comm(Alt,DISPATCH_SIGNAL,7,Time);
+    }
   }
 }
 
@@ -122,13 +134,13 @@ void RADIO_Comm(){
 /*
  * Handles all parachute functions.
  */
-void parachute(float Alt){
+void parachute(float Alt,unsigned long Time){
   if(!chute_enable && Alt >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
     saftey_counter++;
     if(saftey_counter >= 4){
       chute_enable = true;
-      MEGA_Comm(Alt,DISPATCH_SIGNAL,1);
+      MEGA_Comm(Alt,DISPATCH_SIGNAL,1,Time);
       Serial.print("Chute enabled at ");  
       Serial.println(Alt);
       EagleEyeData.print("Chute enabled at: ");
@@ -143,7 +155,7 @@ void parachute(float Alt){
   if(!chute_deploy && chute_enable && Alt <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
     chute_deploy = true;
-    MEGA_Comm(Alt,DISPATCH_SIGNAL,2);
+    MEGA_Comm(Alt,DISPATCH_SIGNAL,2,Time);
     Serial.print("Chute deployed at: ");
     Serial.println(Alt);
     delay(2000);
@@ -172,14 +184,15 @@ struct flight_data GPSData(){
   flight_data data;
   if(gps.f_altitude()==0.000000){
     Serial.println("NO SIGNAL");
+    data.Altitude = AltPrevious;
+    data.Longitude = LonPrevious;
+    data.Latitude = LatPrevious;
+    data.Speed = SpePrevious;
+    data.Time = TimePrevious;
     if(Fixed_Lost==0){
-      MEGA_Comm(0.0,DISPATCH_SIGNAL,3);
       Fixed_Lost++;
+      MEGA_Comm(data.Altitude,DISPATCH_SIGNAL,3,data.Time);
     }
-    data.Altitude = 0.0;
-    data.Longitude = 0.0;
-    data.Latitude = 0.0;
-    data.Speed = 0.0;
   }
   else{
     Serial.println("SIGNAL");
@@ -193,6 +206,11 @@ struct flight_data GPSData(){
     data.Speed = gps.f_speed_mps();
     unsigned long junk, junk1;
     gps.get_datetime(&junk,&data.Time,&junk1);
+    AltPrevious = data.Altitude;
+    LonPrevious = data.Longitude;
+    LatPrevious = data.Latitude;
+    SpePrevious = data.Speed;
+    TimePrevious = data.Time;
     
     Serial.print("Alt: ");
     Serial.println(data.Altitude,6);
@@ -220,7 +238,9 @@ void storeData(float Alt, float Lon, float Lat, float Spe, unsigned long Time){
   EagleEyeData.print(",");
   EagleEyeData.print(Alt);
   EagleEyeData.print(",");
-  EagleEyeData.println(Spe);
+  EagleEyeData.print(Spe);
+  EagleEyeData.print(",");
+  EagleEyeData.println(Time);
   EagleEyeData.close();
 }
 
@@ -236,7 +256,7 @@ void storeData(float Alt, float Lon, float Lat, float Spe, unsigned long Time){
  *  6 - Radio Connection Lost
  *  7 - TouchDown
  */
-void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event){
+void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event, unsigned long Time){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
   if(Send){
     Wire.beginTransmission(1);
@@ -247,10 +267,11 @@ void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event){
     EagleEyeData.print(" <-Sent to Mega at ALT: ");
   }
   else{
-    EagleEyeData.print(IN[LoRa_Event]);
+    EagleEyeData.print(LoRa_Event);
     EagleEyeData.print(" <-Event Logged at ALT: ");
   }
   EagleEyeData.print(Altitude);
   EagleEyeData.print(" at flight TIME: ");
+  EagleEyeData.println(Time);
   EagleEyeData.close();
 }
