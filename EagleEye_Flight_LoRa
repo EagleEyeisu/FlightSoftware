@@ -260,7 +260,6 @@ void MEGA_Comm(float Altitude, boolean Send, int LoRa_Event, unsigned long Time)
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
   if(Send){
     Wire.beginTransmission(1);
-    //Serial.println("Event sent to Mega");
     Wire.write(IN[LoRa_Event]);
     Wire.endTransmission();
     EagleEyeData.print(IN[LoRa_Event]);
