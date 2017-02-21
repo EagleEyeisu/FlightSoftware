@@ -260,11 +260,11 @@ void parachute(float Altitude){
       chute_enable = true;
       Serial.print("Chute enabled at ");  
       Serial.print(Altitude);
-      Serial.println(" meters ");
+      Serial.println(" feet ");
       EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
       EagleEyeData.print("Chute enabled at ");
       EagleEyeData.print(Altitude); 
-      EagleEyeData.println(" meters ");
+      EagleEyeData.println(" feet ");
       EagleEyeData.close();
     }
     else if(Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
@@ -280,13 +280,13 @@ void parachute(float Altitude){
     chute_deploy = true;
     Serial.print("Chute deployed at ");
     Serial.print(Altitude);
-    Serial.println(" meters");
+    Serial.println(" feet");
     delay(2000);
     digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
     EagleEyeData.print("Chute deployed at ");
     EagleEyeData.print(Altitude);
-    EagleEyeData.println(" meters");
+    EagleEyeData.println(" feet");
     EagleEyeData.close();
   }
 }
