@@ -6,6 +6,7 @@
  *                                                                                                     *
  *Date:      Version:        Developer:        Description:                                            *
  *2/9/17     1.0             Jared Danner      Initial Build.                                          *
+ *2/27/17    1.1             Wesly Carelton    Fixed I2C Software & Event Logging                      *
  *******************************************************************************************************/
 
 //LIBRARIES
@@ -15,9 +16,9 @@
 #include <SoftwareSerial.h>
 
 /****FLIGHT******/
-float Alts[20];
-boolean Touchdown = false;
 #include <Wire.h>
+float Alts[20]; 
+boolean Touchdown = false;
 float AltPrevious, LatPrevious, LonPrevious, SpePrevious;  //These are the previous values(the last known GPS Data), they are used incase the GPS Signal stops.
 unsigned long TimePrevious;
 
@@ -38,7 +39,6 @@ int PARACHUTE_DEPLOY_HEIGHT = 6096; //6096m == 20,000 feet
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true;  //Status for Connection to HABET.
-byte IN[] = {B0000,B0001,B0010,B0011,B0100,B0101,B0110,B0111,B1000,B1001}; //Event Log from LoRa.
 boolean DISPATCH_SIGNAL = true;
 String NMEA = "                                                    "; //Variable for NMEA sentence.
 char c;                           //To read characters coming from the GPS.
@@ -87,6 +87,9 @@ void setup(){
   ss.begin(9600);
 }
 
+/*
+ * MAIN PROGRAM
+ */
 void loop() {
   flight_data current = GPSData();                                  //Updates altitude using GPS.
   RADIO_Comm();                                                     //Radio communication.
@@ -94,8 +97,8 @@ void loop() {
   parachute(current.Altitude,current.Time);                         //Parachute functions such as enable, deploy, and saftey checks.
   smartdelay(1000);                                                 //Delays in the GPS data collection, not at end of cycle.
   TouchDown(current.Altitude,current.Time);                         //Signals Touchdown signal to MEGA and LoRa if true.
-  MEGA_Comm(current.Altitude,DISPATCH_SIGNAL,4,current.Time);//TEST
 }
+
 /*
  * Checks to see if touchdown has occured.
  */
