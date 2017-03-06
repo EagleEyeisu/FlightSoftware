@@ -30,8 +30,8 @@ File EagleEyeData;    //File used to store the flight data. Data will be written
 boolean chute_enable = false;       //Status of chute readiness.
 boolean chute_deploy = false;       //Status of chute deployment.
 int saftey_counter = 0;             //Saftey counter.
-int PARACHUTE_ARM_HEIGHT = 30000;    //9144 m == 30,000 feet
-int PARACHUTE_DEPLOY_HEIGHT = 20000;  //6096m == 20,000 feet
+int PARACHUTE_ARM_HEIGHT = 9144;    //9144 m == 30,000 feet
+int PARACHUTE_DEPLOY_HEIGHT = 6096; //6096m == 20,000 feet
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true; //Status for Connection to HABET.
@@ -40,10 +40,6 @@ boolean DISPATCH_SIGNAL = true;
 /****GPS****/
 String NMEA;                     //NMEA that is read in from GPS
 SoftwareSerial ss(3, 2);         //NEED TO UPDATE WIRES FOR MEGA.
-
-/****COMMAND****/
-boolean COMMAND_CENTER = false;
-boolean no_Response = false;
 
 /*
  * Holds data values of Pressure, Altitude, and Temperature
@@ -87,6 +83,9 @@ void loop() {
   parachute(current.Altitude,current.Time);                         //Parachute functions such as enable, deploy, and saftey checks.
   smartdelay(1000);                                                 //Delays in the GPS data collection, not at end of cycle.
   TouchDown(current.Altitude,current.Time);                         //Signals Touchdown signal to MEGA and LoRa if true.
+  if(HABET_Communicaton){
+    
+  }
 }
 
 /*
@@ -221,7 +220,7 @@ struct flight_data GPSData(){
   flight_data data;
   if(gps.f_altitude()==0.000000){
     Serial.println("NO SIGNAL");
-    data.Altitude = AltPrevious;
+    data.Altitude = AltPrevious; 
     data.Longitude = LonPrevious;
     data.Latitude = LatPrevious;
     data.Speed = SpePrevious;
