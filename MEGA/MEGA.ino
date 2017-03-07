@@ -125,8 +125,8 @@ void setup() {
   /****Initialize I2C Comms****/
   Wire.begin(1);  //Setting the address for this board.
   Serial.println("Comms Address Set.\n\n");
-
 }
+
 /*
  * MAIN PROGRAM CODE. 
  */
@@ -136,10 +136,10 @@ void loop(void){
   
   if(event.pressure){
     flight_data current = getData();                                    //Updates altitude, pressure, and tempurature.
-    I2C(current.altitude,false,DISPATCH_SIGNAL,0);                //Checks for incoming communication from LoRA.
     store_Data(current.pressure, current.temperature, current.altitude);//Store Data to SD Card.
     parachute(current.altitude);                                        //Handles all things parachute.
     motor_Function(current.altitude);                                   //Handles motor function.
+    I2C(current.altitude,false,DISPATCH_SIGNAL,0);                //Checks for incoming communication from LoRA.
   }
   else{
     Serial.println("Sensor Error.");
@@ -249,6 +249,7 @@ void I2C(float Altitude,boolean Local,boolean Send,int System_Event){
   }
   EagleEyeData.print(Altitude);
   EagleEyeData.print(" at flight TIME: ");
+  EagleEyeData.println(current_time = now());
   EagleEyeData.close();
 }
 
