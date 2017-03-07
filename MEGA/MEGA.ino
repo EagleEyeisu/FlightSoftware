@@ -98,7 +98,7 @@ void setup() {
 
   /****Initialize the Altimeter****/
   if(!bmp.begin()){ //BMP085 Error, check connection
-    Serial.println("Pressure Sensor Offline.");
+    //Serial.println("Pressure Sensor Offline.");
     delay(10000000);
   }
   else{
