@@ -39,10 +39,13 @@ int PARACHUTE_DEPLOY_HEIGHT = 6096; //6096m == 20,000 feet
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true; //Status for Connection to HABET.
-boolean DISPATCH_SIGNAL = true;  //Status to send to mega
+boolean DISPATCH_SIGNAL = true;  //Status to send to mega.
+boolean Local = true;            //Determines if data is saved on LORA or sent to MEGA.
+int x;                           //Recieved event number.
+boolean newData = false;         //Status of event data.
 
 /****GPS****/
-String NMEA;                     //NMEA that is read in from GPS
+String NMEA;                     //NMEA that is read in from GPS.
 SoftwareSerial ss(3, 2);         //NEED TO UPDATE WIRES FOR MEGA.
 int Fixed_Lost = 0;
 
@@ -89,7 +92,7 @@ void loop() {
   storeData(current.Altitude,current.Latitude,current.Longitude,current.Time); //Stores Data to SD Card.
   parachute(current.Altitude,current.Time);                         //Parachute functions such as enable, deploy, and saftey checks.
   TouchDown(current.Altitude,current.Time);                         //Signals Touchdown signal to MEGA and LoRa if true.
-  if(HABET_Connection){
+  if(HABET_Connection){  //FIGURE OUT WHAT TRIGGERS
     
   }
 }
@@ -115,7 +118,7 @@ struct flight_data GPSData(){
     data.Time = TimePrevious;
     if(Fixed_Lost==0){  //checks to see if the fix has been lost for more than 1 cycle
       Fixed_Lost++;
-      MEGA_Comm(data.Altitude,DISPATCH_SIGNAL,3,data.Time);
+      I2C(data.Altitude,DISPATCH_SIGNAL,3,data.Time);
     }
   }
   else{
@@ -218,7 +221,7 @@ void parachute(float Altitude,float Time){
     saftey_counter++;
     if(saftey_counter >= 4){
       chute_enable = true;
-      MEGA_Comm(Alt,DISPATCH_SIGNAL,1,Time);
+      I2C(Alt,DISPATCH_SIGNAL,1,Time);
       Serial.print("Chute enabled at ");  
       Serial.println(Altitude);
       EagleEyeData.print("Chute enabled at: ");
@@ -233,7 +236,7 @@ void parachute(float Altitude,float Time){
   if(!chute_deploy && chute_enable && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
     chute_deploy = true;
-    MEGA_Comm(Alt,DISPATCH_SIGNAL,2,Time);
+    I2C(Alt,DISPATCH_SIGNAL,2,Time);
     Serial.print("Chute deployed at: ");
     Serial.println(Altitude);
     delay(2000);
@@ -268,7 +271,7 @@ void TouchDown(float Alt, unsigned long Time){
     float result = sum/20.0;
     if(result>Alt-5.0 && result<Alt+5.0){
       Touchdown = true;
-      MEGA_Comm(Alt,DISPATCH_SIGNAL,7,Time);
+      I2C(Alt,DISPATCH_SIGNAL,7,Time);
     }
   }
 }
@@ -304,9 +307,9 @@ void storeData(float Alt,float Lat,float Lon,unsigned long Time){
  *  8 - (EMPTY)
  *  9 - (EMPTY)
  */
-void MEGA_Comm(float Altitude, boolean Send, boolean Local, int LoRa_Event, unsigned long Time){
+void I2C(float Altitude, boolean Send, int LoRa_Event, unsigned long Time){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
-  if(!Local){
+  if(!Local){                                              //FIGURE OUT WHERE TO UPDATE
     if(Send){ //SEND TO MEGA
     byte x = LoRa_Event;
     Wire.beginTransmission(1);
@@ -317,7 +320,11 @@ void MEGA_Comm(float Altitude, boolean Send, boolean Local, int LoRa_Event, unsi
     Serial.println(x);
     }
     else{ //RECIEVE FROM MEGA
-     
+      Wire.onReceive(receiveEvent);
+      EagleEyeData.println();
+      EagleEyeData.print(x);
+      EagleEyeData.print(" <-MEGA Event Logged at ALT: ");
+      newData = false;
     }
   }
   else{
@@ -328,4 +335,14 @@ void MEGA_Comm(float Altitude, boolean Send, boolean Local, int LoRa_Event, unsi
   EagleEyeData.print(" at flight TIME: ");
   EagleEyeData.println(Time);
   EagleEyeData.close();
+}
+
+/**
+ * Helper for radio
+ */
+void receiveEvent(){
+  Serial.print("Event Received: ");
+  x = Wire.read();    //Receive byte as an integer
+  Serial.println(x);  //Print the integer
+  newData = true;
 }
