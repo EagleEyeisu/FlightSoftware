@@ -98,7 +98,7 @@ void setup() {
 
   /****Initialize the Altimeter****/
   if(!bmp.begin()){ //BMP085 Error, check connection
-    //Serial.println("Pressure Sensor Offline.");
+    Serial.println("Pressure Sensor Offline.");
     delay(10000000);
   }
   else{
@@ -114,7 +114,7 @@ void setup() {
   /****Initialize SD Card reader****/
   Serial.println("SD Card Online.");
   pinMode(SD_PIN, OUTPUT);
-  if (!SD.begin(SD_PIN)) {
+  if (!SD.begin(SD_PIN)){
     Serial.println("initialization failed!");
     return;
   }
@@ -258,10 +258,9 @@ void communication(float Altitude, boolean Motor, int System_Event){
  */
 void receiveEvent(){
   Serial.print("Event = ");
-  x = Wire.read();    // receive byte as an integer
-  Serial.println(x);         // print the integer
+  x = Wire.read();    //Receive byte as an integer
+  Serial.println(x);  //Print the integer
   newData = true;
-
 }
  
 /**
