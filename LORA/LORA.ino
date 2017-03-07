@@ -40,9 +40,8 @@ int PARACHUTE_DEPLOY_HEIGHT = 6096; //6096m == 20,000 feet
 /****COMMUNICATION****/
 boolean HABET_Connection = true; //Status for Connection to HABET.
 boolean DISPATCH_SIGNAL = true;  //Status to send to mega.
-boolean Local = true;            //Determines if data is saved on LORA or sent to MEGA.
-int x;                           //Recieved event number.
 boolean newData = false;         //Status of event data.
+int x;                           //Recieved event number.
 
 /****GPS****/
 String NMEA;                     //NMEA that is read in from GPS.
@@ -118,7 +117,7 @@ struct flight_data GPSData(){
     data.Time = TimePrevious;
     if(Fixed_Lost==0){  //checks to see if the fix has been lost for more than 1 cycle
       Fixed_Lost++;
-      I2C(data.Altitude,DISPATCH_SIGNAL,3,data.Time);
+      I2C(data.Altitude,true,DISPATCH_SIGNAL,3,data.Time);
     }
   }
   else{
@@ -154,6 +153,7 @@ void new_NMEA(){
   char Arr[150];
   int i = 0;
   int j = 0;
+  int dollar_counter=0;
   do 
   {
     while (ss.available()){
@@ -221,7 +221,7 @@ void parachute(float Altitude,float Time){
     saftey_counter++;
     if(saftey_counter >= 4){
       chute_enable = true;
-      I2C(Alt,DISPATCH_SIGNAL,1,Time);
+      I2C(Altitude,false,DISPATCH_SIGNAL,1,Time);
       Serial.print("Chute enabled at ");  
       Serial.println(Altitude);
       EagleEyeData.print("Chute enabled at: ");
@@ -236,7 +236,7 @@ void parachute(float Altitude,float Time){
   if(!chute_deploy && chute_enable && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
     chute_deploy = true;
-    I2C(Alt,DISPATCH_SIGNAL,2,Time);
+    I2C(Altitude,true,DISPATCH_SIGNAL,2,Time);
     Serial.print("Chute deployed at: ");
     Serial.println(Altitude);
     delay(2000);
@@ -271,7 +271,7 @@ void TouchDown(float Alt, unsigned long Time){
     float result = sum/20.0;
     if(result>Alt-5.0 && result<Alt+5.0){
       Touchdown = true;
-      I2C(Alt,DISPATCH_SIGNAL,7,Time);
+      I2C(Alt,false,DISPATCH_SIGNAL,7,Time);
     }
   }
 }
@@ -307,15 +307,15 @@ void storeData(float Alt,float Lat,float Lon,unsigned long Time){
  *  8 - (EMPTY)
  *  9 - (EMPTY)
  */
-void I2C(float Altitude, boolean Send, int LoRa_Event, unsigned long Time){
+void I2C(float Altitude,boolean Local,boolean Send,int System_Event,unsigned long Time){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
   if(!Local){                                              //FIGURE OUT WHERE TO UPDATE
     if(Send){ //SEND TO MEGA
-    byte x = LoRa_Event;
+    byte x = System_Event;
     Wire.beginTransmission(1);
     Wire.write(x);
     Wire.endTransmission();
-    EagleEyeData.print(LoRa_Event);
+    EagleEyeData.print(System_Event);
     EagleEyeData.print(" <-Sent to Mega at ALT: ");
     Serial.println(x);
     }
@@ -328,7 +328,7 @@ void I2C(float Altitude, boolean Send, int LoRa_Event, unsigned long Time){
     }
   }
   else{
-    EagleEyeData.print(LoRa_Event);
+    EagleEyeData.print(System_Event);
     EagleEyeData.print(" <-Event Logged at ALT: ");
   }
   EagleEyeData.print(Altitude);

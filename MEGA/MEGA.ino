@@ -27,7 +27,6 @@
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
 
-
 //CONSTANT VARIABLES
 /****PINS********/
 #define RELAY1  28    //Parachute Digital Pin to IN1
@@ -73,7 +72,8 @@ int PARACHUTE_DEPLOY_HEIGHT = 20000;//6096m == 20,000 feet
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true; //Status for Connection to HABET.
-boolean newData = false;         //Status of event data
+boolean DISPATCH_SIGNAL = false;  //Status to send to lora.
+boolean newData = false;         //Status of event data.
 int x;                           //Event Number
 
 /****MISC****/
@@ -136,7 +136,7 @@ void loop(void){
   
   if(event.pressure){
     flight_data current = getData();                                    //Updates altitude, pressure, and tempurature.
-    I2C(current.altitude,false,0);                                      //Checks for incoming communication from LoRA.
+    I2C(current.altitude,false,DISPATCH_SIGNAL,0);                //Checks for incoming communication from LoRA.
     store_Data(current.pressure, current.temperature, current.altitude);//Store Data to SD Card.
     parachute(current.altitude);                                        //Handles all things parachute.
     motor_Function(current.altitude);                                   //Handles motor function.
@@ -168,7 +168,7 @@ void motor_Function(float Altitude){
           motor_Start = true;
           cycle_Up = true;
           speedPrevious = MIN_SIGNAL;
-          I2C(Altitude,true,10);
+          I2C(Altitude,true,DISPATCH_SIGNAL,10);
         }
         else if(cycle_Up){       //CYCLING UP
           if(speed>=MAX_SIGNAL){ //Checks to see if motor has met desired throttle.
@@ -180,7 +180,7 @@ void motor_Function(float Altitude){
           else if(speed<MAX_SIGNAL){    
             for(speed=speedPrevious;speed<=speedPrevious+70;speed+=INCREMENT_AMOUNT){
               if(speed==850){
-                I2C(Altitude,true,12);
+                I2C(Altitude,true,DISPATCH_SIGNAL,12);
                 break_Status = false;
               }
               if(speed<=MAX_SIGNAL){
@@ -195,7 +195,7 @@ void motor_Function(float Altitude){
           if(speed<=850){   //DONT TOUCH - Makes sure break is off but the motor has stopped spinning. 
             cycle_Down == false;
             motor_Complete == true;
-            I2C(Altitude,true,11);
+            I2C(Altitude,true,DISPATCH_SIGNAL,11);
           }
           else if(speed>MIN_SIGNAL){    //Checks to see if motor has stopped.
             for(speed=speedPrevious;speed>=speedPrevious-70;speed-=INCREMENT_AMOUNT){
@@ -211,7 +211,7 @@ void motor_Function(float Altitude){
       else if(!chute_deploy && chute_enable && /*!break_Status &&*/ Altitude <= PARACHUTE_DEPLOY_HEIGHT+300){ //<-number value is used to determine at what height above parachute deployment we need to turn the break on. WILL CHANGE
         motor.writeMicroseconds(700); //Break turns on
         break_Status = true;
-        I2C(Altitude,true,12);
+        I2C(Altitude,true,DISPATCH_SIGNAL,12);
       }
     }
   }
@@ -223,31 +223,33 @@ void motor_Function(float Altitude){
  *  Brake Off   - 11
  *  Brake On    - 12
  */
-void I2C(float Altitude, boolean Motor, int System_Event){
-  if(Motor == false){
-    Wire.onReceive(receiveEvent);
-    if(newData){
-      EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
+void I2C(float Altitude,boolean Local,boolean Send,int System_Event){
+  EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
+  if(!Local){                                      //FIGURE OUT WHERE TO UPDATE
+    if(Send){ //SEND TO LORA
+    byte x = System_Event;
+    Wire.beginTransmission(2);
+    Wire.write(x);
+    Wire.endTransmission();
+    EagleEyeData.print(System_Event);
+    EagleEyeData.print(" <-Sent to LORA at ALT: ");
+    Serial.println(x);
+    }
+    else{ //RECIEVE FROM LORA
+      Wire.onReceive(receiveEvent);
       EagleEyeData.println();
       EagleEyeData.print(x);
-      EagleEyeData.print(" <-LoRa Event Logged at ALT: ");
-      EagleEyeData.print(Altitude);
-      EagleEyeData.print(" at flight TIME: ");
-      EagleEyeData.println(current_time = now());
-      EagleEyeData.close();
+      EagleEyeData.print(" <-LORA Event Logged at ALT: ");
       newData = false;
     }
   }
-  else if(Motor){
-    EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
-    EagleEyeData.println();
+  else{
     EagleEyeData.print(System_Event);
-    EagleEyeData.print(" <-Mega Event Logged at ALT: ");
-    EagleEyeData.print(Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(current_time = now());
-    EagleEyeData.close();
+    EagleEyeData.print(" <-Event Logged at ALT: ");
   }
+  EagleEyeData.print(Altitude);
+  EagleEyeData.print(" at flight TIME: ");
+  EagleEyeData.close();
 }
 
 /**
