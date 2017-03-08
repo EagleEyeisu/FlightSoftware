@@ -12,6 +12,7 @@
  *12/26/16   2.0             Jared Danner      Complete Rebuild. Includes motor, altitude calculation  *            
  *                                             update, I2C Communication with LoRa, Event Logging      *
  *2/27/17    2.1             Wesley Carelton   Fixed I2C Software & Event Logging.                     *
+ *                           Jared Danner      2 way I2C.                                              *
  *******************************************************************************************************/
 
 //LIBRARIES
@@ -63,7 +64,7 @@ Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);   //Don't touch
 File EagleEyeData;                  //File used to store the flight data. Data will be written/saved to this file during flight operations
 #define SD_PIN 53                   //CHANGE THIS TO MEGA OR FEATHER 
 
-/****PARACHUTE***/
+/****PARACHUTE****/
 boolean chute_enable = false;       //Status of chute readiness.
 boolean chute_deploy = false;       //Status of chute deployment.
 int saftey_counter = 0;             //Saftey counter.
@@ -138,8 +139,7 @@ void loop(void){
     flight_data current = getData();                                    //Updates altitude, pressure, and tempurature.
     store_Data(current.pressure, current.temperature, current.altitude);//Store Data to SD Card.
     parachute(current.altitude);                                        //Handles all things parachute.
-    motor_Function(current.altitude);                                   //Handles motor function.
-    I2C(current.altitude,false,DISPATCH_SIGNAL,0);                //Checks for incoming communication from LoRA.
+    I2C(current.altitude,false,DISPATCH_SIGNAL,0);                      //Checks for incoming communication from LoRA.
   }
   else{
     Serial.println("Sensor Error.");
