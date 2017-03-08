@@ -139,6 +139,7 @@ void loop(void){
     flight_data current = getData();                                    //Updates altitude, pressure, and tempurature.
     store_Data(current.pressure, current.temperature, current.altitude);//Store Data to SD Card.
     parachute(current.altitude);                                        //Handles all things parachute.
+    //motor_Function(current.altitude);                                 //Handles motor function.
     I2C(current.altitude,false,DISPATCH_SIGNAL,0);                      //Checks for incoming communication from LoRA.
   }
   else{
