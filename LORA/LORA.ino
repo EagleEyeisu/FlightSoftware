@@ -10,13 +10,12 @@
  *                           Jared Danner      Added Parsing; Removed TinyGPS Function                 *
  *******************************************************************************************************/
 
-//LIBRARIES
-/****ALTITUDE****/
+/****LIBRARIES****/
 #include <SD.h>
 #include <SoftwareSerial.h>
+#include <Wire.h>
  
 /****FLIGHT******/
-#include <Wire.h>
 float Alts[20];
 boolean Touchdown = false;
 float AltPrevious, LatPrevious, LonPrevious;  //These are the previous values(the last known GPS Data), they are used incase the GPS Signal stops.
@@ -27,7 +26,7 @@ unsigned long TimePrevious;
 #define RELAY1  28    //Parachute Digital Pin to IN1
 
 /****SD CARD*****/
-File EagleEyeData;    //File used to store the flight data. Data will be written/saved to this file during flight operations
+File EagleEyeData;    //File object used to store data during flight.
 #define SD_PIN 10     //CHANGE THIS TO MEGA OR FEATHER 
 
 /****PARACHUTE***/
@@ -45,7 +44,7 @@ int x;                           //Recieved event number.
 
 /****GPS****/
 String NMEA;                     //NMEA that is read in from GPS.
-SoftwareSerial ss(3, 2);         //NEED TO UPDATE WIRES FOR MEGA.
+SoftwareSerial ss(3, 2);         //Directs the GPS to read from certain wire ports
 int Fixed_Lost = 0;
 
 /*
@@ -59,6 +58,7 @@ struct flight_data{
 };
 
 void setup(){
+  delay(1000);
   Serial.begin(4800);
 
   /****Parachute deployment Initialize****/
@@ -69,6 +69,7 @@ void setup(){
 
   /****Initialize GPS Module****/
   ss.begin(9600);
+  Serial.println("GPS Online");
   
   /****Initialize SD Card reader****/
   Serial.println("SD Card Online.");
@@ -86,14 +87,12 @@ void setup(){
  * MAIN PROGRAM
  */
 void loop() {
-  flight_data current = GPSData();                                  //Updates altitude using GPS.
-  RADIO_Comm();                                                     //Radio communication.
+  flight_data current = GPSData();                                             //Updates altitude using GPS.
+  RADIO_Comm();                                                                //Radio communication.
   storeData(current.Altitude,current.Latitude,current.Longitude,current.Time); //Stores Data to SD Card.
-  parachute(current.Altitude,current.Time);                         //Parachute functions such as enable, deploy, and saftey checks.
-  TouchDown(current.Altitude,current.Time);                         //Signals Touchdown signal to MEGA and LoRa if true.
-  if(HABET_Connection){  //FIGURE OUT WHAT TRIGGERS
-    
-  }
+  parachute(current.Altitude,current.Time);                                    //Parachute functions such as enable, deploy, and saftey checks.
+  TouchDown(current.Altitude,current.Time);                                    //Signals Touchdown signal to MEGA and LoRa if true.
+  BoardCommunication(current.Altitude,current.Time);                           //Decides to Send or Recieve I2C information.
 }
 
 /*
@@ -156,16 +155,15 @@ void new_NMEA(){
   int dollar_counter=0;
   do 
   {
-    while (ss.available()){
-      Arr[i] = ss.read();
-      if(Arr[i]=='$'){
-        dollar_counter++;
-      }
-      if(dollar_counter==1){
-        NMEA[j] = Arr[i];
-        j++;
-      }
-    }
+     Arr[i] = ss.read();
+     if(Arr[i]=='$'){
+       dollar_counter++;
+     }
+     if(dollar_counter==1){
+       NMEA[j] = Arr[i];
+       j++;
+     }
+     i++;
   }while(millis() - start < 1000);
   Serial.println(NMEA);
 }
@@ -210,6 +208,23 @@ float parse_NMEA(int objective){
   float temp = atof(arr);  //Converts char array to float
   //Serial.println(temp_Alt);
   return temp;
+}
+
+/*
+ * Used to store Data to SD card storage
+ */
+void storeData(float Alt,float Lat,float Lon,unsigned long Time){
+  EagleEyeData = SD.open("GPS_NMEA.txt", FILE_WRITE);
+  EagleEyeData.print(Time);
+  EagleEyeData.print(",");
+  EagleEyeData.print(Lat);
+  EagleEyeData.print(",");
+  EagleEyeData.print(Lon);
+  EagleEyeData.print(",");
+  EagleEyeData.print(Alt);
+  EagleEyeData.print(",");
+  EagleEyeData.println(Time);
+  EagleEyeData.close();
 }
 
 /*
@@ -277,20 +292,17 @@ void TouchDown(float Alt, unsigned long Time){
 }
 
 /*
- * Used to store Data to SD card storage
+ * Helper to determine whether to send or recieve signal.
  */
-void storeData(float Alt,float Lat,float Lon,unsigned long Time){
-  EagleEyeData = SD.open("GPS_NMEA.txt", FILE_WRITE);
-  EagleEyeData.print(Time);
-  EagleEyeData.print(",");
-  EagleEyeData.print(Lat);
-  EagleEyeData.print(",");
-  EagleEyeData.print(Lon);
-  EagleEyeData.print(",");
-  EagleEyeData.print(Alt);
-  EagleEyeData.print(",");
-  EagleEyeData.println(Time);
-  EagleEyeData.close();
+void BoardCommunication(float Altitude,unsigned long Time){
+  if(Serial.read()=='s'){  //INSTEAD OF S, IT WILL BE THE GO AHEAD TO DETACH FROM HABET.
+    I2C(Altitude,false,DISPATCH_SIGNAL,8,Time);
+    DISPATCH_SIGNAL = false;
+    Serial.println("Receiving Mode");
+  }
+  if(!DISPATCH_SIGNAL){
+    I2C(Altitude,false,DISPATCH_SIGNAL,0,Time);
+  }
 }
 
 /**
@@ -304,36 +316,43 @@ void storeData(float Alt,float Lat,float Lon,unsigned long Time){
  *  5 - Abort Detach
  *  6 - Radio Connection Lost
  *  7 - TouchDown
- *  8 - (EMPTY)
+ *  8 - Switch Communication Direction
  *  9 - (EMPTY)
  */
 void I2C(float Altitude,boolean Local,boolean Send,int System_Event,unsigned long Time){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
-  if(!Local){                                              //FIGURE OUT WHERE TO UPDATE
+  if(!Local){
     if(Send){ //SEND TO MEGA
-    byte x = System_Event;
-    Wire.beginTransmission(1);
-    Wire.write(x);
-    Wire.endTransmission();
-    EagleEyeData.print(System_Event);
-    EagleEyeData.print(" <-Sent to Mega at ALT: ");
-    Serial.println(x);
+      byte x = System_Event;
+      Wire.beginTransmission(1);
+      Wire.write(x);
+      Wire.endTransmission();
+      EagleEyeData.print(System_Event);
+      EagleEyeData.print(" <-Sent to Mega at ALT: ");
+      EagleEyeData.print(Altitude);
+      EagleEyeData.print(" at flight TIME: ");
+      EagleEyeData.println(Time);
     }
     else{ //RECIEVE FROM MEGA
       Wire.onReceive(receiveEvent);
-      EagleEyeData.println();
-      EagleEyeData.print(x);
-      EagleEyeData.print(" <-MEGA Event Logged at ALT: ");
-      newData = false;
+      if(newData){
+        EagleEyeData.println();
+        EagleEyeData.print(x);
+        EagleEyeData.print(" <-MEGA Event Logged at ALT: ");
+        EagleEyeData.print(Altitude);
+        EagleEyeData.print(" at flight TIME: ");
+        EagleEyeData.println(Time);
+        newData = false;
+      }
     }
   }
   else{
     EagleEyeData.print(System_Event);
     EagleEyeData.print(" <-Event Logged at ALT: ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(Time);
   }
-  EagleEyeData.print(Altitude);
-  EagleEyeData.print(" at flight TIME: ");
-  EagleEyeData.println(Time);
   EagleEyeData.close();
 }
 
@@ -346,3 +365,4 @@ void receiveEvent(){
   Serial.println(x);  //Print the integer
   newData = true;
 }
+

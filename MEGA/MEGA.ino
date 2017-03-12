@@ -15,18 +15,16 @@
  *                           Jared Danner      2 way I2C.                                              *
  *******************************************************************************************************/
 
-//LIBRARIES
-/****MOTOR*******/
-#include <Servo.h>
-
-/****ALTITUDE****/
-#include <SD.h> 
-
-/****FLIGHT******/
+/****LIBRARIES****/
 #include <TimeLib.h>
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
+#include <Servo.h>
+#include <SD.h> 
+
+/****FLIGHT******/
+float AltPrevious = 0.0;
 
 //CONSTANT VARIABLES
 /****PINS********/
@@ -61,32 +59,33 @@ boolean break_Status = false;    //Status of break.
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);   //Don't touch
 
 /****SD CARD*****/
-File EagleEyeData;                  //File used to store the flight data. Data will be written/saved to this file during flight operations
-#define SD_PIN 53                   //CHANGE THIS TO MEGA OR FEATHER 
+File EagleEyeData;                  //File object used to store data during flight.
+#define SD_PIN 53                   //Digital connection pin for SD card. 
 
 /****PARACHUTE****/
-boolean chute_enable = false;       //Status of chute readiness.
-boolean chute_deploy = false;       //Status of chute deployment.
-int saftey_counter = 0;             //Saftey counter.
-int PARACHUTE_ARM_HEIGHT = 30000;   //9144 m == 30,000 feet
-int PARACHUTE_DEPLOY_HEIGHT = 20000;//6096m == 20,000 feet
+boolean chute_enable = false;        //Status of chute readiness.
+boolean chute_deploy = false;        //Status of chute deployment.
+int saftey_counter = 0;              //Saftey counter.
+int PARACHUTE_ARM_HEIGHT = 30000;    //9144 m == 30,000 feet
+int PARACHUTE_DEPLOY_HEIGHT = 20000; //6096m == 20,000 feet
 
 /****COMMUNICATION****/
-boolean HABET_Connection = true; //Status for Connection to HABET.
-boolean DISPATCH_SIGNAL = false;  //Status to send to lora.
-boolean newData = false;         //Status of event data.
-int x;                           //Event Number
+boolean HABET_Connection = true;  //Status for Connection to HABET.
+boolean DISPATCH_SIGNAL = false;  //If false: reviece from LoRa. If true: send to LoRa.
+boolean newData = false;          //Status of event data.
+int x;                            //Event Number.
+int Flip = 0;                     //Used to tell which program cycle the communication flip happened on.
 
 /****MISC****/
-time_t current_time;             //Time of events.
+time_t current_time;              //Time of events.
 
 /*
  * Holds data values of Pressure, Altitude, and Temperature
  */
 struct flight_data{
-  float pressure;
-  float altitude;
-  float temperature;
+  float Pressure;
+  float Altitude;
+  float Temperature;
 };
 
 /*
@@ -111,13 +110,12 @@ void setup() {
   Serial.println("Parachute Online.");
 
   /****Initialize SD Card reader****/
-  Serial.println("SD Card Online.");
   pinMode(SD_PIN, OUTPUT);
   if (!SD.begin(SD_PIN)){
-    Serial.println("initialization failed!");
+    Serial.println("SD Card Initialization Failed!");
     return;
   }
-  Serial.println("initialization done.");
+  Serial.println("SD Card Online.");
   
   /****Initialize Motor Pin****/
   motor.attach(MOTOR_PIN);     //Attaches ESC to Arduino
@@ -132,29 +130,139 @@ void setup() {
  * MAIN PROGRAM CODE. 
  */
 void loop(void){
+  sensors_event_t event; //Creates event object to store pressure sensor data in.
+  bmp.getEvent(&event);  //Updates event object with the current pressure sensor data.
+  
+  flight_data current = getData();                                    //Updates altitude, pressure, and tempurature.
+  store_Data(current.Pressure, current.Temperature, current.Altitude);//Store Data to SD Card.
+  parachute(current.Altitude);                                        //Handles all things parachute.
+  //motor_Function(current.Altitude);                                 //Handles motor function.
+  BoardCommunication(current.Altitude);                               //Decides to Send or Recieve I2C information.
+  DelayHandler();                                                     //Handles delay adjustments.
+}
+
+/*
+ * Updates values to current conditions.
+ */
+struct flight_data getData(){
+  /****Get a new sensor event****/
   sensors_event_t event;
   bmp.getEvent(&event);
   
-  if(event.pressure){
-    flight_data current = getData();                                    //Updates altitude, pressure, and tempurature.
-    store_Data(current.pressure, current.temperature, current.altitude);//Store Data to SD Card.
-    parachute(current.altitude);                                        //Handles all things parachute.
-    //motor_Function(current.altitude);                                 //Handles motor function.
-    I2C(current.altitude,false,DISPATCH_SIGNAL,0);                      //Checks for incoming communication from LoRA.
+  /****Display atmospheric pressue in hPa****/
+  Serial.print("Pressure:    ");
+  Serial.print(event.pressure);
+  Serial.println(" hPa ");
+   
+  /****First we get the current temperature from the BMP180****/
+  float temperature;
+  bmp.getTemperature(&temperature);
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C ");
+
+  /****Calculate Altitude from Pressure****/
+  float Altitude = getAlt(event.pressure);
+  AltPrevious = Altitude;
+  Serial.print("Altitude:    ");
+  Serial.print(Altitude);
+  Serial.println(" ft\n");
+
+  /****Save current Temp, Alt, and Pressure to our data struct****/
+  flight_data data;
+  data.Pressure = event.pressure;
+  data.Temperature = temperature;
+  data.Altitude = Altitude;
+  return data;
+}
+
+/*
+ * Method used to derive Altitude from Pressure.
+ * Initally hPa, than converted to mPa for calculations.
+ */
+float getAlt(float inPressure){
+  float pressure = inPressure/10.0;
+  float alt;
+  float leftTop;
+  float rightTop;      //All variables used to calculate altitude
+  float bottom;
+  float topTotal;
+
+  if(pressure < 2.55){                           //ABOVE 25,000m
+    leftTop = -47454.8;
+    rightTop = pow(pressure, 0.087812) - 1.65374;
+    bottom = pow(pressure, 0.087812);
+    topTotal = leftTop * rightTop;
+    alt = (topTotal / bottom);
   }
-  else{
-    Serial.println("Sensor Error.");
+  else if(67.05 > pressure && pressure > 2.55){  //ABOVE 11,000m and BELOW 25,000m
+    rightTop = -6369.43;
+    leftTop = log(pressure) - 4.85016;
+    alt =  leftTop * rightTop;
   }
-  if(cycle_Up || cycle_Down){
-    if(spin_Up || motor_Complete){
-      delay(1000);
+  else{                                           //BELOW 11,000m (Pressure > 67.05)
+    leftTop = 44397.5;
+    rightTop = 18437 * pow(pressure, 0.190259);
+    alt = leftTop - rightTop;
+  }
+  return alt*3.28; //Conversion from feet to meters
+}
+
+/*
+ * Used to store Data to SD card storage
+ */
+void store_Data(float Pressure, float Temperature, float Altitude){
+  EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
+  EagleEyeData.print(current_time = now());
+  EagleEyeData.print(",");
+  EagleEyeData.print(Altitude);
+
+  EagleEyeData.print(",");
+  EagleEyeData.print(Pressure);
+
+  EagleEyeData.print(",");
+  EagleEyeData.println(Temperature);
+  EagleEyeData.close();
+}
+
+/**
+ * All parachute functions/decisions/everything.
+ */
+void parachute(float Altitude){
+  if(!chute_enable && Altitude >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
+    saftey_counter++;
+    if(saftey_counter >= 4){
+      chute_enable = true;
+      Serial.print("Chute enabled at ");  
+      Serial.print(Altitude);
+      Serial.println(" feet ");
+      EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+      EagleEyeData.print("Chute enabled at ");
+      EagleEyeData.print(Altitude); 
+      EagleEyeData.println(" feet ");
+      EagleEyeData.close();
     }
-    else{
-      delay(300); // (3/10)th second delay when motor is active
+    else if(Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
+      saftey_counter = 0;
+      Serial.println("Saftey reset to 0.");
+      EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+      EagleEyeData.println("Saftey reset to 0."); 
+      EagleEyeData.close();  
     }
   }
-  else{
-    delay(1000);  //One second delay between recordings
+  if(!chute_deploy && chute_enable /*&& break_Status*/ && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
+    digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
+    chute_deploy = true;
+    Serial.print("Chute deployed at ");
+    Serial.print(Altitude);
+    Serial.println(" feet");
+    delay(2000);
+    digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
+    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+    EagleEyeData.print("Chute deployed at ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.println(" feet");
+    EagleEyeData.close();
   }
 }
 
@@ -209,7 +317,7 @@ void motor_Function(float Altitude){
           }
         }
       }
-      else if(!chute_deploy && chute_enable && /*!break_Status &&*/ Altitude <= PARACHUTE_DEPLOY_HEIGHT+300){ //<-number value is used to determine at what height above parachute deployment we need to turn the break on. WILL CHANGE
+      else if(!chute_deploy && chute_enable && !break_Status && Altitude <= PARACHUTE_DEPLOY_HEIGHT+300){ //<-number value is used to determine at what height above parachute deployment we need to turn the break on. WILL CHANGE
         motor.writeMicroseconds(700); //Break turns on
         break_Status = true;
         I2C(Altitude,true,DISPATCH_SIGNAL,12);
@@ -219,10 +327,31 @@ void motor_Function(float Altitude){
 }
 
 /*
+ * Helper to determine whether to send or recieve signal.
+ */
+void BoardCommunication(float Altitude){
+  if(!DISPATCH_SIGNAL){
+    I2C(Altitude,false,DISPATCH_SIGNAL,0);   //Checks for incoming communication from LoRA.
+  }
+  if(Flip == 1){ //Sends handshake to LoRa upon communication switch.
+    byte y = 13;
+    Wire.beginTransmission(2);
+    Wire.write(y);
+    Wire.endTransmission();
+    Serial.println("Sent Handshake");
+    Flip++;
+   }
+   /*if(Serial.read() == 's' && DISPATCH_SIGNAL){
+      I2C(Altitude,false,true,0);                 //Used to send a test signal back to the LoRa.
+   }*/
+}
+
+/*
  * Handles Event Logging. From LoRa and MEGA.
- *  Motor Start - 10
- *  Brake Off   - 11
- *  Brake On    - 12
+ *  10 - Motor Start
+ *  11 - Brake Off
+ *  12 - Brake On
+ *  13 - Communication Switch
  */
 void I2C(float Altitude,boolean Local,boolean Send,int System_Event){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
@@ -234,23 +363,30 @@ void I2C(float Altitude,boolean Local,boolean Send,int System_Event){
     Wire.endTransmission();
     EagleEyeData.print(System_Event);
     EagleEyeData.print(" <-Sent to LORA at ALT: ");
-    Serial.println(x);
+    EagleEyeData.print(Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(current_time = now());
     }
     else{ //RECIEVE FROM LORA
       Wire.onReceive(receiveEvent);
-      EagleEyeData.println();
-      EagleEyeData.print(x);
-      EagleEyeData.print(" <-LORA Event Logged at ALT: ");
-      newData = false;
+      if(newData){
+        EagleEyeData.println();
+        EagleEyeData.print(x);
+        EagleEyeData.print(" <-LORA Event Logged at ALT: ");
+        EagleEyeData.print(Altitude);
+        EagleEyeData.print(" at flight TIME: ");
+        EagleEyeData.println(current_time = now());
+        newData = false;
+      }
     }
   }
   else{
     EagleEyeData.print(System_Event);
     EagleEyeData.print(" <-Event Logged at ALT: ");
+    EagleEyeData.print(Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(current_time = now());
   }
-  EagleEyeData.print(Altitude);
-  EagleEyeData.print(" at flight TIME: ");
-  EagleEyeData.println(current_time = now());
   EagleEyeData.close();
 }
 
@@ -261,129 +397,27 @@ void receiveEvent(){
   Serial.print("Event Recieved: ");
   x = Wire.read();    //Receive byte as an integer
   Serial.println(x);  //Print the integer
+  if(x == 8){
+    DISPATCH_SIGNAL = true;
+    Serial.print("Sending Mode");
+    Flip = 1;
+  }
   newData = true;
 }
- 
-/**
- * All parachute functions/decisions/everything.
+
+/*
+ * Adjusts the delay to accomidate for motor when active.
  */
-void parachute(float Altitude){
-  if(!chute_enable && Altitude >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
-    saftey_counter++;
-    if(saftey_counter >= 4){
-      chute_enable = true;
-      Serial.print("Chute enabled at ");  
-      Serial.print(Altitude);
-      Serial.println(" feet ");
-      EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
-      EagleEyeData.print("Chute enabled at ");
-      EagleEyeData.print(Altitude); 
-      EagleEyeData.println(" feet ");
-      EagleEyeData.close();
+void DelayHandler(){
+  if(cycle_Up || cycle_Down){       //While motor is spinning up.
+    if(spin_Up || motor_Complete){  //If motor is at full power or the motor cycle is complete.
+      delay(1000);
     }
-    else if(Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
-      saftey_counter = 0;
-      Serial.println("Saftey reset to 0.");
-      EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
-      EagleEyeData.println("Saftey reset to 0."); 
-      EagleEyeData.close();  
+    else{
+      delay(300); // (3/10)th second delay when motor is active
     }
   }
-  if(!chute_deploy && chute_enable && break_Status && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
-    digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
-    chute_deploy = true;
-    Serial.print("Chute deployed at ");
-    Serial.print(Altitude);
-    Serial.println(" feet");
-    delay(2000);
-    digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
-    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
-    EagleEyeData.print("Chute deployed at ");
-    EagleEyeData.print(Altitude);
-    EagleEyeData.println(" feet");
-    EagleEyeData.close();
+  else{
+    delay(1000);  //One second delay between recordings
   }
-}
-
-/*
- * Updates values to current conditions.
- */
-struct flight_data getData(){
-  /****Get a new sensor event****/
-  sensors_event_t event;
-  bmp.getEvent(&event);
-  
-  /****Display atmospheric pressue in hPa****/
-  Serial.print("Pressure:    ");
-  Serial.print(event.pressure);
-  Serial.println(" hPa ");
-   
-  /****First we get the current temperature from the BMP180****/
-  float temperature;
-  bmp.getTemperature(&temperature);
-  Serial.print("Temperature: ");
-  Serial.print(temperature);
-  Serial.println(" C ");
-
-  /****Calculate Altitude from Pressure****/
-  float altitude = getAlt(event.pressure);
-  Serial.print("Altitude:    ");
-  Serial.print(altitude);
-  Serial.println(" ft\n");
-
-  /****Save current Temp, Alt, and Pressure to our data struct****/
-  flight_data data;
-  data.pressure = event.pressure;
-  data.temperature = temperature;
-  data.altitude = altitude;
-  return data;
-}
-
-/*
- * Used to store Data to SD card storage
- */
-void store_Data(float Pressure, float Temperature, float Altitude){
-  EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
-  EagleEyeData.print(current_time = now());
-  EagleEyeData.print(",");
-  EagleEyeData.print(Altitude);
-
-  EagleEyeData.print(",");
-  EagleEyeData.print(Pressure);
-
-  EagleEyeData.print(",");
-  EagleEyeData.println(Temperature);
-  EagleEyeData.close();
-}
-
-/*
- * Method used to derive Altitude from Pressure.
- * Initally hPa, than converted to mPa for calculations.
- */
-float getAlt(float inPressure){
-  float pressure = inPressure/10.0;
-  float alt;
-  float leftTop;
-  float rightTop;      //All variables used to calculate altitude
-  float bottom;
-  float topTotal;
-
-  if(pressure < 2.55){                           //ABOVE 25,000m
-    leftTop = -47454.8;
-    rightTop = pow(pressure, 0.087812) - 1.65374;
-    bottom = pow(pressure, 0.087812);
-    topTotal = leftTop * rightTop;
-    alt = (topTotal / bottom);
-  }
-  else if(67.05 > pressure && pressure > 2.55){  //ABOVE 11,000m and BELOW 25,000m
-    rightTop = -6369.43;
-    leftTop = log(pressure) - 4.85016;
-    alt =  leftTop * rightTop;
-  }
-  else{                                           //BELOW 11,000m (Pressure > 67.05)
-    leftTop = 44397.5;
-    rightTop = 18437 * pow(pressure, 0.190259);
-    alt = leftTop - rightTop;
-  }
-  return alt*3.28; //Conversion from feet to meters
 }
