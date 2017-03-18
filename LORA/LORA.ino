@@ -8,12 +8,14 @@
  *2/9/17     1.0             Jared Danner      Initial Build.                                          *
  *2/27/17    1.1             Wesley Carelton   Fixed I2C Software                                      *
  *                           Jared Danner      Added Parsing; Removed TinyGPS Function                 *
+ *3/15/17    1.2             Jared Danner      Added Radio Capability; I2C fixes                       *
  *******************************************************************************************************/
 
 /****LIBRARIES****/
 #include <SD.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
+#include <RH_RF95.h>
  
 /****FLIGHT******/
 float Alts[20];
@@ -37,15 +39,23 @@ int PARACHUTE_ARM_HEIGHT = 9144;    //9144 m == 30,000 feet
 int PARACHUTE_DEPLOY_HEIGHT = 6096; //6096m == 20,000 feet
 
 /****COMMUNICATION****/
-boolean HABET_Connection = true; //Status for Connection to HABET.
-boolean DISPATCH_SIGNAL = true;  //Status to send to mega.
-boolean newData = false;         //Status of event data.
-int x;                           //Recieved event number.
+#define RFM95_CS 8
+#define RFM95_RST 4
+#define RFM95_INT 7                
+#define LED 13                     //Used to flash LED upon message transmission.
+#define RF95_FREQ 433.0            //Frequency used on LoRa. UPDATE WITH HABET
+RH_RF95 rf95(RFM95_CS, RFM95_INT); //Directs the radio to read from a certain port.
+boolean HABET_Connection = true;   //Status for Connection to HABET.
+boolean DISPATCH_SIGNAL = true;    //Status to send to mega.
+boolean READY_FOR_DROP = false;    //Gets turned true by Mega deciding to drop based on the 9Dof.
+boolean newData = false;           //Status of event data.
+int x;                             //Recieved event number.
+int Lost_Packet = 0;               //Keep track of how many packets are lost.
 
 /****GPS****/
 String NMEA;                     //NMEA that is read in from GPS.
 SoftwareSerial ss(3, 2);         //Directs the GPS to read from certain wire ports
-int Fixed_Lost = 0;
+int Fixed_Lost = 0;              //Keeps track of how long the GPS fix has been lost. Used in event logging.
 
 /*
  * Holds data values of Pressure, Altitude, and Temperature
@@ -61,26 +71,54 @@ void setup(){
   delay(1000);
   Serial.begin(4800);
 
-  /****Parachute deployment Initialize****/
+  /****Initialization of Parachute System****/
   //Set all the pins low so they do not toggle on Reset or Power on!
   digitalWrite(RELAY1, HIGH);  //Sends a LOW signal
   pinMode(RELAY1, OUTPUT);     //Sets RELAY1 as output pin.
   Serial.println("Parachute Online.");
 
-  /****Initialize GPS Module****/
+  /****Initialization of GPS Module****/
   ss.begin(9600);
   Serial.println("GPS Online");
   
-  /****Initialize SD Card reader****/
+  /****Initialization of SD Card reader****/
   Serial.println("SD Card Online.");
   pinMode(SD_PIN, OUTPUT);
 
-  /****Initialize I2C Comms****/
+  /****Initialization of I2C Comms****/
   Wire.begin(2);    //Setting the address for this board.
-  Serial.println("Comms Address Set.\n\n");
+  Serial.println("Comms Address Set.");
 
-  /****Initalization of certain Variables****/
+  /****Initialization of certain Variables****/
   AltPrevious=0.0; LatPrevious=0.0; LonPrevious=0.0; TimePrevious=0.0;
+
+  /****Initialization of Radio****/
+  pinMode(LED, OUTPUT);     
+  pinMode(RFM95_RST, OUTPUT);
+  digitalWrite(RFM95_RST, HIGH);
+  //Adjust the LED to be insync with radio trasmission.
+  digitalWrite(RFM95_RST, LOW);
+  delay(10);
+  digitalWrite(RFM95_RST, HIGH);
+  delay(10);
+  //Checks for Creation of Radio Object.
+  if(!rf95.init()){
+    Serial.println("LoRa radio init failed");
+    while (1);
+  }
+  else{
+    Serial.println("LoRa radio init OK!");
+  }
+  //Checks for Frequency
+  if(!rf95.setFrequency(RF95_FREQ)){
+    Serial.println("setFrequency failed");
+    while (1);
+  }
+  else{
+    Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+  }
+  rf95.setTxPower(23, false);
+  Serial.println();
 }
 
 /*
@@ -88,18 +126,49 @@ void setup(){
  */
 void loop() {
   flight_data current = GPSData();                                             //Updates altitude using GPS.
-  RADIO_Comm();                                                                //Radio communication.
+  Radio_Comm(current.Altitude,current.Time);                                   //Radio communication.
   storeData(current.Altitude,current.Latitude,current.Longitude,current.Time); //Stores Data to SD Card.
   parachute(current.Altitude,current.Time);                                    //Parachute functions such as enable, deploy, and saftey checks.
   TouchDown(current.Altitude,current.Time);                                    //Signals Touchdown signal to MEGA and LoRa if true.
-  BoardCommunication(current.Altitude,current.Time);                           //Decides to Send or Recieve I2C information.
+  BoardCommunication(current.Altitude,current.Time,false);                     //Decides to Send or Recieve I2C information.
 }
 
 /*
  * Radio Communication into and out of the LoRa.
  */
-void RADIO_Comm(){
-  
+void Radio_Comm(float Altitude,float Time){
+  Serial.println(".");
+  if(READY_FOR_DROP){
+    char data[10] = "DROP";
+    Serial.print("Sending drop signal: "); Serial.println(data);
+    rf95.send(data, sizeof(data));     //Sends packet
+    rf95.waitPacketSent();
+    digitalWrite(LED, HIGH);
+    delay(10); //Allows for light to turn on log enough to be seen.
+    digitalWrite(LED, LOW);
+    HABET_Connection = false;
+    I2C(Altitude,true,DISPATCH_SIGNAL,4,Time);
+  }
+  if (rf95.available()){                 //Checks if there is a incoming message.
+    uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+    uint8_t len = sizeof(buf);           //Temporary variable to hold the message
+    
+    if(rf95.recv(buf, &len)){            //Retrieves the incoming message
+      digitalWrite(LED, HIGH);
+      delay(10); //Allows for light to turn on log enough to be seen.
+      digitalWrite(LED, LOW);
+      Serial.print("Recieved: ");
+      Serial.println((char*)buf);
+      if(true){ //Will be switched to only trigger on specific message
+        //BoardCommunication(Altitude,Time,true); //Triggers the switch in I2C and asks mega for Go/NoGo on drop.
+      }
+    }
+    else{
+      Lost_Packet++;
+      Serial.println("Packet Lost");
+    }
+    Serial.println();
+  }
 }
 
 /*
@@ -120,7 +189,7 @@ struct flight_data GPSData(){
     }
   }
   else{
-    Serial.println("SIGNAL");
+    //Serial.println("SIGNAL");
     Fixed_Lost = 0;
     data.Altitude = parse_NMEA(0);
     data.Latitude = parse_NMEA(1);
@@ -132,13 +201,13 @@ struct flight_data GPSData(){
     LatPrevious = data.Latitude;
     TimePrevious = data.Time;
     
-    Serial.print("Alt: ");
-    Serial.println(data.Altitude,6);
-    Serial.print("Lon: ");
-    Serial.println(data.Longitude,6);
-    Serial.print("Lat: ");
-    Serial.println(data.Latitude,6);
-    Serial.println();
+    //Serial.print("Alt: ");
+    //Serial.println(data.Altitude,6);
+    //Serial.print("Lon: ");
+    //Serial.println(data.Longitude,6);
+    //Serial.print("Lat: ");
+    //Serial.println(data.Latitude,6);
+    //Serial.println();
   }
   return data;
 }
@@ -165,7 +234,7 @@ void new_NMEA(){
      }
      i++;
   }while(millis() - start < 1000);
-  Serial.println(NMEA);
+  //Serial.println(NMEA);
 }
 
 /*
@@ -284,7 +353,7 @@ void TouchDown(float Alt, unsigned long Time){
       sum += Alts[i];
     }
     float result = sum/20.0;
-    if(result>Alt-5.0 && result<Alt+5.0){
+    if(result>Alt-5.0 && result<Alt+5.0 && !Touchdown){
       Touchdown = true;
       I2C(Alt,false,DISPATCH_SIGNAL,7,Time);
     }
@@ -294,11 +363,12 @@ void TouchDown(float Alt, unsigned long Time){
 /*
  * Helper to determine whether to send or recieve signal.
  */
-void BoardCommunication(float Altitude,unsigned long Time){
-  if(Serial.read()=='s'){  //INSTEAD OF S, IT WILL BE THE GO AHEAD TO DETACH FROM HABET.
+void BoardCommunication(float Altitude,unsigned long Time, boolean DROP_SIGNAL){
+  if(DROP_SIGNAL){
     I2C(Altitude,false,DISPATCH_SIGNAL,8,Time);
     DISPATCH_SIGNAL = false;
     Serial.println("Receiving Mode");
+    DROP_SIGNAL = false;
   }
   if(!DISPATCH_SIGNAL){
     I2C(Altitude,false,DISPATCH_SIGNAL,0,Time);
@@ -317,7 +387,7 @@ void BoardCommunication(float Altitude,unsigned long Time){
  *  6 - Radio Connection Lost
  *  7 - TouchDown
  *  8 - Switch Communication Direction
- *  9 - (EMPTY)
+ *  9 - HABET DROP REQUEST
  */
 void I2C(float Altitude,boolean Local,boolean Send,int System_Event,unsigned long Time){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
@@ -362,7 +432,9 @@ void I2C(float Altitude,boolean Local,boolean Send,int System_Event,unsigned lon
 void receiveEvent(){
   Serial.print("Event Received: ");
   x = Wire.read();    //Receive byte as an integer
+  if(x == 9){
+    READY_FOR_DROP = true;
+  }
   Serial.println(x);  //Print the integer
   newData = true;
 }
-
