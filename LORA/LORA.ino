@@ -137,7 +137,7 @@ void loop() {
  * Radio Communication into and out of the LoRa.
  */
 void Radio_Comm(float Altitude,float Time){
-  Serial.println(".");
+  //Serial.println(".");
   if(READY_FOR_DROP){
     char data[10] = "DROP";
     Serial.print("Sending drop signal: "); Serial.println(data);
@@ -177,7 +177,7 @@ void Radio_Comm(float Altitude,float Time){
 struct flight_data GPSData(){
   flight_data data;
   new_NMEA();
-  if(!true){//no fix
+  if(false){//no fix
     Serial.println("NO SIGNAL");
     data.Altitude = AltPrevious;
     data.Longitude = LonPrevious;
@@ -201,13 +201,13 @@ struct flight_data GPSData(){
     LatPrevious = data.Latitude;
     TimePrevious = data.Time;
     
-    //Serial.print("Alt: ");
-    //Serial.println(data.Altitude,6);
-    //Serial.print("Lon: ");
-    //Serial.println(data.Longitude,6);
-    //Serial.print("Lat: ");
-    //Serial.println(data.Latitude,6);
-    //Serial.println();
+    Serial.print("Alt: ");
+    Serial.println(data.Altitude,6);
+    Serial.print("Lon: ");
+    Serial.println(data.Longitude,6);
+    Serial.print("Lat: ");
+    Serial.println(data.Latitude,6);
+    Serial.println();
   }
   return data;
 }
@@ -216,7 +216,7 @@ struct flight_data GPSData(){
  * Responsible for updating and recieving information directly from GPS.
  */
 void new_NMEA(){
-  NMEA = "                                                        ";
+  NMEA = "                                                              ";
   unsigned long start = millis();
   char Arr[150];
   int i = 0;
@@ -224,6 +224,7 @@ void new_NMEA(){
   int dollar_counter=0;
   do 
   {
+    while(ss.available()){
      Arr[i] = ss.read();
      if(Arr[i]=='$'){
        dollar_counter++;
@@ -233,8 +234,9 @@ void new_NMEA(){
        j++;
      }
      i++;
+    }
   }while(millis() - start < 1000);
-  //Serial.println(NMEA);
+  Serial.println(NMEA);
 }
 
 /*
