@@ -54,7 +54,7 @@ int Lost_Packet = 0;               //Keep track of how many packets are lost.
 
 /****GPS****/
 String NMEA;                     //NMEA that is read in from GPS.
-SoftwareSerial ss(3, 2);         //Directs the GPS to read from certain wire ports
+SoftwareSerial ss(11, 10);         //Directs the GPS to read from certain wire ports
 int Fixed_Lost = 0;              //Keeps track of how long the GPS fix has been lost. Used in event logging.
 
 /*
@@ -141,21 +141,21 @@ void Radio_Comm(float Altitude,float Time){
   if(READY_FOR_DROP){
     char data[10] = "DROP";
     Serial.print("Sending drop signal: "); Serial.println(data);
-    rf95.send(data, sizeof(data));     //Sends packet
+    rf95.send(data, sizeof(data));       //Sends packet
     rf95.waitPacketSent();
     digitalWrite(LED, HIGH);
-    delay(10); //Allows for light to turn on log enough to be seen.
+    delay(10);                           //Allows for light to turn on log enough to be seen.
     digitalWrite(LED, LOW);
     HABET_Connection = false;
     I2C(Altitude,true,DISPATCH_SIGNAL,4,Time);
   }
-  if (rf95.available()){                 //Checks if there is a incoming message.
+  if (rf95.available()){                 //Checks if there is a incoming message
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);           //Temporary variable to hold the message
     
     if(rf95.recv(buf, &len)){            //Retrieves the incoming message
       digitalWrite(LED, HIGH);
-      delay(10); //Allows for light to turn on log enough to be seen.
+      delay(10);                         //Allows for light to turn on log enough to be seen.
       digitalWrite(LED, LOW);
       Serial.print("Recieved: ");
       Serial.println((char*)buf);
@@ -177,25 +177,35 @@ void Radio_Comm(float Altitude,float Time){
 struct flight_data GPSData(){
   flight_data data;
   new_NMEA();
-  if(false){//no fix
+  Fixed_Lost = parse_NMEA(4); //Checks for fix
+  if(Fixed_Lost==0){//no fix
     Serial.println("NO SIGNAL");
+    I2C(data.Altitude,true,DISPATCH_SIGNAL,3,data.Time);
     data.Altitude = AltPrevious;
     data.Longitude = LonPrevious;
     data.Latitude = LatPrevious;
     data.Time = TimePrevious;
-    if(Fixed_Lost==0){  //checks to see if the fix has been lost for more than 1 cycle
-      Fixed_Lost++;
-      I2C(data.Altitude,true,DISPATCH_SIGNAL,3,data.Time);
-    }
+    Serial.print("Alt: ");
+    Serial.println(data.Altitude,6);
+    Serial.print("Lon: ");
+    Serial.println(data.Longitude,6);
+    Serial.print("Lat: ");
+    Serial.println(data.Latitude,6);
+    Serial.println();
   }
   else{
-    //Serial.println("SIGNAL");
+    Serial.println("SIGNAL");
     Fixed_Lost = 0;
     data.Altitude = parse_NMEA(0);
     data.Latitude = parse_NMEA(1);
     data.Longitude = parse_NMEA(2);
     data.Time = parse_NMEA(3);
-    
+    if(data.Altitude<100.0 || data.Altitude>150000.0){ // Secondary saftey filter to not read the not wanted NMEA sentences
+      data.Altitude = AltPrevious;
+      data.Longitude = LonPrevious;
+      data.Latitude = LatPrevious;
+      data.Time = TimePrevious;
+    }
     AltPrevious = data.Altitude;
     LonPrevious = data.Longitude;
     LatPrevious = data.Latitude;
@@ -256,6 +266,9 @@ float parse_NMEA(int objective){
   else if(objective == 3){ //TIME
     GoalNumber = 1; //1st comma
   }
+  else if(objective == 4){
+    GoalNumber = 6; //6th comma
+  }
   
   boolean Goal = false;   //True if the NMEA is reading the objective
   int Comma_Counter = 0;  //comma counter
@@ -277,7 +290,6 @@ float parse_NMEA(int objective){
     arr[i]=two[i];
   }
   float temp = atof(arr);  //Converts char array to float
-  //Serial.println(temp_Alt);
   return temp;
 }
 
