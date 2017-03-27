@@ -138,6 +138,7 @@ void loop() {
  * Radio Communication into and out of the LoRa.
  */
 void Radio_Comm(float Altitude,float Time){
+  delay(10);
   if(READY_FOR_DROP){
     READY_FOR_DROP = false;
     char data[10] = "DROP";
@@ -150,7 +151,8 @@ void Radio_Comm(float Altitude,float Time){
     HABET_Connection = false;
     I2C(Altitude,true,DISPATCH_SIGNAL,4,Time);
   }
-  if(rf95.available()){                 //Checks if there is a incoming message
+  else if(rf95.available()){             //Checks if there is a incoming message
+    //Serial.println("Here");
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);           //Temporary variable to hold the message
     
@@ -180,22 +182,15 @@ struct flight_data GPSData(){
   new_NMEA();
   Fixed_Lost = parse_NMEA(4); //Checks for fix
   if(Fixed_Lost==0){//no fix
-    //Serial.println("NO SIGNAL");
+    Serial.println("NO SIGNAL");
     I2C(data.Altitude,true,DISPATCH_SIGNAL,3,data.Time);
     data.Altitude = AltPrevious;
     data.Longitude = LonPrevious;
     data.Latitude = LatPrevious;
     data.Time = TimePrevious;
-    //Serial.print("Alt: ");
-    //Serial.println(data.Altitude,6);
-    //Serial.print("Lon: ");
-    //Serial.println(data.Longitude,6);
-    //Serial.print("Lat: ");
-    //Serial.println(data.Latitude,6);
-    //Serial.println();
   }
   else{
-    //Serial.println("SIGNAL");
+    Serial.println("SIGNAL");
     Fixed_Lost = 0;
     data.Altitude = parse_NMEA(0);
     data.Latitude = parse_NMEA(1);
@@ -212,13 +207,13 @@ struct flight_data GPSData(){
     LatPrevious = data.Latitude;
     TimePrevious = data.Time;
     
-    //Serial.print("Alt: ");
-    //Serial.println(data.Altitude,6);
-    //Serial.print("Lon: ");
-    //Serial.println(data.Longitude,6);
-    //Serial.print("Lat: ");
-    //Serial.println(data.Latitude,6);
-    //Serial.println();
+    Serial.print("Alt: ");
+    Serial.println(data.Altitude,6);
+    Serial.print("Lon: ");
+    Serial.println(data.Longitude,6);
+    Serial.print("Lat: ");
+    Serial.println(data.Latitude,6);
+    Serial.println();
   }
   return data;
 }
@@ -247,7 +242,7 @@ void new_NMEA(){
      i++;
     }
   }while(millis() - start < 1000);
-  //Serial.println(NMEA);
+  Serial.println(NMEA);
 }
 
 /*

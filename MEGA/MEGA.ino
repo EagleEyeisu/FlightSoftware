@@ -219,7 +219,7 @@ struct flight_data getData(){
   AltPrevious = Altitude;
   Serial.print("Altitude:    ");
   Serial.print(Altitude);
-  Serial.println(" ft\n");
+  Serial.println(" m\n");
 
   /****Save current Temp, Alt, and Pressure to our data struct****/
   flight_data data;
@@ -234,34 +234,31 @@ struct flight_data getData(){
  * Initally hPa, than converted to mPa for calculations.
  */
 float getAlt(float inPressure){
-  if(inPressure == 0.0){
-    float pressure = inPressure/10.0;
-    float alt;
-    float leftTop;
-    float rightTop;      //All variables used to calculate altitude
-    float bottom;
-    float topTotal;
+  float pressure = inPressure/10.0;
+  float alt;
+  float leftTop;
+  float rightTop;      //All variables used to calculate altitude
+  float bottom;
+  float topTotal;
     
-    if(pressure < 2.55){                           //ABOVE 25,000m
-      leftTop = -47454.8;
-      rightTop = pow(pressure, 0.087812) - 1.65374;
-      bottom = pow(pressure, 0.087812);
-      topTotal = leftTop * rightTop;
-      alt = (topTotal / bottom);
-    }
-    else if(67.05 > pressure && pressure > 2.55){  //ABOVE 11,000m and BELOW 25,000m
-      rightTop = -6369.43;
-      leftTop = log(pressure) - 4.85016;
-      alt =  leftTop * rightTop;
-    }
-    else{                                           //BELOW 11,000m (Pressure > 67.05)
-      leftTop = 44397.5;
-      rightTop = 18437 * pow(pressure, 0.190259);
-      alt = leftTop - rightTop;
-    }
-    return alt;
+  if(pressure < 2.55){                           //ABOVE 25,000m
+    leftTop = -47454.8;
+    rightTop = pow(pressure, 0.087812) - 1.65374;
+    bottom = pow(pressure, 0.087812);
+    topTotal = leftTop * rightTop;
+    alt = (topTotal / bottom);
   }
-  return AltPrevious;
+  else if(67.05 > pressure && pressure > 2.55){  //ABOVE 11,000m and BELOW 25,000m
+    rightTop = -6369.43;
+    leftTop = log(pressure) - 4.85016;
+    alt =  leftTop * rightTop;
+  }
+  else{                                           //BELOW 11,000m (Pressure > 67.05)
+    leftTop = 44397.5;
+    rightTop = 18437 * pow(pressure, 0.190259);
+    alt = leftTop - rightTop;
+   }
+   return alt;
 }
 
 /*
