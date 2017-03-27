@@ -20,8 +20,11 @@
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BMP085_U.h>
+#include <Adafruit_LSM9DS0.h>
+#include <Adafruit_Simple_AHRS.h>
 #include <Servo.h>
 #include <SD.h> 
+
 
 /****FLIGHT******/
 float AltPrevious = 0.0;
@@ -77,6 +80,10 @@ boolean DETACH_REQUEST = false; //If true, gets Go/NoGo from 9Dof.
 int x;                              //Event Number.
 int Flip = 0;                       //Used to tell which program cycle the communication flip happened on.
 
+/****9DOF Board****/
+int timeout = 0;
+Adafruit_LSM9DS0     lsm(1000);  // Use I2C, ID #1000
+Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
 
 /****MISC****/
 time_t current_time;              //Time of events.
@@ -98,8 +105,8 @@ void setup() {
 
   /****Initialize the Altimeter****/
   if(!bmp.begin()){ //BMP085 Error, check connection
-    Serial.println("Pressure Sensor Offline.");
-    //delay(10000000);
+    Serial.println("PROBLEM WITH PRESSURE SENSOR.");
+    //while(1);
   }
   else{
     Serial.println("Pressure Sensor Online.");
@@ -114,10 +121,12 @@ void setup() {
   /****Initialize SD Card reader****/
   pinMode(SD_PIN, OUTPUT);
   if (!SD.begin(SD_PIN)){
-    Serial.println("SD Card Initialization Failed!");
-    //return;
+    Serial.println("PROBLEM WITH SD CARD.");
+    //while(1);
   }
-  Serial.println("SD Card Online.");
+  else{
+    Serial.println("SD Card Online.");
+  }
   
   /****Initialize Motor Pin****/
   motor.attach(MOTOR_PIN);     //Attaches ESC to Arduino
@@ -125,13 +134,17 @@ void setup() {
 
   /****Initialize I2C Comms****/
   Wire.begin(1);  //Setting the address for this board.
-  Serial.println("Comms Address Set.\n\n");
+  Serial.println("Comms Address Set.");
+
+  /****Initialize 9DOF Board****/
+  
 }
 
 /*
  * MAIN PROGRAM CODE. 
  */
 void loop(void){
+  Serial.println(".");
   sensors_event_t event; //Creates event object to store pressure sensor data in.
   bmp.getEvent(&event);  //Updates event object with the current pressure sensor data.
   
@@ -141,8 +154,44 @@ void loop(void){
   //motor_Function(current.Altitude);                                 //Handles motor function.
   BoardCommunication(current.Altitude);                               //Decides to Send or Recieve I2C information.
   Orientation(current.Altitude);
-  Serial.println(".");
   DelayHandler();                                                     //Handles delay adjustments.
+}
+
+/*
+ * Processes data from the 9Dof board.
+ */
+void Orientation(float Altitude){
+  sensors_vec_t   orientation;
+  if(true){//ahrs.getOrientation(&orientation)
+    float roll = 180 - abs(orientation.roll);
+    //Serial.print(F("Orientation: "));
+    //Serial.println(roll);
+    //Serial.print(F(" "));
+    float pitch = abs(orientation.pitch); 
+    //Serial.println(pitch);
+    
+    EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
+    if(DETACH_REQUEST){
+      if((roll <= 90 && pitch <= 90) || timeout >= 2){ //CHANGE BACK TO 20!!
+        if(timeout >= 0){
+         Serial.println("   FUCK IT    ");
+        }
+        I2C(Altitude,false,DISPATCH_SIGNAL,9);
+        DETACH_REQUEST = false;
+        timeout = 0;
+        EagleEyeData.print("Detach: ");
+     }
+     else{
+       timeout++;
+     }
+   }
+  EagleEyeData.print(Altitude);
+  EagleEyeData.print(",");
+  EagleEyeData.print(roll);
+  EagleEyeData.print(",");
+  EagleEyeData.println(pitch);
+  EagleEyeData.close();
+  }
 }
 
 /*
@@ -185,31 +234,34 @@ struct flight_data getData(){
  * Initally hPa, than converted to mPa for calculations.
  */
 float getAlt(float inPressure){
-  float pressure = inPressure/10.0;
-  float alt;
-  float leftTop;
-  float rightTop;      //All variables used to calculate altitude
-  float bottom;
-  float topTotal;
-
-  if(pressure < 2.55){                           //ABOVE 25,000m
-    leftTop = -47454.8;
-    rightTop = pow(pressure, 0.087812) - 1.65374;
-    bottom = pow(pressure, 0.087812);
-    topTotal = leftTop * rightTop;
-    alt = (topTotal / bottom);
+  if(inPressure == 0.0){
+    float pressure = inPressure/10.0;
+    float alt;
+    float leftTop;
+    float rightTop;      //All variables used to calculate altitude
+    float bottom;
+    float topTotal;
+    
+    if(pressure < 2.55){                           //ABOVE 25,000m
+      leftTop = -47454.8;
+      rightTop = pow(pressure, 0.087812) - 1.65374;
+      bottom = pow(pressure, 0.087812);
+      topTotal = leftTop * rightTop;
+      alt = (topTotal / bottom);
+    }
+    else if(67.05 > pressure && pressure > 2.55){  //ABOVE 11,000m and BELOW 25,000m
+      rightTop = -6369.43;
+      leftTop = log(pressure) - 4.85016;
+      alt =  leftTop * rightTop;
+    }
+    else{                                           //BELOW 11,000m (Pressure > 67.05)
+      leftTop = 44397.5;
+      rightTop = 18437 * pow(pressure, 0.190259);
+      alt = leftTop - rightTop;
+    }
+    return alt*3.28; //Conversion from feet to meters
   }
-  else if(67.05 > pressure && pressure > 2.55){  //ABOVE 11,000m and BELOW 25,000m
-    rightTop = -6369.43;
-    leftTop = log(pressure) - 4.85016;
-    alt =  leftTop * rightTop;
-  }
-  else{                                           //BELOW 11,000m (Pressure > 67.05)
-    leftTop = 44397.5;
-    rightTop = 18437 * pow(pressure, 0.190259);
-    alt = leftTop - rightTop;
-  }
-  return alt*3.28; //Conversion from feet to meters
+  return AltPrevious;
 }
 
 /*
@@ -235,7 +287,7 @@ void store_Data(float Pressure, float Temperature, float Altitude){
 void parachute(float Altitude){
   if(!chute_enable && Altitude >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
     saftey_counter++;
-    if(saftey_counter >= 10){
+    if(saftey_counter >= 4){
       chute_enable = true;
       Serial.print("Chute enabled at ");  
       Serial.print(Altitude);
@@ -253,8 +305,8 @@ void parachute(float Altitude){
       EagleEyeData.println("Saftey reset to 0."); 
       EagleEyeData.close();  
     }
-  }
-  if(!chute_deploy && chute_enable /*&& break_Status*/ && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
+  }                             /*&& break_Status*/
+  if(!chute_deploy && chute_enable && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
     chute_deploy = true;
     Serial.print("Chute deployed at ");
@@ -342,12 +394,12 @@ void BoardCommunication(float Altitude){
     Wire.beginTransmission(2);
     Wire.write(y);
     Wire.endTransmission();
-    //Serial.println("Sent Handshake");
+    Serial.println("Sent Handshake");
     Flip++;
    }
-   if(Serial.read() == 's' && DISPATCH_SIGNAL){
+   /*if(Serial.read() == 's' && DISPATCH_SIGNAL){
       I2C(Altitude,false,true,0);                 //Used to send a test signal back to the LoRa.
-   }
+   }*/
 }
 
 /*
@@ -365,6 +417,7 @@ void I2C(float Altitude,boolean Local,boolean Send,int System_Event){
     Wire.beginTransmission(2);
     Wire.write(x);
     Wire.endTransmission();
+    Serial.println("sent");
     EagleEyeData.print(System_Event);
     EagleEyeData.print(" <-Sent to LORA at ALT: ");
     EagleEyeData.print(Altitude);
@@ -407,6 +460,10 @@ void receiveEvent(){
     Serial.print("Sending Mode");
     Flip = 1;
   }
+  else if(x==4){
+    HABET_Connection = false;
+    Serial.println("Detached");
+  }
   newData = true;
 }
 
@@ -425,30 +482,4 @@ void DelayHandler(){
   else{
     delay(1000);  //One second delay between recordings
   }
-}
-
-/*
- * Processes data from the 9Dof board.
- */
-void Orientation(float Altitude){
-
-  
-  //ALL THE 9DOF CODE
-
-  
-  if(DETACH_REQUEST){
-    if(true/*X>90.0 && Y>90.0*/){  //True for testing. Remove later.
-      I2C(Altitude,false,DISPATCH_SIGNAL,9);
-      DETACH_REQUEST == false;
-    }
-  }
-  //EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
-  //EagleEyeData.print(Altitude);
-  //EagleEyeData.print(",");
-  //EagleEyeData.print(/*X Value*/);
-  //EagleEyeData.print(",");
-  //EagleEyeData.print(/*Y Value*/);
-  //EagleEyeData.print(",");
-  //EagleEyeData.print(/*Z Value*/);
-  //EagleEyeData.close()
 }

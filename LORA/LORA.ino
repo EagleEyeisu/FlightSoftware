@@ -125,6 +125,7 @@ void setup(){
  * MAIN PROGRAM
  */
 void loop() {
+  Serial.println(".");
   flight_data current = GPSData();                                             //Updates altitude using GPS.
   Radio_Comm(current.Altitude,current.Time);                                   //Radio communication.
   storeData(current.Altitude,current.Latitude,current.Longitude,current.Time); //Stores Data to SD Card.
@@ -137,8 +138,8 @@ void loop() {
  * Radio Communication into and out of the LoRa.
  */
 void Radio_Comm(float Altitude,float Time){
-  //Serial.println(".");
   if(READY_FOR_DROP){
+    READY_FOR_DROP = false;
     char data[10] = "DROP";
     Serial.print("Sending drop signal: "); Serial.println(data);
     rf95.send(data, sizeof(data));       //Sends packet
@@ -149,7 +150,7 @@ void Radio_Comm(float Altitude,float Time){
     HABET_Connection = false;
     I2C(Altitude,true,DISPATCH_SIGNAL,4,Time);
   }
-  if (rf95.available()){                 //Checks if there is a incoming message
+  if(rf95.available()){                 //Checks if there is a incoming message
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);           //Temporary variable to hold the message
     
@@ -159,8 +160,8 @@ void Radio_Comm(float Altitude,float Time){
       digitalWrite(LED, LOW);
       Serial.print("Recieved: ");
       Serial.println((char*)buf);
-      if(true){ //Will be switched to only trigger on specific message
-        //BoardCommunication(Altitude,Time,true); //Triggers the switch in I2C and asks mega for Go/NoGo on drop.
+      if(buf[0]=='R' && buf[5]=='?'){
+        BoardCommunication(Altitude,Time,true); //Triggers the switch in I2C and asks mega for Go/NoGo on drop.
       }
     }
     else{
@@ -179,22 +180,22 @@ struct flight_data GPSData(){
   new_NMEA();
   Fixed_Lost = parse_NMEA(4); //Checks for fix
   if(Fixed_Lost==0){//no fix
-    Serial.println("NO SIGNAL");
+    //Serial.println("NO SIGNAL");
     I2C(data.Altitude,true,DISPATCH_SIGNAL,3,data.Time);
     data.Altitude = AltPrevious;
     data.Longitude = LonPrevious;
     data.Latitude = LatPrevious;
     data.Time = TimePrevious;
-    Serial.print("Alt: ");
-    Serial.println(data.Altitude,6);
-    Serial.print("Lon: ");
-    Serial.println(data.Longitude,6);
-    Serial.print("Lat: ");
-    Serial.println(data.Latitude,6);
-    Serial.println();
+    //Serial.print("Alt: ");
+    //Serial.println(data.Altitude,6);
+    //Serial.print("Lon: ");
+    //Serial.println(data.Longitude,6);
+    //Serial.print("Lat: ");
+    //Serial.println(data.Latitude,6);
+    //Serial.println();
   }
   else{
-    Serial.println("SIGNAL");
+    //Serial.println("SIGNAL");
     Fixed_Lost = 0;
     data.Altitude = parse_NMEA(0);
     data.Latitude = parse_NMEA(1);
@@ -211,13 +212,13 @@ struct flight_data GPSData(){
     LatPrevious = data.Latitude;
     TimePrevious = data.Time;
     
-    Serial.print("Alt: ");
-    Serial.println(data.Altitude,6);
-    Serial.print("Lon: ");
-    Serial.println(data.Longitude,6);
-    Serial.print("Lat: ");
-    Serial.println(data.Latitude,6);
-    Serial.println();
+    //Serial.print("Alt: ");
+    //Serial.println(data.Altitude,6);
+    //Serial.print("Lon: ");
+    //Serial.println(data.Longitude,6);
+    //Serial.print("Lat: ");
+    //Serial.println(data.Latitude,6);
+    //Serial.println();
   }
   return data;
 }
@@ -246,7 +247,7 @@ void new_NMEA(){
      i++;
     }
   }while(millis() - start < 1000);
-  Serial.println(NMEA);
+  //Serial.println(NMEA);
 }
 
 /*
@@ -379,10 +380,12 @@ void TouchDown(float Alt, unsigned long Time){
  */
 void BoardCommunication(float Altitude,unsigned long Time, boolean DROP_SIGNAL){
   if(DROP_SIGNAL){
-    I2C(Altitude,false,DISPATCH_SIGNAL,8,Time);
+    byte x = 8;
+    Wire.beginTransmission(1);
+    Wire.write(x);
+    Wire.endTransmission();
     DISPATCH_SIGNAL = false;
     Serial.println("Receiving Mode");
-    DROP_SIGNAL = false;
   }
   if(!DISPATCH_SIGNAL){
     I2C(Altitude,false,DISPATCH_SIGNAL,0,Time);
