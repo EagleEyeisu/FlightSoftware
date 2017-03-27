@@ -69,8 +69,8 @@ File EagleEyeData;                  //File object used to store data during flig
 boolean chute_enable = false;        //Status of chute readiness.
 boolean chute_deploy = false;        //Status of chute deployment.
 int saftey_counter = 0;              //Saftey counter.
-int PARACHUTE_ARM_HEIGHT = 30000;    //9144 m == 30,000 feet
-int PARACHUTE_DEPLOY_HEIGHT = 20000; //6096m == 20,000 feet
+int PARACHUTE_ARM_HEIGHT = 9144;     //9144 m == 30,000 feet
+int PARACHUTE_DEPLOY_HEIGHT = 6096;  //6096m == 20,000 feet
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true;    //Status for Connection to HABET.
@@ -106,7 +106,7 @@ void setup() {
   /****Initialize the Altimeter****/
   if(!bmp.begin()){ //BMP085 Error, check connection
     Serial.println("PROBLEM WITH PRESSURE SENSOR.");
-    //while(1);
+    while(1);
   }
   else{
     Serial.println("Pressure Sensor Online.");
@@ -144,7 +144,7 @@ void setup() {
  * MAIN PROGRAM CODE. 
  */
 void loop(void){
-  Serial.println(".");
+  //Serial.println(".");
   sensors_event_t event; //Creates event object to store pressure sensor data in.
   bmp.getEvent(&event);  //Updates event object with the current pressure sensor data.
   
@@ -203,23 +203,23 @@ struct flight_data getData(){
   bmp.getEvent(&event);
   
   /****Display atmospheric pressue in hPa****/
-  //Serial.print("Pressure:    ");
-  //Serial.print(event.pressure);
-  //Serial.println(" hPa ");
+  Serial.print("Pressure:    ");
+  Serial.print(event.pressure);
+  Serial.println(" hPa ");
    
   /****First we get the current temperature from the BMP180****/
   float temperature;
   bmp.getTemperature(&temperature);
-  //Serial.print("Temperature: ");
-  //Serial.print(temperature);
-  //Serial.println(" C ");
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" C ");
 
   /****Calculate Altitude from Pressure****/
   float Altitude = getAlt(event.pressure);
   AltPrevious = Altitude;
-  //Serial.print("Altitude:    ");
-  //Serial.print(Altitude);
-  //Serial.println(" ft\n");
+  Serial.print("Altitude:    ");
+  Serial.print(Altitude);
+  Serial.println(" ft\n");
 
   /****Save current Temp, Alt, and Pressure to our data struct****/
   flight_data data;
@@ -259,7 +259,7 @@ float getAlt(float inPressure){
       rightTop = 18437 * pow(pressure, 0.190259);
       alt = leftTop - rightTop;
     }
-    return alt*3.28; //Conversion from feet to meters
+    return alt;
   }
   return AltPrevious;
 }
@@ -291,11 +291,11 @@ void parachute(float Altitude){
       chute_enable = true;
       Serial.print("Chute enabled at ");  
       Serial.print(Altitude);
-      Serial.println(" feet ");
+      Serial.println(" meters ");
       EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
       EagleEyeData.print("Chute enabled at ");
       EagleEyeData.print(Altitude); 
-      EagleEyeData.println(" feet ");
+      EagleEyeData.println(" meters ");
       EagleEyeData.close();
     }
     else if(Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
@@ -305,80 +305,20 @@ void parachute(float Altitude){
       EagleEyeData.println("Saftey reset to 0."); 
       EagleEyeData.close();  
     }
-  }                             /*&& break_Status*/
+  }
   if(!chute_deploy && chute_enable && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
     chute_deploy = true;
     Serial.print("Chute deployed at ");
     Serial.print(Altitude);
-    Serial.println(" feet");
+    Serial.println(" meters");
     delay(2000);
     digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
     EagleEyeData.print("Chute deployed at ");
     EagleEyeData.print(Altitude);
-    EagleEyeData.println(" feet");
+    EagleEyeData.println(" meters");
     EagleEyeData.close();
-  }
-}
-
-/*
- * Motor Control System
- */
-void motor_Function(float Altitude){
-  if(chute_deploy == false){
-    if(HABET_Connection == false){
-      if(motor_Complete == false){
-        if(!motor_Start){
-          motor_Start = true;
-          cycle_Up = true;
-          speedPrevious = MIN_SIGNAL;
-          I2C(Altitude,true,DISPATCH_SIGNAL,10);
-        }
-        else if(cycle_Up){       //CYCLING UP
-          if(speed>=MAX_SIGNAL){ //Checks to see if motor has met desired throttle.
-            cycle_Up == false;
-            spin_Up == true;
-            cycle_Down == true;
-            speed = MAX_SIGNAL;
-          }
-          else if(speed<MAX_SIGNAL){    
-            for(speed=speedPrevious;speed<=speedPrevious+70;speed+=INCREMENT_AMOUNT){
-              if(speed==850){
-                I2C(Altitude,true,DISPATCH_SIGNAL,12);
-                break_Status = false;
-              }
-              if(speed<=MAX_SIGNAL){
-              motor.writeMicroseconds(speed);
-              delay(100);
-              }
-            }
-            speedPrevious = speed;
-          }
-       }
-       else if(cycle_Down){ //CYCLING DOWN
-          if(speed<=850){   //DONT TOUCH - Makes sure break is off but the motor has stopped spinning. 
-            cycle_Down == false;
-            motor_Complete == true;
-            I2C(Altitude,true,DISPATCH_SIGNAL,11);
-          }
-          else if(speed>MIN_SIGNAL){    //Checks to see if motor has stopped.
-            for(speed=speedPrevious;speed>=speedPrevious-70;speed-=INCREMENT_AMOUNT){
-              if(speed>=MIN_SIGNAL){
-                motor.writeMicroseconds(speed);
-                delay(100);
-              }
-            }
-            speedPrevious = speed;
-          }
-        }
-      }
-      else if(!chute_deploy && chute_enable && !break_Status && Altitude <= PARACHUTE_DEPLOY_HEIGHT+300){ //<-number value is used to determine at what height above parachute deployment we need to turn the break on. WILL CHANGE
-        motor.writeMicroseconds(700); //Break turns on
-        break_Status = true;
-        I2C(Altitude,true,DISPATCH_SIGNAL,12);
-      }
-    }
   }
 }
 
