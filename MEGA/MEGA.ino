@@ -444,12 +444,14 @@ void gyroParaccute(float altitude) {
     redZoneBool = false
   }
   if (redZoneBool == true && enable == true && parachute(altitude)) {
-    
+    EagleEyeData = SD.open("DescentData.txt", FILE_WRITE);
+    EagleEyeData.print("Parachute deployed at: ");
+    EagleEyeData.print(altitude);
+    EagleEyeData.print("m. Roll: ");
+    EagleEyeData.print(roll);
+    EagleEyeData.print(" Pitch: ");
+    EagleEyeData.println(pitch);
+    EagleEyeData.close();
   }
-  
-  
-
-
-  
 }
 
