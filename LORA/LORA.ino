@@ -138,8 +138,19 @@ void loop() {
  * Radio Communication into and out of the LoRa.
  */
 void Radio_Comm(float Altitude,float Time){
-  delay(10);
-  if(READY_FOR_DROP){
+  if(!READY_FOR_DROP){
+    char NMEA_Sentence[150];
+    for(int i=0;i<150;i++){
+      NMEA_Sentence[i] = NMEA[i];
+    }
+    Serial.print("Sending NMEA: "); Serial.println(NMEA_Sentence);
+    rf95.send(NMEA_Sentence, sizeof(NMEA_Sentence));
+    rf95.waitPacketSent();
+    digitalWrite(LED, HIGH);
+    delay(10);
+    digitalWrite(LED, LOW);
+  }
+  else if(READY_FOR_DROP){
     READY_FOR_DROP = false;
     char data[10] = "DROP";
     Serial.print("Sending drop signal: "); Serial.println(data);
@@ -152,7 +163,6 @@ void Radio_Comm(float Altitude,float Time){
     I2C(Altitude,true,DISPATCH_SIGNAL,4,Time);
   }
   else if(rf95.available()){             //Checks if there is a incoming message
-    //Serial.println("Here");
     uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
     uint8_t len = sizeof(buf);           //Temporary variable to hold the message
     
