@@ -84,6 +84,7 @@ int Flip = 0;                       //Used to tell which program cycle the commu
 int timeout = 0;
 Adafruit_LSM9DS0     lsm(1000);  // Use I2C, ID #1000
 Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
+boolean redZoneBool = false;
 
 /****MISC****/
 time_t current_time;              //Time of events.
@@ -154,7 +155,9 @@ void loop(void){
   //motor_Function(current.Altitude);                                 //Handles motor function.
   BoardCommunication(current.Altitude);                               //Decides to Send or Recieve I2C information.
   Orientation(current.Altitude);
-  DelayHandler();                                                     //Handles delay adjustments.
+  delay(500);//Handles delay adjustments.
+  gyroParachute(current.Altitude)  
+  delay(500)
 }
 
 /*
@@ -303,6 +306,7 @@ void parachute(float Altitude){
       EagleEyeData.close();  
     }
   }
+  
   if(!chute_deploy && chute_enable && Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
     chute_deploy = true;
@@ -310,6 +314,9 @@ void parachute(float Altitude){
     Serial.print(Altitude);
     Serial.println(" meters");
     delay(2000);
+
+
+    
     digitalWrite(RELAY1, HIGH);               //Run the current for 2 seconds, then open the circuit and stop the current
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
     EagleEyeData.print("Chute deployed at ");
@@ -317,7 +324,9 @@ void parachute(float Altitude){
     EagleEyeData.println(" meters");
     EagleEyeData.close();
   }
+  
 }
+
 
 /*
  * Helper to determine whether to send or recieve signal.
@@ -420,3 +429,27 @@ void DelayHandler(){
     delay(1000);  //One second delay between recordings
   }
 }
+
+bool parachuteRedZone(float roll, float pitch) {
+  return (roll >= 135 && pitch <= 45);
+}
+void gyroParaccute(float altitude) {
+  sensors_vec_t   orientation;
+  float roll = 180 - abs(orientation.roll);
+  float pitch = abs(orientation.pitch); 
+  if (!parachuteRedZone(roll,pitch)) {
+    redZoneBool = true
+  }
+  else {
+    redZoneBool = false
+  }
+  if (redZoneBool == true && enable == true && parachute(altitude)) {
+    
+  }
+  
+  
+
+
+  
+}
+
