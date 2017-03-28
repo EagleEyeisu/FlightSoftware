@@ -69,7 +69,7 @@ File EagleEyeData;                  //File object used to store data during flig
 boolean chute_enable = false;        //Status of chute readiness.
 boolean chute_deploy = false;        //Status of chute deployment.
 int saftey_counter = 0;              //Saftey counter.
-int PARACHUTE_ARM_HEIGHT = 9144;     //9144 m == 30,000 feet
+int PARACHUTE_ARM_HEIGHT = 7620;     //9144 m == 25,000 feet
 int PARACHUTE_DEPLOY_HEIGHT = 6096;  //6096m == 20,000 feet
 
 /****COMMUNICATION****/
