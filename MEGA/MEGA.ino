@@ -2,7 +2,7 @@
  *                                                                                                     *
  *Purpose: Primary software for use on EAGLE EYE rotor craft. Controls and                             *
  *         maintains motor speed, deploys parachute, reads and records atmospheric                     *
- *         data.                                                                                       *
+ *         data, maintains I2C communication.                                                          *
  *                                                                                                     *
  *Date:      Version:        Developer:        Description:                                            *
  *6/25/16    1.0             James Wingerter   Initial Build.                                          *
@@ -13,6 +13,7 @@
  *                                             update, I2C Communication with LoRa, Event Logging      *
  *2/27/17    2.1             Wesley Carelton   Fixed I2C Software & Event Logging.                     *
  *                           Jared Danner      2 way I2C.                                              *
+ *3/30/17    2.2             James Wingerter   Added Thermocouple Temperature readings                 *
  *******************************************************************************************************/
 
 /****LIBRARIES****/
@@ -24,7 +25,8 @@
 #include <Adafruit_Simple_AHRS.h>
 #include <Servo.h>
 #include <SD.h> 
-
+#include "Adafruit_MAX31855.h"
+#include <SPI.h>
 
 /****FLIGHT******/
 float AltPrevious = 0.0;
@@ -58,8 +60,14 @@ boolean motor_Complete = false;  //True when motor cycle is complete.
 boolean motor_Start = false;     //Triggers the beginning of the motor process.
 boolean break_Status = false;    //Status of break.
 
+/****THERMOCOUPLE PINS****/
+#define MAXDO   32
+#define MAXCS   30
+#define MAXCLK  31
+
 /****SENSORS*****/
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);   //Don't touch
+Adafruit_MAX31855 thermocouple(MAXCLK, MAXCS, MAXDO);           //Don't touch
 
 /****SD CARD*****/
 File EagleEyeData;                  //File object used to store data during flight.
@@ -94,12 +102,16 @@ time_t current_time;              //Time of events.
 struct flight_data{
   float Pressure;
   float Altitude;
-  float Temperature;
+  float Temperature_ext;
+  float roll;
+  float pitch;
+  float yaw;
 };
 
-/*
+
+/*****************************************************************************************************
  * Method initializes the main hardware components. Only runs once, or until everything is initialized
- */
+ ****************************************************************************************************/
 void setup(){
   Serial.begin(4800); //4800 is the standard use across all Eagle Eye Programs
   
@@ -147,38 +159,58 @@ void setup(){
   lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_2G);
   lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
   lsm.setupGyro(lsm.LSM9DS0_GYROSCALE_245DPS);
+
+  /****Initialize Thermocouple****/
+  // wait for MAX chip to stabilize
+  delay(500);
+  Serial.println("Thermocouple Amplifier Online");
 }
 
-/*
- * MAIN PROGRAM CODE.
- */
+/*******************************************************************
+ *************************MAIN PROGRAM CODE*************************
+ *******************************************************************/
 void loop(void){
   //Serial.println(".");
-  flight_data current = getPressureSensorData();                      //Updates altitude, pressure, and tempurature.
-  store_Data(current.Pressure,current.Temperature,current.Altitude);  //Store Data to SD Card.
-  parachute(current.Altitude);                                        //Handles all things parachute.
-  //motor_Function(current.Altitude);                                 //Handles motor function.
-  BoardCommunication(current.Altitude);                               //Decides to Send or Recieve I2C information.
+  flight_data current = getData();           //Updates altitude, pressure, and tempurature.
+  store_Data(current.Pressure,current.Temperature_ext,current.Altitude,current.roll,current.pitch,current.yaw);  //Store Data to SD Card.
+  parachute(current.Altitude);                                            //Handles all things parachute.
+  //motor_Function(current.Altitude);                                     //Handles motor function.
+  BoardCommunication(current.Altitude);                                   //Decides to Send or Recieve I2C information.
   Orientation(current.Altitude);
   DelayHandler(current.Altitude);
 }
 
+/*******************************************************************
+*******************************************************************/
+
 /*
  * Updates values to current conditions.
  */
-struct flight_data getPressureSensorData(){
+struct flight_data getData(){
   /****Get a new sensor event****/
   sensors_event_t event;
   bmp.getEvent(&event);
+  float temperature_ext = thermocouple.readCelsius();
+
+  float roll = getRoll();
+  float pitch = getPitch();
+  float yaw = getYaw();
   
   /****Display atmospheric pressue in hPa****/
   //Serial.print("Pressure:    ");
   //Serial.print(event.pressure);
   //Serial.println(" hPa ");
+
+  /****Display Temperature in Celsius****/
+     if (isnan(temperature_ext)) {
+     //Serial.println("0.00");
+   } else {
+     //Serial.print("C = "); 
+     //Serial.println(c);
+   }
    
   /****First we get the current temperature from the BMP180****/
-  float temperature;
-  bmp.getTemperature(&temperature);
+  //bmp.getTemperature(&temperature);
   //Serial.print("Temperature: ");
   //Serial.print(temperature);
   //Serial.println(" C ");
@@ -193,8 +225,11 @@ struct flight_data getPressureSensorData(){
   /****Save current Temp, Alt, and Pressure to our data struct****/
   flight_data data;
   data.Pressure = event.pressure;
-  data.Temperature = temperature;
+  data.Temperature_ext = temperature_ext;
   data.Altitude = Altitude;
+  data.roll = roll;
+  data.pitch = pitch;
+  data.yaw = yaw;
   return data;
 }
 
@@ -233,7 +268,7 @@ float getAlt(float inPressure){
 /*
  * Used to store Data to SD card storage
  */
-void store_Data(float Pressure, float Temperature, float Altitude){
+void store_Data(float Pressure, float Temperature_ext, float Altitude, float roll, float pitch, float yaw){
   EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
   EagleEyeData.print(current_time = now());
   EagleEyeData.print(",");
@@ -243,8 +278,24 @@ void store_Data(float Pressure, float Temperature, float Altitude){
   EagleEyeData.print(Pressure);
 
   EagleEyeData.print(",");
-  EagleEyeData.println(Temperature);
+  EagleEyeData.println(Temperature_ext);
   EagleEyeData.close();
+
+
+  EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
+  EagleEyeData.print(roll);
+  EagleEyeData.print(",");
+  EagleEyeData.println(pitch);
+  EagleEyeData.close();
+  EagleEyeData.println(yaw);
+  EagleEyeData.close();
+  Serial.print("Roll: ");
+  Serial.print(roll);
+  Serial.print(" Pitch: ");
+  Serial.print(pitch);
+  Serial.print(" Yaw: ");
+  Serial.print(yaw);
+  Serial.println();
 }
 
 /**
@@ -468,6 +519,13 @@ float getPitch(){
     return (abs(orientation.pitch));
   }
 }
+float getYaw(){
+  sensors_vec_t   orientation;
+  if(ahrs.getOrientation(&orientation)){
+    return (orientation.pitch);
+  }
+}
+
 
 /*
  * Adjusts the delay to accomidate for motor when active.
