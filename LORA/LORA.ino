@@ -53,9 +53,9 @@ int x;                             //Recieved event number.
 int Lost_Packet = 0;               //Keep track of how many packets are lost.
 
 /****GPS****/
-String NMEA;                     //NMEA that is read in from GPS.
+String NMEA;                       //NMEA that is read in from GPS.
 SoftwareSerial ss(11, 10);         //Directs the GPS to read from certain wire ports
-int Fixed_Lost = 0;              //Keeps track of how long the GPS fix has been lost. Used in event logging.
+int GPS_Fix = 0;                   //Keeps track of how long the GPS fix has been lost. Used in event logging.
 
 /*
  * Holds data values of Pressure, Altitude, and Temperature
@@ -84,8 +84,14 @@ void setup(){
   Serial.println("GPS Online");
   
   /****Initialization of SD Card reader****/
-  Serial.println("SD Card Online.");
   pinMode(SD_PIN, OUTPUT);
+  if(!SD.begin(SD_PIN)){
+    Serial.println("PROBLEM WITH SD CARD.");
+    //while(1);
+  }
+  else{
+    Serial.println("SD Card Online.");
+  }
 
   /****Initialization of I2C Comms****/
   Wire.begin(2);    //Setting the address for this board.
@@ -137,7 +143,7 @@ void loop() {
  * Radio Communication into and out of the LoRa.
  */
 void Radio_Comm(){
-  if(!READY_FOR_DROP){
+  if(false){
     char NMEA_Sentence[150];
     for(int i=0;i<150;i++){
       NMEA_Sentence[i] = NMEA[i];//Converts the NMEA sentence to a character array.
