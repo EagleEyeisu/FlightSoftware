@@ -138,7 +138,7 @@ void setup(){
   pinMode(SD_PIN, OUTPUT);
   if(!SD.begin(SD_PIN)){
     Serial.println("PROBLEM WITH SD CARD.");
-    while(1);
+    //while(1);
   }
   else{
     Serial.println("SD Card Online.");
@@ -158,7 +158,7 @@ void setup(){
     while(1);
   }
   else{
-    Serial.print("9Dof Online.");
+    Serial.println("9Dof Online.");
   }
   lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_2G);
   lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
@@ -166,7 +166,7 @@ void setup(){
 
   /****Initialize Thermocouple****/
   delay(500);
-  Serial.println("Thermocouple Amplifier Online\n\n");
+  Serial.println("Thermocouple Amplifier Online.\n\n");
 }
 
 /*
@@ -197,14 +197,13 @@ void getData(){
   data.Pitch = getPitch();
   data.Yaw = getYaw();
   
-  Serial.print("Pressure:    ");Serial.print(event.pressure);Serial.println(" hPa ");
-  Serial.print("Altitude:    ");Serial.print(data.Altitude);Serial.println(" m\n");
-  if(isnan(data.Temperature_ext)){
-   Serial.println("0.00;");
-   }
-   else{
-     Serial.print("Temperature: ");Serial.print(data.Temperature_ext);Serial.println(" C ");
-   }
+  Serial.print("Pressure:    ");Serial.print(event.pressure);Serial.println(" hPa");
+  Serial.print("Altitude:    ");Serial.print(data.Altitude);Serial.println(" m");
+  Serial.print("Temperature: ");Serial.print(data.Temperature_ext);Serial.println(" C");
+  Serial.print("Roll:  ");Serial.println(data.Roll);
+  Serial.print("Pitch: ");Serial.println(data.Pitch);
+  Serial.print("Yaw:   ");Serial.println(data.Yaw);
+  Serial.println();
   AltPrevious = data.Altitude;
 }
 
