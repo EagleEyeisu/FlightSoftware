@@ -472,7 +472,7 @@ void I2C(boolean Local,boolean Send,int System_Event){
  */
 void Send_I2C(int System_Event){
   x = System_Event;
-  Wire.beginTransmission(1);
+  Wire.beginTransmission(2);
   Wire.write(x);
   Wire.endTransmission();
 }

@@ -19,10 +19,7 @@
 #include <RH_RF95.h>
  
 /****FLIGHT******/
-float Alts[20];
-boolean Touchdown = false;
 float AltPrevious = 0.0, LatPrevious = 0.0, LonPrevious = 0.0;  //These are the previous values(the last known GPS Data), they are used incase the GPS Signal stops.
-unsigned long TimePrevious;
 
 //CONSTANT VARIABLES
 /****PINS********/
@@ -45,7 +42,7 @@ int PARACHUTE_DEPLOY_HEIGHT = 6096; //6096m == 20,000 feet
 #define RFM95_INT 7                
 #define LED 13                     //Used to flash LED upon message transmission.
 #define RF95_FREQ 433.0            //Frequency used on LoRa. UPDATE WITH HABET
-RH_RF95 rf95(RFM95_CS, RFM95_INT); //Directs the radio to read from a certain port.
+RH_RF95 rf95(8, 7);                //Directs the radio to read from a certain port.
 boolean HABET_Connection = true;   //Status for Connection to HABET.
 boolean DISPATCH_SIGNAL = true;    //Status to send to mega.
 boolean READY_FOR_DROP = false;    //Gets turned true by Mega deciding to drop based on the 9Dof.
@@ -65,7 +62,6 @@ struct flight_data{
   float Altitude;
   float Latitude;
   float Longitude;
-  unsigned long Time;
 };
 
 struct flight_data data;
@@ -106,7 +102,6 @@ void setup(){
   digitalWrite(RFM95_RST, LOW);
   delay(10);
   digitalWrite(RFM95_RST, HIGH);
-  delay(10);
   //Checks for Creation of Radio Object.
   if(!rf95.init()){
     Serial.println("LoRa radio init failed");
@@ -127,8 +122,20 @@ void setup(){
   Serial.println();
 }
 
-/*
- * MAIN PROGRAM
+
+/**
+ * Handles Event Logging. Sends MEGA milestone updates/errors.
+ *  LORA EVENTS
+ *  0 - Chute Disabled
+ *  1 - Chute Enabled
+ *  2 - Chute Deployed
+ *  3 - GPS Offline
+ *  4 - Detached
+ *  5 - Abort Detach
+ *  6 - Radio Connection Lost
+ *  7 - TouchDown
+ *  8 - Switch Communication Direction
+ *  9 - HABET DROP REQUEST
  */
 void loop() {
   Serial.println(".");
@@ -136,7 +143,6 @@ void loop() {
   Save(0,0);                    //Stores Data to SD Card.
   Radio_Comm();                 //Radio communication.
   parachute();                  //Parachute functions such as enable, deploy, and saftey checks.
-  TouchDown();                  //Checks for stop in decent.
   BoardCommunication(false);    //Decides to Send or Recieve I2C information.
 }
 
@@ -156,7 +162,8 @@ void Radio_Comm(){
     char Detach[10] = "DROP";
     Send_Packet(Detach);
     HABET_Connection = false;
-    I2C(true,DISPATCH_SIGNAL,4);
+    x = 4;
+    Save(1,0);
   }
   else if(rf95.available()){//Checks for incoming message.
     Retrieve_Packet();
@@ -208,33 +215,32 @@ void Blink(){
  */
 void GPSData(){
   new_NMEA();
-  GPS_Fix = parse_NMEA(4); //Checks for fix
-  if(GPS_Fix==0){          //no fix
-    Serial.println("NO SIGNAL");
-    I2C(true,DISPATCH_SIGNAL,3);
+  GPS_Fix = parse_NMEA(3);//Checks for fix
+  if(GPS_Fix==0){         //no fix
+    //Serial.println("NO SIGNAL");
+    x = 3;
+    Save(1,0);
     Revert_Struct();
   }
   else if(GPS_Fix==1){
-    Serial.println("SIGNAL");
+    //Serial.println("SIGNAL");
     data.Altitude = parse_NMEA(0);
     data.Latitude = parse_NMEA(1);
     data.Longitude = parse_NMEA(2);
-    data.Time = parse_NMEA(3);
     if(data.Altitude<100.0 || data.Altitude>150000.0){ // Secondary saftey filter to not read the not wanted NMEA sentences
       Revert_Struct();
     }
     AltPrevious = data.Altitude;
     LonPrevious = data.Longitude;
     LatPrevious = data.Latitude;
-    TimePrevious = data.Time;
   }
   else{//Wrong NMEA sentence, ingores it.
     Revert_Struct();
   }
-  Serial.print("Alt: ");Serial.println(data.Altitude,6);
-  Serial.print("Lon: ");Serial.println(data.Longitude,6);
-  Serial.print("Lat: ");Serial.println(data.Latitude,6);
-  Serial.println();
+  //Serial.print("Alt: ");Serial.println(data.Altitude,6);
+  //Serial.print("Lon: ");Serial.println(data.Longitude,6);
+  //Serial.print("Lat: ");Serial.println(data.Latitude,6);
+  //Serial.println();
 }
 
 /*
@@ -244,7 +250,6 @@ void Revert_Struct(){
   data.Altitude = AltPrevious;
   data.Longitude = LonPrevious;
   data.Latitude = LatPrevious;
-  data.Time = TimePrevious;
 }
 
 /*
@@ -255,6 +260,7 @@ void new_NMEA(){
   char Arr[150];
   int i = 0;
   int j = 0;
+  int count = 0;
   int dollar_counter=0;
   unsigned long start = millis();
   do 
@@ -270,8 +276,9 @@ void new_NMEA(){
      }
      i++;
     }
-  }while(millis() - start < 1000);
-  Serial.println(NMEA);
+    count++;
+  }while(millis()-start<1000);
+  //Serial.println(NMEA);
 }
 
 /*
@@ -288,10 +295,7 @@ float parse_NMEA(int objective){
   else if(objective==2){//LONGITUDE
     GoalNumber = 4;     //4th comma
   }
-  else if(objective==3){//TIME
-    GoalNumber = 1;     //1st comma
-  }
-  else if(objective==4){//FIX
+  else if(objective==3){//FIX
     GoalNumber = 6;     //6th comma
   }
   int i;
@@ -322,9 +326,7 @@ float parse_NMEA(int objective){
  * Stores Data from all sensors to SD Card.
  * I2C_Selector:
  * 0 - Does not involve I2C
- * 1 - Saves Sending Data.
- * 2 - Saves Recieved Data.
- * 3 - Saves Local Data.
+ * 1 - Saves Event and Alttude.
  * Parachute_Selector:
  * 0 - Does not involve Parachute.
  * 1 - Enable Chute.
@@ -333,7 +335,7 @@ float parse_NMEA(int objective){
  */
 void Save(int I2C_Selector, int Parachute_Selector){
   if(I2C_Selector != 0){
-    Save_I2C(I2C_Selector);
+    Save_I2C();
   }
   else if(Parachute_Selector != 0){
     Save_Parachute(Parachute_Selector);
@@ -346,32 +348,11 @@ void Save(int I2C_Selector, int Parachute_Selector){
 /*
  * Saves I2C Data.
  */
-void Save_I2C(int I2C_Selector){
+void Save_I2C(){
   EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
-  if(I2C_Selector==1){  //SAVES SENDING DATA.
-    EagleEyeData.println();
-    EagleEyeData.print(x);
-    EagleEyeData.print(" <-Sent to Mega at ALT: ");
-    EagleEyeData.print(data.Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(data.Time);
-  }
-  else if(I2C_Selector==2){  //SAVES RECIEVED DATA.
-    EagleEyeData.println();
-    EagleEyeData.print(x);
-    EagleEyeData.print(" <-MEGA Event Logged at ALT: ");
-    EagleEyeData.print(data.Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(data.Time);
-  }
-  else{ //SAVES LOCAL DATA.
-    EagleEyeData.println();
-    EagleEyeData.print(x);
-    EagleEyeData.print(" <-Event Logged at ALT: ");
-    EagleEyeData.print(data.Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(data.Time);
-  }
+  EagleEyeData.println();
+  EagleEyeData.print(x);
+  EagleEyeData.println(data.Altitude);
   EagleEyeData.close();
 }
 
@@ -381,11 +362,11 @@ void Save_I2C(int I2C_Selector){
 void Save_Parachute(int Parachute_Selector){
   EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
   if(Parachute_Selector==1){    //SAVES PARACHUTE ENABLEMENT.
-    EagleEyeData.print("Chute enabled at: ");
+    EagleEyeData.print("ENABLED: ");
     EagleEyeData.println(data.Altitude); 
   }
   else if(Parachute_Selector==2){ //SAVES PARACHUTE DEPLOYMENT.
-    EagleEyeData.print("Chute deployed at: ");
+    EagleEyeData.print("DEPLOYED: ");
     EagleEyeData.println(data.Altitude);
   }
   else{  //SAVES RESET OF SAFTEY COUNTRER.
@@ -399,14 +380,11 @@ void Save_Parachute(int Parachute_Selector){
  */
 void Save_NMEA(){
   EagleEyeData = SD.open("GPS_NMEA.txt", FILE_WRITE);
-  EagleEyeData.println();
-  EagleEyeData.print(data.Altitude);
+  EagleEyeData.print(data.Altitude,6);
   EagleEyeData.print(",");
-  EagleEyeData.print(data.Latitude);
+  EagleEyeData.print(data.Latitude,6);
   EagleEyeData.print(",");
-  EagleEyeData.print(data.Longitude);
-  EagleEyeData.print(",");
-  EagleEyeData.println(data.Time);
+  EagleEyeData.print(data.Longitude,6);
   EagleEyeData.close();
 }
 
@@ -418,53 +396,25 @@ void parachute(){
     saftey_counter++;
     if(saftey_counter >= 4){
       chute_enable = true;
-      I2C(false,DISPATCH_SIGNAL,1);
-      Serial.print("ENABLED: ");Serial.println(data.Altitude);
+      Send_I2C(1);
+      //Serial.print("ENABLED: ");Serial.println(data.Altitude);
       Save(0,1);
     }
     else if(data.Altitude <= PARACHUTE_ARM_HEIGHT){//Resets saftey counter to 0
       saftey_counter = 0;
-      Serial.println("Saftey reset to 0.");
+      //Serial.println("Saftey reset to 0.");
       Save(0,3);
     }
   }
   if(!chute_deploy && chute_enable && data.Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, LOW);//This is close the circuit providing power the chute deployment system
     chute_deploy = true;
-    I2C(true,DISPATCH_SIGNAL,2);
-    Serial.print("DEPLOY: ");Serial.print(data.Altitude);Serial.println(" meters");
+    Save(1,0);
+    Send_I2C(2);
+    //Serial.print("DEPLOY: ");Serial.print(data.Altitude);Serial.println(" meters");
     delay(2000);
     digitalWrite(RELAY1, HIGH);//Run the current for 2 seconds, then open the circuit and stop the current
     Save(0,2);
-  }
-}
-
-/*
- * Checks to see if touchdown has occured.
- */
-void TouchDown(){
-  Alts[20] = 0;
-  int i;
-  for(i=19;i>0;i--){
-    Alts[i] = Alts[i+1];
-  }
-  Alts[0] = data.Altitude;
-  boolean fullArr = true;
-  for(i=0;i<20;i++){
-    if(Alts[i]==0.0){
-      fullArr = false;
-    }
-  }
-  if(fullArr == true){
-    float sum;
-    for(i=0;i<20;i++){
-      sum += Alts[i];
-    }
-    float result = sum/20.0;
-    if(result>data.Altitude-5.0 && result<data.Altitude+5.0 && !Touchdown){
-      Touchdown = true;
-      I2C(true,DISPATCH_SIGNAL,7);
-    }
   }
 }
 
@@ -478,37 +428,7 @@ void BoardCommunication(boolean DROP_SIGNAL){
     Serial.println("Receiving Mode");
   }
   if(!DISPATCH_SIGNAL){
-    I2C(false,DISPATCH_SIGNAL,0);
-  }
-}
-
-/**
- * Handles Event Logging. Sends MEGA milestone updates/errors.
- *  LORA EVENTS
- *  0 - Chute Disabled
- *  1 - Chute Enabled
- *  2 - Chute Deployed
- *  3 - GPS Offline
- *  4 - Detached
- *  5 - Abort Detach
- *  6 - Radio Connection Lost
- *  7 - TouchDown
- *  8 - Switch Communication Direction
- *  9 - HABET DROP REQUEST
- */
-void I2C(boolean Local,boolean Send,int System_Event){
-  if(!Local){
-    if(Send){ //SEND TO MEGA
-      Send_I2C(System_Event);
-      Save(1,0);
-    }
-    else{ //RECIEVE FROM MEGA
-      Receive_I2C();
-    }
-  }
-  else{
-    x = System_Event;
-    Save(3,0);
+    Receive_I2C();
   }
 }
 
@@ -516,9 +436,8 @@ void I2C(boolean Local,boolean Send,int System_Event){
  * Sends byte over I2C Connection.
  */
 void Send_I2C(int System_Event){
-  x = System_Event;
   Wire.beginTransmission(1);
-  Wire.write(x);
+  Wire.write(System_Event);
   Wire.endTransmission();
 }
 
@@ -528,7 +447,7 @@ void Send_I2C(int System_Event){
 void Receive_I2C(){
   Wire.onReceive(receiveEvent);
   if(newData){
-    Save(2,0);
+    Save(1,0);
     newData = false;
   }
 }
@@ -539,10 +458,10 @@ void Receive_I2C(){
 void receiveEvent(){
   Serial.print("Event Received: ");
   x = Wire.read();    //Receive byte as an integer
-  Serial.println(x);
+  //Serial.println(x);
   if(x == 9){
     READY_FOR_DROP = true;
   }
-  Serial.println(x);  //Print the integer
   newData = true;
 }
+
