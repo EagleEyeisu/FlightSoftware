@@ -5,10 +5,11 @@
  *                 and becomes the crafts HQ if the mega were to fail.                                 *
  *                                                                                                     *
  *Date:      Version:        Developer:        Description:                                            *
- *2/9/17     1.0             Jared Danner      Initial Build.                                          *
- *2/27/17    1.1             Wesley Carelton   Fixed I2C Software                                      *
+ *02/9/17    1.0             Jared Danner      Initial Build.                                          *
+ *02/27/17   1.1             Wesley Carelton   Fixed I2C Software                                      *
  *                           Jared Danner      Added Parsing; Removed TinyGPS Function                 *
- *3/15/17    1.2             Jared Danner      Added Radio Capability; I2C fixes                       *
+ *03/15/17   1.2             Jared Danner      Added Radio Capability; I2C fixes                       *
+ *04/03/17   1.2a            Jared Danner      Housekeeping. Cleaned up/Restructured.
  *******************************************************************************************************/
 
 /****LIBRARIES****/
@@ -418,7 +419,7 @@ void parachute(){
     if(saftey_counter >= 4){
       chute_enable = true;
       I2C(false,DISPATCH_SIGNAL,1);
-      Serial.print("Chute enabled at ");Serial.println(data.Altitude);
+      Serial.print("ENABLED: ");Serial.println(data.Altitude);
       Save(0,1);
     }
     else if(data.Altitude <= PARACHUTE_ARM_HEIGHT){//Resets saftey counter to 0
@@ -431,7 +432,7 @@ void parachute(){
     digitalWrite(RELAY1, LOW);//This is close the circuit providing power the chute deployment system
     chute_deploy = true;
     I2C(true,DISPATCH_SIGNAL,2);
-    Serial.print("Chute deployed at: ");Serial.println(data.Altitude);
+    Serial.print("DEPLOY: ");Serial.print(data.Altitude);Serial.println(" meters");
     delay(2000);
     digitalWrite(RELAY1, HIGH);//Run the current for 2 seconds, then open the circuit and stop the current
     Save(0,2);
@@ -462,7 +463,7 @@ void TouchDown(){
     float result = sum/20.0;
     if(result>data.Altitude-5.0 && result<data.Altitude+5.0 && !Touchdown){
       Touchdown = true;
-      I2C(false,DISPATCH_SIGNAL,7);
+      I2C(true,DISPATCH_SIGNAL,7);
     }
   }
 }
@@ -538,6 +539,7 @@ void Receive_I2C(){
 void receiveEvent(){
   Serial.print("Event Received: ");
   x = Wire.read();    //Receive byte as an integer
+  Serial.println(x);
   if(x == 9){
     READY_FOR_DROP = true;
   }

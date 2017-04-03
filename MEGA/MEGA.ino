@@ -1,19 +1,20 @@
-/*******************************EAGLE EYE PROPRIETARY INFORMATION***************************************
- *                                                                                                     *
- *Purpose: Primary software for use on EAGLE EYE rotor craft. Controls and                             *
- *         maintains motor speed, deploys parachute, reads and records atmospheric                     *
- *         data, maintains I2C communication.                                                          *
- *                                                                                                     *
- *Date:      Version:        Developer:        Description:                                            *
- *6/25/16    1.0             James Wingerter   Initial Build.                                          *
- *7/10/16    1.1             James Wingerter   Added sd memory, parachute deployment                   *
- *9/14/16    1.2             James Wingerter/Jared Danner - Added saftey count to 4                    *
- *9/19/16    1.3             Jared Danner      Changed variables to print real numbers                 *
- *12/26/16   2.0             Jared Danner      Complete Rebuild. Includes motor, altitude calculation  *           
- *                                             update, I2C Communication with LoRa, Event Logging      *
- *2/27/17    2.1             Wesley Carelton   Fixed I2C Software & Event Logging.                     *
- *                           Jared Danner      2 way I2C.                                              *
- *3/30/17    2.2             James Wingerter   Added Thermocouple Temperature readings                 *
+/*******************************EAGLE EYE PROPRIETARY INFORMATION**************************************
+ *                                                                                                    *
+ *Purpose: Primary software for use on EAGLE EYE rotor craft. Controls and                            *
+ *         maintains motor speed, deploys parachute, reads and records atmospheric                    *
+ *         data, maintains I2C communication.                                                         *
+ *                                                                                                    *
+ *Date:      Version:        Developer:        Description:                                           *
+ *06/25/16   1.0            James Wingerter   Initial Build.                                          *
+ *07/10/16   1.1            James Wingerter   Added sd memory, parachute deployment                   *
+ *09/14/16   1.2            James Wingerter   Added saftey count to 4                                 *
+ *09/19/16   1.2a           James Wingerter   Changed variables to print real numbers                 *
+ *12/26/16   2.0            Jared Danner      Complete Rebuild. Includes motor, altitude calculation  *           
+ *                                            update, I2C Communication with LoRa, Event Logging      *
+ *02/27/17   2.0a           Wesley Carelton   Fixed I2C Software & Event Logging.                     *
+ *                          Jared Danner      2 way I2C.                                              *
+ *03/30/17   2.1            James Wingerter   Added Thermocouple Temperature readings                 *
+ *04/03/17   2.1a           Jared Danner      Housekeeping. Cleaned up/Restructured.                  *
  *******************************************************************************************************/
 
 /****LIBRARIES****/
@@ -84,7 +85,7 @@ int PARACHUTE_DEPLOY_HEIGHT = 6096;  //6096m == 20,000 feet
 boolean HABET_Connection = true;    //Status for Connection to HABET.
 boolean DISPATCH_SIGNAL = false;    //If false: reviece from LoRa. If true: send to LoRa.
 boolean newData = false;            //Status of event data.
-boolean DETACH_REQUEST = false; //If true, gets Go/NoGo from 9Dof.
+boolean DETACH_REQUEST = false;     //If true, gets Go/NoGo from 9Dof.
 int x;                              //Event Number.
 int Flip = 0;                       //Used to tell which program cycle the communication flip happened on.
 
@@ -98,7 +99,7 @@ sensors_vec_t   orientation;
 time_t current_time;              //Time of events.
 
 /*
- * Holds data values of Pressure, Altitude, and Temperature
+ * Holds data values for the flight.
  */
 struct flight_data{
   float Pressure;
@@ -121,7 +122,7 @@ void setup(){
   /****Initialize the Altimeter****/
   if(!bmp.begin()){ //BMP085 Error, check connection
     Serial.println("PROBLEM WITH PRESSURE SENSOR.");
-    //while(1);
+    while(1);
   }
   else{
     Serial.println("Pressure Sensor Online.");
@@ -137,7 +138,7 @@ void setup(){
   pinMode(SD_PIN, OUTPUT);
   if(!SD.begin(SD_PIN)){
     Serial.println("PROBLEM WITH SD CARD.");
-    //while(1);
+    while(1);
   }
   else{
     Serial.println("SD Card Online.");
@@ -173,12 +174,12 @@ void setup(){
  */
 void loop(void){
   //Serial.println(".");
-  getData();           //Updates altitude, pressure.
-  store_Data();  //Store Data to SD Card.
-  parachute();                                            //Handles all things parachute.
-  //motor_Function();                                     //Handles motor function.
-  BoardCommunication();                                   //Decides to Send or Recieve I2C information.
-  Orientation();
+  getData();                   //Updates entire struct.
+  Save(0,0,0);                 //Store Data to SD Card.
+  parachute();                 //Handles all things parachute.
+  //motor_Function();          //Handles motor function.
+  BoardCommunication();        //Decides to Send or Recieve I2C information.
+  Detach_Orientation();        //Handles detachment.
   DelayHandler();
 }
 
@@ -186,34 +187,25 @@ void loop(void){
  * Updates values to current conditions.
  */
 void getData(){
-  /****Get a new sensor event****/
   sensors_event_t event;
   bmp.getEvent(&event);
-  
+
+  data.Pressure = event.pressure;
   data.Temperature_ext = thermocouple.readCelsius();
+  data.Altitude = getAlt(event.pressure);
   data.Roll = getRoll();
   data.Pitch = getPitch();
   data.Yaw = getYaw();
   
-  /****Display atmospheric pressue in hPa****/
-  Serial.print("Pressure:    ");
-  Serial.print(event.pressure);
-  Serial.println(" hPa ");
-
-  /****Display Temperature in Celsius****/
-  if (isnan(data.Temperature_ext)){
-   Serial.println("0.00");
+  Serial.print("Pressure:    ");Serial.print(event.pressure);Serial.println(" hPa ");
+  Serial.print("Altitude:    ");Serial.print(data.Altitude);Serial.println(" m\n");
+  if(isnan(data.Temperature_ext)){
+   Serial.println("0.00;");
    }
    else{
-     Serial.print("C = ");Serial.println(data.Temperature_ext);
+     Serial.print("Temperature: ");Serial.print(data.Temperature_ext);Serial.println(" C ");
    }
-
-  /****Calculate Altitude from Pressure****/
-  data.Altitude = getAlt(event.pressure);
   AltPrevious = data.Altitude;
-  Serial.print("Altitude:    ");
-  Serial.print(data.Altitude);
-  Serial.println(" m\n");
 }
 
 /*
@@ -249,36 +241,154 @@ float getAlt(float inPressure){
 }
 
 /*
- * Used to store Data to SD card storage
+ * Stores Data from all sensors to SD Card.
+ * I2C_Selector:
+ * 0 - Does not involve I2C
+ * 1 - Sending Data.
+ * 2 - Recieved Data.
+ * 3 - Local Data.
+ * Parachute_Selector:
+ * 0 - Does not involve Parachute.
+ * 1 - Enable Chute.
+ * 2 - Deploy Chute.
+ * 3 - Reset saftey counter.
+ * 9DOF_Selector
+ * 0 - Does not involve Orientation.
+ * 1 - Default Orientation.
+ * 2 - Special Test Case(Deploy).
+ * 3 - Craft Deploy Orientation.
  */
-void store_Data(){
+void Save(int I2C_Selector, int Parachute_Selector,int DOF_Selector){
+  if(I2C_Selector != 0){
+    Save_I2C(I2C_Selector);
+  }
+  else if(Parachute_Selector != 0){
+    Save_Parachute(Parachute_Selector);
+  }
+  else if(DOF_Selector != 0){
+    Save_DOF(DOF_Selector);
+  }
+  else{
+    Save_Default();
+  }
+}
+
+/*
+ * Saves I2C Data.
+ */
+void Save_I2C(int I2C_Selector){
+  EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
+  if(I2C_Selector==1){  //SAVES SENDING DATA.
+    EagleEyeData.println();
+    EagleEyeData.print(x);
+    EagleEyeData.print(" <-Sent to LORA at ALT: ");
+    EagleEyeData.print(data.Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(current_time = now());
+  }
+  else if(I2C_Selector==2){//SAVES RECIEVED DATA.
+    EagleEyeData.println();
+    EagleEyeData.print(x);
+    EagleEyeData.print(" <-LORA Event Logged at ALT: ");
+    EagleEyeData.print(data.Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(current_time = now());
+  }
+  else{ //SAVES LOCAL DATA.
+    EagleEyeData.println();
+    EagleEyeData.print(x);
+    EagleEyeData.print(" <-Event Logged at ALT: ");
+    EagleEyeData.print(data.Altitude);
+    EagleEyeData.print(" at flight TIME: ");
+    EagleEyeData.println(current_time = now());
+  }
+  EagleEyeData.close();
+}
+
+/*
+ * Saves Parachute Data.
+ */
+void Save_Parachute(int Parachute_Selector){
+  EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+  if(Parachute_Selector==1){    //SAVES PARACHUTE ENABLEMENT.
+    EagleEyeData.println();
+    EagleEyeData.print("ENABLED: ");
+    EagleEyeData.print(data.Altitude); 
+    EagleEyeData.println(" meters");
+  }
+  else if(Parachute_Selector==2){ //SAVES PARACHUTE DEPLOYMENT.
+    EagleEyeData.println();
+    EagleEyeData.print("DEPLOYED: ");
+    EagleEyeData.print(data.Altitude);
+    EagleEyeData.println(" meters");
+  }
+  else{  //SAVES RESET OF SAFTEY COUNTRER.
+    EagleEyeData.println();
+    EagleEyeData.println("Saftey reset to 0.");  
+  }
+  EagleEyeData.close();
+}
+
+/*
+ * Saves 9DOF Orientation Data.
+ */
+void Save_DOF(int DOF_Selector){
+  if(DOF_Selector==1){
+    EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
+    EagleEyeData.println();
+    EagleEyeData.print(data.Altitude);
+    EagleEyeData.print(",");
+    EagleEyeData.print(data.Roll);
+    EagleEyeData.print(",");
+    EagleEyeData.print(data.Pitch);
+    EagleEyeData.print(",");
+    EagleEyeData.println(data.Yaw);
+    EagleEyeData.close();
+  }
+  else if(DOF_Selector==2){
+    EagleEyeData = SD.open("DescentData.txt", FILE_WRITE);
+    EagleEyeData.println();
+    EagleEyeData.print("Parachute deployed at: ");
+    EagleEyeData.print(data.Altitude);
+    EagleEyeData.print("m, Roll: ");
+    EagleEyeData.print(data.Roll);
+    EagleEyeData.print(" Pitch: ");
+    EagleEyeData.println(data.Pitch);
+    EagleEyeData.close();
+  }
+  else{
+    EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
+    EagleEyeData.println();
+    EagleEyeData.print("Parachute deployed at: ");
+    EagleEyeData.print(data.Altitude);
+    EagleEyeData.print("m, Roll: ");
+    EagleEyeData.print(data.Roll);
+    EagleEyeData.print(" Pitch: ");
+    EagleEyeData.println(data.Pitch);
+    EagleEyeData.close();
+  }
+}
+
+/*
+ * Saves struct data.
+ */
+void Save_Default(){
   EagleEyeData = SD.open("FltData.txt", FILE_WRITE); //USE THIS BUT EVENT LOG
+  EagleEyeData.println();
   EagleEyeData.print(current_time = now());
   EagleEyeData.print(",");
   EagleEyeData.print(data.Altitude);
-
   EagleEyeData.print(",");
   EagleEyeData.print(data.Pressure);
-
   EagleEyeData.print(",");
-  EagleEyeData.println(data.Temperature_ext);
-  EagleEyeData.close();
-
-
-  EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
+  EagleEyeData.print(data.Temperature_ext);
+  EagleEyeData.print(",");
   EagleEyeData.print(data.Roll);
   EagleEyeData.print(",");
-  EagleEyeData.println(data.Pitch);
-  EagleEyeData.close();
+  EagleEyeData.print(data.Pitch);
+  EagleEyeData.print(",");
   EagleEyeData.println(data.Yaw);
   EagleEyeData.close();
-  Serial.print("Roll: ");
-  Serial.print(data.Roll);
-  Serial.print(" Pitch: ");
-  Serial.print(data.Pitch);
-  Serial.print(" Yaw: ");
-  Serial.print(data.Yaw);
-  Serial.println();
 }
 
 /**
@@ -286,38 +396,37 @@ void store_Data(){
  */
 void parachute(){
   gyroParachute();
-  EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
   if(!chute_enable && data.Altitude >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
     saftey_counter++;
     if(saftey_counter >= 4){
       chute_enable = true;
-      Serial.print("ENABLED: ");
-      Serial.print(data.Altitude);
-      Serial.println(" meters ");
-      EagleEyeData.print("ENABLED: ");
-      EagleEyeData.print(data.Altitude); 
-      EagleEyeData.println(" meters ");
+      Serial.print("ENABLED: ");Serial.print(data.Altitude);Serial.println(" meters ");
+      Save(0,1,0);
     }
     else if(data.Altitude <= PARACHUTE_ARM_HEIGHT){  //Resets saftey counter to 0
       saftey_counter = 0;
       Serial.println("Saftey reset to 0.");
-      EagleEyeData.println("Saftey reset to 0."); 
+      Save(0,3,0);
     }
   }
   if(!chute_deploy && chute_enable && data.Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
-    digitalWrite(RELAY1, LOW);                //This is close the circuit providing power the chute deployment system
+    digitalWrite(RELAY1, LOW);//Closes circuit. Provides power to deployment.
     chute_deploy = true;
-    Serial.print("DEPLOYED: ");
-    Serial.print(data.Altitude);
-    Serial.println(" meters");
-    Save_Orientation();
-    delay(2000);                              //Run the current for 2 seconds, then open the circuit and stop the current
+    Serial.print("DEPLOYED: ");Serial.print(data.Altitude);Serial.println(" meters");
+    Save(0,0,3);
+    delay(2000);//Provides power for 2 seconds. Than cuts power and opens the circuit.
     digitalWrite(RELAY1, HIGH);
-    EagleEyeData.print("DEPLOYED: ");
-    EagleEyeData.print(data.Altitude);
-    EagleEyeData.println(" meters");
+    Save(0,2,0);
   }
-  EagleEyeData.close();
+}
+
+/*
+ * Experimental Deployment relying on orientation.
+ */
+void gyroParachute(){
+  if(parachuteRedZone() && chute_enable && (data.Altitude <= PARACHUTE_DEPLOY_HEIGHT)){
+    Save(0,0,2);
+  }
 }
 
 /*
@@ -325,17 +434,14 @@ void parachute(){
  */
 void BoardCommunication(){
   if(!DISPATCH_SIGNAL){
-    I2C(false,DISPATCH_SIGNAL,0);   //Checks for incoming communication from LoRA.
+    I2C(false,DISPATCH_SIGNAL,0);//Checks for incoming communication from LoRA.
   }
-  if(Flip == 1){ //Sends handshake to LoRa upon communication switch.
-    byte y = 13;
-    Wire.beginTransmission(2);
-    Wire.write(y);
-    Wire.endTransmission();
+  if(Flip == 1){//Sends handshake to LoRa upon communication switch.
+    Send_I2C(13);
     Flip++;
    }
    /*if(Serial.read() == 's' && DISPATCH_SIGNAL){
-      I2C(Altitude,false,true,0);                 //Used to send a test signal back to the LoRa.
+      I2C(false,true,0);//Used to send a test signal back to the LoRa.
    }*/
 }
 
@@ -347,41 +453,40 @@ void BoardCommunication(){
  *  13 - Communication Switch
  */
 void I2C(boolean Local,boolean Send,int System_Event){
-  EagleEyeData = SD.open("EventLog.txt", FILE_WRITE);
   if(!Local){
     if(Send){ //SEND TO LORA
-    byte x = System_Event;
-    Wire.beginTransmission(2);
-    Wire.write(x);
-    Wire.endTransmission();
-    Serial.println("sent");
-    EagleEyeData.print(System_Event);
-    EagleEyeData.print(" <-Sent to LORA at ALT: ");
-    EagleEyeData.print(data.Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(current_time = now());
+    Send_I2C(System_Event);
+    Save(1,0,0);
     }
     else{ //RECIEVE FROM LORA
-      Wire.onReceive(receiveEvent);
-      if(newData){
-        EagleEyeData.println();
-        EagleEyeData.print(x);
-        EagleEyeData.print(" <-LORA Event Logged at ALT: ");
-        EagleEyeData.print(data.Altitude);
-        EagleEyeData.print(" at flight TIME: ");
-        EagleEyeData.println(current_time = now());
-        newData = false;
-      }
+      Receive_I2C();
     }
   }
   else{
-    EagleEyeData.print(System_Event);
-    EagleEyeData.print(" <-Event Logged at ALT: ");
-    EagleEyeData.print(data.Altitude);
-    EagleEyeData.print(" at flight TIME: ");
-    EagleEyeData.println(current_time = now());
+    x = System_Event;
+    Save(3,0,0);
   }
-  EagleEyeData.close();
+}
+
+/*
+ * Sends byte over I2C Connection.
+ */
+void Send_I2C(int System_Event){
+  x = System_Event;
+  Wire.beginTransmission(1);
+  Wire.write(x);
+  Wire.endTransmission();
+}
+
+/*
+ * Recieves byte over I2C Connection.
+ */
+void Receive_I2C(){
+  Wire.onReceive(receiveEvent);
+  if(newData){
+    Save(2,0,0);
+    newData = false;
+  }
 }
 
 /**
@@ -405,49 +510,26 @@ void receiveEvent(){
 }
 
 /*
- * Processes data from the 9Dof board.
- */
-void Orientation(){
-  if(DETACH_REQUEST){       //LoRa's asked us for detach.
-    Detach_Orientation();   //Handles Detachment Orientation Process.
-  }
-  else{
-    Save_Orientation();     //Saves the Orientation.
-  }
-}
-
-/*
- * Saves Orientation Data to SD Card.
- */
-void Save_Orientation(){
-  EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
-  EagleEyeData.print(data.Altitude);
-  EagleEyeData.print(",");
-  EagleEyeData.print(data.Roll);
-  EagleEyeData.print(",");
-  EagleEyeData.println(data.Pitch);
-  EagleEyeData.close();
-}
-
-/*
  * Handles Detachment Orientation Process.
  */
 void Detach_Orientation(){
-  EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
-  if((parachuteRedZone && chute_enable) || (chute_enable && timeout >= 20)){ //CHANGE BACK TO 20!!
-    if(timeout >= 20){
-      EagleEyeData.println("Timed out. LAUNCH");
+  if(DETACH_REQUEST){
+    EagleEyeData = SD.open("9Dof.txt", FILE_WRITE);
+    if((parachuteRedZone && chute_enable) || (chute_enable && timeout >= 20)){ //CHANGE BACK TO 20!!
+      if(timeout >= 20){
+        EagleEyeData.println("Timed out. LAUNCH");
+      }
+      I2C(false,DISPATCH_SIGNAL,9);
+      DETACH_REQUEST = false;
+      timeout = 0;
+      EagleEyeData.print("Detach: ");
+      Save(0,0,1);
     }
-    I2C(false,DISPATCH_SIGNAL,9);
-    DETACH_REQUEST = false;
-    timeout = 0;
-    EagleEyeData.print("Detach: ");
+    else{
+      timeout++;
+    }
+    EagleEyeData.close();
   }
-  else{
-    timeout++;
-  }
-  Save_Orientation();
-  EagleEyeData.close();
 }
 
 /*
@@ -455,22 +537,6 @@ void Detach_Orientation(){
  */
 bool parachuteRedZone(){
   return !(data.Roll >= 135 && data.Pitch <= 45);
-}
-
-/*
- * Stuff I don't understand. I hope this is what you guys wanted.
- */
-void gyroParachute(){
-  if(parachuteRedZone() && chute_enable && (data.Altitude <= PARACHUTE_DEPLOY_HEIGHT)){
-    EagleEyeData = SD.open("DescentData.txt", FILE_WRITE);
-    EagleEyeData.print("Parachute deployed at: ");
-    EagleEyeData.print(data.Altitude);
-    EagleEyeData.print("m, Roll: ");
-    EagleEyeData.print(data.Roll);
-    EagleEyeData.print(" Pitch: ");
-    EagleEyeData.println(data.Pitch);
-    EagleEyeData.close();
-  }
 }
 
 /*
@@ -508,7 +574,7 @@ void DelayHandler(){
   if(cycle_Up || cycle_Down){       //While motor is spinning up.
     if(spin_Up || motor_Complete){  //If motor is at full power or the motor cycle is complete.
       delay(500);
-      Orientation();
+      Save(0,0,1);
       delay(500);
     }
     else{
@@ -517,7 +583,7 @@ void DelayHandler(){
   }
   else{
     delay(500);//Handles delay adjustments.
-    Orientation();
+    Save(0,0,1);
     delay(500);
   }
 }
