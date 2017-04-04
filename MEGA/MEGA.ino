@@ -130,7 +130,7 @@ void setup(){
   
   /****Parachute deployment Initialize****/
   //Set all the pins low so they do not toggle on Reset or Power on!
-  digitalWrite(RELAY1, HIGH);  //Sends a LOW signal
+  digitalWrite(RELAY1, LOW);  //Sends a LOW signal
   pinMode(RELAY1, OUTPUT);     //Sets RELAY1 as output pin.
   Serial.println("Parachute Online.");
   
@@ -197,13 +197,13 @@ void getData(){
   data.Pitch = getPitch();
   data.Yaw = getYaw();
   
-  //Serial.print("Pressure:    ");Serial.print(event.pressure);Serial.println(" hPa");
-  //Serial.print("Altitude:    ");Serial.print(data.Altitude);Serial.println(" m");
-  //Serial.print("Temperature: ");Serial.print(data.Temperature_ext);Serial.println(" C");
-  //Serial.print("Roll:  ");Serial.println(data.Roll);
-  //Serial.print("Pitch: ");Serial.println(data.Pitch);
-  //Serial.print("Yaw:   ");Serial.println(data.Yaw);
-  //Serial.println();
+  Serial.print("Pressure:    ");Serial.print(event.pressure);Serial.println(" hPa");
+  Serial.print("Altitude:    ");Serial.print(data.Altitude);Serial.println(" m");
+  Serial.print("Temperature: ");Serial.print(data.Temperature_ext);Serial.println(" C");
+  Serial.print("Roll:  ");Serial.println(data.Roll);
+  Serial.print("Pitch: ");Serial.println(data.Pitch);
+  Serial.print("Yaw:   ");Serial.println(data.Yaw);
+  Serial.println();
   AltPrevious = data.Altitude;
 }
 
@@ -409,12 +409,12 @@ void parachute(){
     }
   }
   if(!chute_deploy && chute_enable && data.Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
-    digitalWrite(RELAY1, LOW);//Closes circuit. Provides power to deployment.
+    digitalWrite(RELAY1, HIGH);//Closes circuit. Provides power to deployment.
     chute_deploy = true;
     Serial.print("DEPLOYED: ");Serial.print(data.Altitude);Serial.println(" meters");
     Save(0,0,3);
     delay(2000);//Provides power for 2 seconds. Than cuts power and opens the circuit.
-    digitalWrite(RELAY1, HIGH);
+    digitalWrite(RELAY1, LOW);
     Save(0,2,0);
   }
 }
