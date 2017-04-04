@@ -54,7 +54,6 @@ char NMEA_Sentence[150];
 boolean NMEAorDROP = true;
 
 /****GPS****/
-String NMEA;                       //NMEA that is read in from GPS.
 SoftwareSerial ss(11, 10);         //Directs the GPS to read from certain wire ports
 int GPS_Fix = 0;                   //Keeps track of how long the GPS fix has been lost. Used in event logging.
 
@@ -155,8 +154,9 @@ void loop() {
 void Radio_Comm(){
   if(NMEAorDROP){
     for(int i=0;i<150;i++){
-      NMEA_Sentence[i] = NMEA[i];//Converts the NMEA sentence to a character array.
+      Serial.print(NMEA_Sentence[i]);
     }
+    Serial.println();
     Send_Packet();
   }
   else if(READY_FOR_DROP){//Sends drop signal to HABET.
@@ -268,10 +268,13 @@ void Revert_Struct(){
  * Responsible for updating and recieving information directly from GPS.
  */
 void new_NMEA(){
-  NMEA = "                                                              ";
+  int i = 0;
+  for(i=0;i<150;i++){
+    NMEA_Sentence[i] = " ";
+  }
   unsigned long start = millis();
   char Arr[150];
-  int i = 0;
+  i = 0;
   int j = 0;
   int dollar_counter=0;
   do 
@@ -282,13 +285,12 @@ void new_NMEA(){
         dollar_counter++;
       }
       if(dollar_counter==1){
-        NMEA[j] = Arr[i];
+        NMEA_Sentence[j] = Arr[i];
         j++;
       }
      i++;
      }
    }while(millis() - start < 1000);
-   Serial.println(NMEA);
 }
 
 /*
@@ -314,12 +316,12 @@ float parse_NMEA(int objective){
   boolean Goal = false;      //True if the NMEA is reading the objective
   String two = "                   ";  //Temp string to capture wanted information
   for(i=0;i<120;i++){
-    if(NMEA[i]==','){//Checks for a comma in the NMEA
+    if(NMEA_Sentence[i]==','){//Checks for a comma in the NMEA
       Comma_Counter++;
     }
     else if(Comma_Counter==GoalNumber){//Once targetted comma is passed. Record until next comma
-      if(NMEA[i]!=','){
-        two[t] = NMEA[i];
+      if(NMEA_Sentence[i]!=','){
+        two[t] = NMEA_Sentence[i];
         t++;
       }
     }
