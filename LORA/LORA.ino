@@ -49,6 +49,9 @@ boolean READY_FOR_DROP = false;    //Gets turned true by Mega deciding to drop b
 boolean newData = false;           //Status of event data.
 int x;                             //Recieved event number.
 int Lost_Packet = 0;               //Keep track of how many packets are lost.
+char Detach[10] = "DROP";
+char NMEA_Sentence[150];
+boolean NMEAorDROP = true;
 
 /****GPS****/
 String NMEA;                       //NMEA that is read in from GPS.
@@ -150,22 +153,22 @@ void loop() {
  * Radio Communication into and out of the LoRa.
  */
 void Radio_Comm(){
-  if(false){
-    char NMEA_Sentence[150];
+  if(NMEAorDROP){
     for(int i=0;i<150;i++){
       NMEA_Sentence[i] = NMEA[i];//Converts the NMEA sentence to a character array.
     }
-    Send_Packet(NMEA_Sentence);
+    Send_Packet();
   }
   else if(READY_FOR_DROP){//Sends drop signal to HABET.
     READY_FOR_DROP = false;
-    char Detach[10] = "DROP";
-    Send_Packet(Detach);
+    
+    Send_Packet();
+    NMEAorDROP = true;
     HABET_Connection = false;
     x = 4;
     Save(1,0);
   }
-  else if(rf95.available()){//Checks for incoming message.
+  if(rf95.available()){//Checks for incoming message.
     Retrieve_Packet();
   }
 }
@@ -173,11 +176,19 @@ void Radio_Comm(){
 /*
  * Sends character array over the Feather 32u4.
  */
-void Send_Packet(char Packet[]){
-  Serial.print("Sending: ");Serial.println(Packet);
-  rf95.send(Packet, sizeof(Packet));
-  rf95.waitPacketSent();
-  Blink();
+void Send_Packet(){
+  if(NMEAorDROP){
+    Serial.print("Sending: ");Serial.println(NMEA_Sentence);
+    rf95.send(NMEA_Sentence, sizeof(NMEA_Sentence));
+    rf95.waitPacketSent();
+    Blink();
+  }
+  else{
+    Serial.print("Sending: ");Serial.println(Detach);
+    rf95.send(Detach, sizeof(Detach));
+    rf95.waitPacketSent();
+    Blink();
+  }
 }
 
 /*
@@ -192,6 +203,7 @@ void Retrieve_Packet(){
     Serial.print("Recieved: ");Serial.println((char*)buf);
     if(buf[0]=='R' && buf[5]=='?'){
       BoardCommunication(true);//Triggers the switch in I2C and asks mega for Go/NoGo on drop.
+      NMEAorDROP = false;
     }
   }
   else{
@@ -257,28 +269,26 @@ void Revert_Struct(){
  */
 void new_NMEA(){
   NMEA = "                                                              ";
+  unsigned long start = millis();
   char Arr[150];
   int i = 0;
   int j = 0;
-  int count = 0;
   int dollar_counter=0;
-  unsigned long start = millis();
   do 
   {
     while(ss.available()){
-     Arr[i] = ss.read();
-     if(Arr[i]=='$'){
-       dollar_counter++;
-     }
-     if(dollar_counter==1){
-       NMEA[j] = Arr[i];
-       j++;
-     }
+      Arr[i] = ss.read();
+      if(Arr[i]=='$'){
+        dollar_counter++;
+      }
+      if(dollar_counter==1){
+        NMEA[j] = Arr[i];
+        j++;
+      }
      i++;
-    }
-    count++;
-  }while(millis()-start<1000);
-  //Serial.println(NMEA);
+     }
+   }while(millis() - start < 1000);
+   Serial.println(NMEA);
 }
 
 /*
@@ -461,6 +471,9 @@ void receiveEvent(){
   //Serial.println(x);
   if(x == 9){
     READY_FOR_DROP = true;
+  }
+  else if(x==13){
+    Serial.println("Handshake Recieved");
   }
   newData = true;
 }

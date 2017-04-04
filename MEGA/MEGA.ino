@@ -78,8 +78,8 @@ File EagleEyeData;                  //File object used to store data during flig
 boolean chute_enable = false;        //Status of chute readiness.
 boolean chute_deploy = false;        //Status of chute deployment.
 int saftey_counter = 0;              //Saftey counter.
-int PARACHUTE_ARM_HEIGHT = 7620;     //9144 m == 25,000 feet
-int PARACHUTE_DEPLOY_HEIGHT = 6096;  //6096m == 20,000 feet
+int PARACHUTE_ARM_HEIGHT = 100;     //9144 m == 25,000 feet //7620
+int PARACHUTE_DEPLOY_HEIGHT = 50;  //6096m == 20,000 feet
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true;    //Status for Connection to HABET.
@@ -173,7 +173,7 @@ void setup(){
  * MAIN PROGRAM CODE.
  */
 void loop(void){
-  //Serial.println(".");
+  Serial.println(".");
   getData();                   //Updates entire struct.
   Save(0,0,0);                 //Store Data to SD Card.
   parachute();                 //Handles all things parachute.
@@ -197,13 +197,13 @@ void getData(){
   data.Pitch = getPitch();
   data.Yaw = getYaw();
   
-  Serial.print("Pressure:    ");Serial.print(event.pressure);Serial.println(" hPa");
-  Serial.print("Altitude:    ");Serial.print(data.Altitude);Serial.println(" m");
-  Serial.print("Temperature: ");Serial.print(data.Temperature_ext);Serial.println(" C");
-  Serial.print("Roll:  ");Serial.println(data.Roll);
-  Serial.print("Pitch: ");Serial.println(data.Pitch);
-  Serial.print("Yaw:   ");Serial.println(data.Yaw);
-  Serial.println();
+  //Serial.print("Pressure:    ");Serial.print(event.pressure);Serial.println(" hPa");
+  //Serial.print("Altitude:    ");Serial.print(data.Altitude);Serial.println(" m");
+  //Serial.print("Temperature: ");Serial.print(data.Temperature_ext);Serial.println(" C");
+  //Serial.print("Roll:  ");Serial.println(data.Roll);
+  //Serial.print("Pitch: ");Serial.println(data.Pitch);
+  //Serial.print("Yaw:   ");Serial.println(data.Yaw);
+  //Serial.println();
   AltPrevious = data.Altitude;
 }
 
@@ -517,8 +517,10 @@ void Detach_Orientation(){
     if((parachuteRedZone && chute_enable) || (chute_enable && timeout >= 20)){ //CHANGE BACK TO 20!!
       if(timeout >= 20){
         EagleEyeData.println("Timed out. LAUNCH");
+        Serial.println("Timed out. LAUNCH");
       }
-      I2C(false,DISPATCH_SIGNAL,9);
+      Send_I2C(9);
+      Serial.println("Sent Detach Signal");
       DETACH_REQUEST = false;
       timeout = 0;
       EagleEyeData.print("Detach: ");
