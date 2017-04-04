@@ -39,6 +39,16 @@ void setup(){
 
 
   /****Initialization of SD Card reader****/
+  pinMode(SD_PIN, OUTPUT);
+  if(!SD.begin(SD_PIN)){
+    Serial.println("PROBLEM WITH SD CARD.");
+    //while(1);
+  }
+  else{
+    Serial.println("SD Card Online.");
+  }
+  
+  /****Initialization of Radio****/
   pinMode(LED, OUTPUT);     
   pinMode(RFM95_RST, OUTPUT);
   digitalWrite(RFM95_RST, HIGH);
@@ -81,7 +91,7 @@ void loop() {
  */
 void Start_Drop(){
   if(Serial.read() == 'BEGIN_DROP'){
-    char Packet[10] = "READY?";
+    char Packet[10] = "START";
     Serial.print("Sending: "); Serial.println(Packet);
     rf95.send(Packet, sizeof(Packet));
     rf95.waitPacketSent();
@@ -179,16 +189,16 @@ float parse_NMEA(int objective){
  * 1 - Stores Full NMEA Sentence.
  * 2 - Stores Parsed Data.
  */
-void Save(int Data_Selector){
-  if(Data_Selector == 1){
+void Save(int Selector){
+  if(Selector == 1){
     GSData = SD.open("NMEA.txt", FILE_WRITE);
     for(int i=0;i<150;i++){
-       GSData.print(NMEA_Sentence[i]);
+       //GSData.print(NMEA_Sentence[i]);
     }
     GSData.println();
     GSData.close();
   }
-  else if(Data_Selector == 2){
+  else if(Selector == 2){
     GSData = SD.open("Parsed_Data.txt", FILE_WRITE);
     GSData.print(data.Altitude);
     GSData.print(",");
