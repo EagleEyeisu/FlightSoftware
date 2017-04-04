@@ -154,9 +154,9 @@ void loop() {
 void Radio_Comm(){
   if(NMEAorDROP){
     for(int i=0;i<150;i++){
-      Serial.print(NMEA_Sentence[i]);
+      //Serial.print(NMEA_Sentence[i]);
     }
-    Serial.println();
+    //Serial.println();
     Send_Packet();
   }
   else if(READY_FOR_DROP){//Sends drop signal to HABET.
@@ -210,7 +210,7 @@ void Retrieve_Packet(){
     Lost_Packet++;
     Serial.println("Packet Lost");
   }
-  Serial.println();
+  //Serial.println();
 }
 
 /*
@@ -270,7 +270,8 @@ void Revert_Struct(){
 void new_NMEA(){
   int i = 0;
   for(i=0;i<150;i++){
-    NMEA_Sentence[i] = " ";
+    NMEA_Sentence[i] = ' ';
+    NMEA_Sentence[i] = ' ';
   }
   unsigned long start = millis();
   char Arr[150];
