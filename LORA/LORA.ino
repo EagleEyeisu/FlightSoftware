@@ -10,6 +10,7 @@
  *                           Jared Danner      Added Parsing; Removed TinyGPS Function                 *
  *03/15/17   1.2             Jared Danner      Added Radio Capability; I2C fixes                       *
  *04/03/17   1.2a            Jared Danner      Housekeeping. Cleaned up/Restructured.
+ *4/04/17    1.2b            James Wingerter   Fixed deployment with new relay/OR/NOT config           *
  *******************************************************************************************************/
 
 /****LIBRARIES****/
@@ -74,7 +75,7 @@ void setup(){
 
   /****Initialization of Parachute System****/
   //Set all the pins low so they do not toggle on Reset or Power on!
-  digitalWrite(RELAY1, HIGH);  //Sends a LOW signal
+  digitalWrite(RELAY1, LOW);  //Sends a LOW signal
   pinMode(RELAY1, OUTPUT);     //Sets RELAY1 as output pin.
   Serial.println("Parachute Online.");
 
@@ -420,13 +421,13 @@ void parachute(){
     }
   }
   if(!chute_deploy && chute_enable && data.Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
-    digitalWrite(RELAY1, LOW);//This is close the circuit providing power the chute deployment system
+    digitalWrite(RELAY1, HIGH);//This is close the circuit providing power the chute deployment system
     chute_deploy = true;
     Save(1,0);
     Send_I2C(2);
     //Serial.print("DEPLOY: ");Serial.print(data.Altitude);Serial.println(" meters");
     delay(2000);
-    digitalWrite(RELAY1, HIGH);//Run the current for 2 seconds, then open the circuit and stop the current
+    digitalWrite(RELAY1, LOW);//Run the current for 2 seconds, then open the circuit and stop the current
     Save(0,2);
   }
 }
