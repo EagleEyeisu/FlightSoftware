@@ -1,5 +1,6 @@
 /****LIBRARIES****/
 #include <SD.h>
+#include <Servo.h>
 #include <RH_RF95.h>
 
 /****COMMUNICATION****/
