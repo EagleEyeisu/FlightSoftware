@@ -1,14 +1,22 @@
+/*******************************EAGLE EYE PROPRIETARY INFORMATION***************************************
+ *                                                                                                     *
+ * Purpose: Primary software for use of the Ground Station for the Eagle Eye Project. Monitors         *
+ *                  live data feed from the LORA on the Eagle Eye Craft. Has the ability to begin      *
+ *                  the Detach process.                                                                *
+ *                                                                                                     *
+ *Date:      Version:        Developer:        Description:                                            *       
+ *04/04/17   1.0             Jared Danner      Initial Build.                                          *
+ *******************************************************************************************************/
 
 /****LIBRARIES****/
 #include <SD.h>
-#include <SPI.h>
 #include <RH_RF95.h>
 
-/****SC CARD****/
-File GSData;    //File object used to store data during flight.
+/****SD CARD****/
+File GSData;
 #define SD_PIN 10
 
-/***COMMUNICATION****/
+/****COMMUNICATION****/
 #define RFM95_CS 8
 #define RFM95_RST 4
 #define RFM95_INT 7
@@ -16,6 +24,7 @@ File GSData;    //File object used to store data during flight.
 #define RF95_FREQ 433.0
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 boolean Drop_Sequence = false;
+boolean HandShake1 = false;
 
 /****GPS****/
 char NMEA_Sentence[150];
@@ -35,8 +44,6 @@ struct GPS_data data;
 void setup(){
   delay(1000);
   Serial.begin(4800);
-  while(!Serial);
-
 
   /****Initialization of SD Card reader****/
   pinMode(SD_PIN, OUTPUT);
@@ -79,7 +86,7 @@ void setup(){
 /*
  * MAIN PROGRAM CODE.
  */
-void loop() {
+void loop(){
   Serial.println(".");
   Receive();
   Start_Drop();
@@ -87,29 +94,15 @@ void loop() {
 }
 
 /*
- * Sends the "ARE YOU READY TO DROP" signal which starts the detach sequence.
- */
-void Start_Drop(){
-  if(Serial.read() == 'BEGIN_DROP'){
-    char Packet[10] = "START";
-    Serial.print("Sending: "); Serial.println(Packet);
-    rf95.send(Packet, sizeof(Packet));
-    rf95.waitPacketSent();
-    Drop_Sequence = true;
-  }
-}
-
-/*
- * Receives Data from craft.
+ * Receives Data.
  */
 void Receive(){
   if(rf95.available()){
     uint8_t buf[150];
     uint8_t len = sizeof(buf);
     if(rf95.recv(buf, &len)){ //Processes Response
-      if(buf[1]=='G' && buf[2]=='P' && buf[3]=='G' && buf[4]=='G' && !Drop_Sequence){
-        //Serial.print("Recieved: ");
-        //Serial.println((char*)buf);
+      if(buf[1]=='G' && buf[2]=='P' && buf[3]=='G' && buf[4]=='G' && !Drop_Sequence){//RECEIVES GPGGA Sentence
+        //Serial.print("Recieved: ");Serial.println((char*)buf);
         for(int i=0;i<150;i++){
           NMEA_Sentence[i] = buf[i];
         }
@@ -117,14 +110,46 @@ void Receive(){
         Data_Parsing();
         Save(2);
       }
-      else if(buf[0]=='D' && buf[2]=='T' && buf[5]=='H' && buf[7]=='D' && Drop_Sequence){
-        Serial.println("DETACH CONFIRMED");
+      else if(buf[0]=='H' && buf[1]=='S' && buf[2]=='1' && Drop_Sequence){//RECEIVES "HS1" (Confirmation that the HABET LORA received the drop signal)
+        HandShake1 = false;
+        Serial.println("DROP PROCESS ON HABET STARTED");
+      }
+      else if(buf[0]=='E' && buf[1]=='N' && buf[2]=='D' && Drop_Sequence){//RECEIVES "END" (Lora on HABET has dropped the craft)
         Drop_Sequence = false;
+        Send_Handshake = true;
+        Serial.println("DETACH CONFIRMED");
       }
     }
-    else{
-      Serial.println("Receive failed");
+  }
+}
+
+/*
+ * Stores Data from NMEA.
+ * Data_Selector
+ * 1 - Stores Full NMEA Sentence.
+ * 2 - Stores Parsed Data.
+ */
+void Save(int Selector){
+  if(Selector == 1){
+    GSData = SD.open("NMEA.txt", FILE_WRITE);
+    for(int i=0;i<150;i++){
+       //GSData.print(NMEA_Sentence[i]);
     }
+    GSData.println();
+    GSData.close();
+  }
+  else if(Selector == 2){
+    GSData = SD.open("Parsed_Data.txt", FILE_WRITE);
+    GSData.print(data.Altitude);
+    GSData.print(",");
+    GSData.print(data.Latitude);
+    GSData.print(",");
+    GSData.print(data.Longitude);
+    GSData.print(",");
+    GSData.print(data.Fix);
+    GSData.print(",");
+    GSData.print(data.Sat_Count);
+    GSData.close();
   }
 }
 
@@ -143,7 +168,7 @@ void Data_Parsing(){
  * Parsing method for GPS.
  */
 float parse_NMEA(int objective){
-  int GoalNumber;//Target comma number
+  int GoalNumber;  //Target comma number
   if(objective==0){//ALTITUDE
     GoalNumber = 9;//9th comma
   }
@@ -184,31 +209,24 @@ float parse_NMEA(int objective){
 }
 
 /*
- * Stores Data from NMEA.
- * Data_Selector
- * 1 - Stores Full NMEA Sentence.
- * 2 - Stores Parsed Data.
+ * Sends the "ARE YOU READY TO DROP" signal which starts the detach sequence.
  */
-void Save(int Selector){
-  if(Selector == 1){
-    GSData = SD.open("NMEA.txt", FILE_WRITE);
-    for(int i=0;i<150;i++){
-       //GSData.print(NMEA_Sentence[i]);
-    }
-    GSData.println();
-    GSData.close();
+void Start_Drop(){
+  if(Serial.read() == 'BEGIN_DROP'){
+    HandShake1==true;
   }
-  else if(Selector == 2){
-    GSData = SD.open("Parsed_Data.txt", FILE_WRITE);
-    GSData.print(data.Altitude);
-    GSData.print(",");
-    GSData.print(data.Latitude);
-    GSData.print(",");
-    GSData.print(data.Longitude);
-    GSData.print(",");
-    GSData.print(data.Fix);
-    GSData.print(",");
-    GSData.print(data.Sat_Count);
-    GSData.close();
+  if(HandShake1){
+    char Packet[10] = "START";
+    Serial.print("Sending: "); Serial.println(Packet);
+    rf95.send(Packet, sizeof(Packet));
+    rf95.waitPacketSent();
+    Drop_Sequence = true;
+  }
+  else if(Send_Handshake){
+    char Packet[15] = "COMPLETE";
+    Serial.print("Sending: "); Serial.println(Packet);
+    rf95.send(Packet, sizeof(Packet));
+    rf95.waitPacketSent();
+    Send_Handshake = false;
   }
 }
