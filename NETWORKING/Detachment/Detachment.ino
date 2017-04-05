@@ -14,11 +14,15 @@ boolean HandShake_GND = false;
 boolean Complete_Drop = false;
 
 /****SERVO****/
-//WESLEY PUT STUFF HERE
+Servo detach_servo;
 
 void setup() {
   delay(3000);
   Serial.begin(4800);
+
+  /****Initialization of Servo****/
+  detach_servo.attach(3);
+  detach_servo.write(0);
   
   /****Initialization of Radio****/
   pinMode(LED, OUTPUT);     
@@ -84,9 +88,7 @@ void Receive(){
  * Releases the EagleEyeCraft from HABET.
  */
 void Release(){
-  //PUT YOUR STUFF HERE WESLEY i already included the library, just put in the setup stuff and what it takes it spin the servo.
-
-  
+  detach_servo.write(90);  
 }
 
 /*
