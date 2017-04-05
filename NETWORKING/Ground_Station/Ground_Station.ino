@@ -5,7 +5,8 @@
  *                  the Detach process.                                                                *
  *                                                                                                     *
  *Date:      Version:        Developer:        Description:                                            *       
- *04/04/17   1.0             Jared Danner      Initial Build.                                          *
+ *04/04/17   1.0             Jared Danner      Initial Build.                                          
+ *04/05/17   1.0a            James Wingerter   Bug fixes, added global Send_Handshake boolean          *
  *******************************************************************************************************/
 
 /****LIBRARIES****/
@@ -25,6 +26,7 @@ File GSData;
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 boolean Drop_Sequence = false;
 boolean HandShake1 = false;
+boolean Send_Handshake;
 
 /****GPS****/
 char NMEA_Sentence[150];
