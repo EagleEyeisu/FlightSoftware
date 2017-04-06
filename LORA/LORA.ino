@@ -201,8 +201,9 @@ void Retrieve_Packet(){
   if(rf95.recv(buf, &len)){//Retrieves the incoming message
     Blink();
     Blink();
-    Serial.print("Recieved: ");Serial.println((char*)buf);
+
     if(buf[0]=='R' && buf[5]=='?'){
+      Serial.print("Recieved: ");Serial.println((char*)buf);
       BoardCommunication(true);//Triggers the switch in I2C and asks mega for Go/NoGo on drop.
       NMEAorDROP = false;
     }

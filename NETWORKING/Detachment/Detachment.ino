@@ -1,6 +1,5 @@
 /****LIBRARIES****/
 #include <SD.h>
-#include <Servo.h>
 #include <RH_RF95.h>
 #include <Servo.h>
 
@@ -58,9 +57,9 @@ void setup() {
  * MAIN PROGRAM CODE.
  */
 void loop() {
+  delay(1000);
   Receive();
   Start_Drop();
-  delay(1000);
 }
 
 /*
@@ -90,7 +89,10 @@ void Receive(){
  * Releases the EagleEyeCraft from HABET.
  */
 void Release(){
-  detach_servo.write(180);  
+  for(int i=90;i<180;i++){
+    detach_servo.write(i);
+    delay(10);  
+  }
 }
 
 /*

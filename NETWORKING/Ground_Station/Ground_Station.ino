@@ -11,6 +11,7 @@
 
 /****LIBRARIES****/
 #include <SD.h>
+#include <SPI.h>
 #include <RH_RF95.h>
 
 /****SD CARD****/
@@ -25,7 +26,6 @@ File GSData;
 #define RF95_FREQ 433.0
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 boolean Drop_Sequence = false;
-boolean HandShake1 = false;
 boolean Send_Handshake = false;
 
 /****GPS****/
@@ -113,7 +113,6 @@ void Receive(){
         Save(2);
       }
       else if(buf[0]=='H' && buf[1]=='S' && buf[2]=='1' && Drop_Sequence){//RECEIVES "HS1" (Confirmation that the HABET LORA received the drop signal)
-        HandShake1 = false;
         Serial.println("DROP PROCESS ON HABET STARTED");
       }
       else if(buf[0]=='E' && buf[1]=='N' && buf[2]=='D' && Drop_Sequence){//RECEIVES "END" (Lora on HABET has dropped the craft)
@@ -220,10 +219,7 @@ float parse_NMEA(int objective){
  * Sends the "ARE YOU READY TO DROP" signal which starts the detach sequence.
  */
 void Start_Drop(){
-  if(Serial.read() == 'BEGIN_DROP'){
-    HandShake1==true;
-  }
-  if(HandShake1){
+  if(Serial.read()=='a'){
     char Packet[10] = "START";
     Serial.print("Sending: "); Serial.println(Packet);
     rf95.send(Packet, sizeof(Packet));
