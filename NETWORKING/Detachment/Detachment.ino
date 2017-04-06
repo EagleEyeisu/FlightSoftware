@@ -13,6 +13,7 @@ RH_RF95 rf95(RFM95_CS, RFM95_INT);
 boolean Drop_Sequence = false;
 boolean HandShake_GND = false;
 boolean Complete_Drop = false;
+boolean Sent = false;
 
 /****SERVO****/
 Servo detach_servo;
@@ -89,9 +90,8 @@ void Receive(){
  * Releases the EagleEyeCraft from HABET.
  */
 void Release(){
-  for(int i=90;i<180;i++){
     detach_servo.write(i);
-    delay(10);  
+    delay(10);
   }
 }
 
@@ -99,7 +99,8 @@ void Release(){
  * Handles sending.
  */
 void Start_Drop(){
-  if(Drop_Sequence){
+  if(Drop_Sequence && !Sent){
+    Sent = true;
     char Packet[10] = "READY?";
     Serial.print("Sending: "); Serial.println(Packet);
     rf95.send(Packet, sizeof(Packet));
