@@ -2,6 +2,7 @@
 #include <SD.h>
 #include <Servo.h>
 #include <RH_RF95.h>
+#include <Servo.h>
 
 /****COMMUNICATION****/
 #define RFM95_CS 8
