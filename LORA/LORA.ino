@@ -162,9 +162,8 @@ void Radio_Comm(){
     Send_Packet();
   }
   else if(READY_FOR_DROP){//Sends drop signal to HABET.
-    READY_FOR_DROP = false;
-    
     Send_Packet();
+    READY_FOR_DROP = false;
     NMEAorDROP = true;
     HABET_Connection = false;
     x = 4;
@@ -185,7 +184,7 @@ void Send_Packet(){
     rf95.waitPacketSent();
     Blink();
   }
-  else{
+  else if(READ_FOR_DROP){
     Serial.print("Sending: ");Serial.println(Detach);
     rf95.send(Detach, sizeof(Detach));
     rf95.waitPacketSent();

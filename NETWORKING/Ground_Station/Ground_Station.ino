@@ -25,6 +25,7 @@ File GSData;
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 boolean Drop_Sequence = false;
 boolean HandShake1 = false;
+boolean Send_Handshake = false;
 
 /****GPS****/
 char NMEA_Sentence[150];
@@ -162,6 +163,12 @@ void Data_Parsing(){
   data.Longitude = parse_NMEA(2);
   data.Fix = parse_NMEA(3);
   data.Sat_Count = parse_NMEA(4);
+
+  Serial.print("Altitude: ");Serial.print(data.Altitude);Serial.println(" m");
+  Serial.print("Latitude: ");Serial.println(data.Latitude);
+  Serial.print("Latitude: ");Serial.println(data.Longitude);
+  Serial.print("Fix: ");Serial.println(data.Fix);
+  Serial.print("Sat: ");Serial.println(data.Sat_Count);
 }
 
 /*
