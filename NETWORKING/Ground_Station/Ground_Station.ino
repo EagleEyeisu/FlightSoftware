@@ -5,7 +5,8 @@
  *                  the Detach process.                                                                *
  *                                                                                                     *
  *Date:      Version:        Developer:        Description:                                            *       
- *04/04/17   1.0             Jared Danner      Initial Build.                                          *
+ *04/04/17   1.0             Jared Danner      Initial Build.                                          
+ *04/05/17   1.0a            James Wingerter   Bug fixes, added global Send_Handshake boolean          *
  *******************************************************************************************************/
 
 /****LIBRARIES****/

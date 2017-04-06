@@ -23,8 +23,8 @@ void setup() {
   Serial.begin(4800);
 
   /****Initialization of Servo****/
-  detach_servo.attach(3);
-  detach_servo.write(0);
+  detach_servo.attach(11);
+  detach_servo.write(90);
   
   /****Initialization of Radio****/
   pinMode(LED, OUTPUT);     
@@ -90,7 +90,7 @@ void Receive(){
  * Releases the EagleEyeCraft from HABET.
  */
 void Release(){
-  detach_servo.write(90);  
+  detach_servo.write(180);  
 }
 
 /*
