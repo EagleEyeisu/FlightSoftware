@@ -21,6 +21,7 @@
  
 /****FLIGHT******/
 float AltPrevious = 0.0, LatPrevious = 0.0, LonPrevious = 0.0;  //These are the previous values(the last known GPS Data), they are used incase the GPS Signal stops.
+int Program_Cycle = 0;
 
 //CONSTANT VARIABLES
 /****PINS********/
@@ -125,7 +126,6 @@ void setup(){
   Serial.println();
 }
 
-
 /**
  * Handles Event Logging. Sends MEGA milestone updates/errors.
  *  LORA EVENTS
@@ -140,7 +140,8 @@ void setup(){
  *  8 - Switch Communication Direction
  *  9 - HABET DROP REQUEST
  */
-void loop() {
+void loop(){
+  Program_Cycle++;
   Serial.println(".");
   GPSData();                    //Updates altitude using GPS.
   Save(0,0);                    //Stores Data to SD Card.
@@ -178,7 +179,7 @@ void Radio_Comm(){
  * Sends character array over the Feather 32u4.
  */
 void Send_Packet(){
-  if(NMEAorDROP){
+  if(NMEAorDROP && (Program_Cycle%15==0)){
     Serial.print("Sending: ");Serial.println(NMEA_Sentence);
     rf95.send(NMEA_Sentence, sizeof(NMEA_Sentence));
     rf95.waitPacketSent();
