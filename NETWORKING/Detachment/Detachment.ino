@@ -61,6 +61,7 @@ void loop() {
   delay(1000);
   Receive();
   Start_Drop();
+  Serial.println(".");
 }
 
 /*
@@ -72,14 +73,17 @@ void Receive(){
     uint8_t len = sizeof(buf);
     if(rf95.recv(buf, &len)){ //Processes Response
       if(buf[0]=='S' && buf[1]=='T' && buf[2]=='A' && buf[4]=='T'){
+        Serial.println("Receved start");
         Drop_Sequence = true;
       }
       else if(buf[0]=='D' && buf[1]=='R' && buf[2]=='O' && buf[3]=='P'){
+        Serial.println("Receved drop");
         Release();
         Drop_Sequence = false;
         Complete_Drop = true;
       }
       else if(buf[0]=='C' && buf[2]=='M' && buf[4]=='L' && buf[7]=='E'){
+        Serial.println("Receved complete");
         Complete_Drop = false;
       }
     }
@@ -94,6 +98,7 @@ void Release(){
     detach_servo.write(i);
     delay(10);
   }
+  Serial.println("Detached");
 }
 
 /*
