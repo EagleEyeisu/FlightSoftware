@@ -90,6 +90,7 @@ void Receive(){
  * Releases the EagleEyeCraft from HABET.
  */
 void Release(){
+  for(int i=90;i<160;i++){
     detach_servo.write(i);
     delay(10);
   }
