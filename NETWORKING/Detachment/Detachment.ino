@@ -5,7 +5,7 @@
 
 /****SYSTEM INFO****/
 int Program_Cycle = 0;
-boolean FirstState = false;
+boolean FirstStage = false;
 boolean SecondStage = false;
 boolean ThirdStage = false;
 
@@ -17,7 +17,6 @@ boolean ThirdStage = false;
 #define RF95_FREQ 433.0
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
 boolean HandShakeGND = false;
-int Program_Cycle = 0;
 
 /****SERVO****/
 Servo detach_servo;
@@ -76,7 +75,7 @@ void Receive(){
     uint8_t buf[20];
     uint8_t len = sizeof(buf);
     if(rf95.recv(buf, &len)){ //Processes Response
-      if(buf[0]=='S' && buf[1]=='T' && buf[2]=='A' && buf[3]=='R' buf[4]=='T'){
+      if(buf[0]=='S' && buf[1]=='T' && buf[2]=='A' && buf[3]=='R' && buf[4]=='T'){
         Serial.println("Received: START from GND");
         HandShakeGND = true;
         Program_Cycle = 0;
@@ -130,6 +129,7 @@ void Start_Drop(){
     }
   }
   else if(FirstStage){//SENDS SIGNAL TO EE TO ASK FOR DROP
+    Program_Cycle++;
     if(Program_Cycle%5==0){
       char Packet[10] = "STARTEE";
       Serial.print("Sending: "); Serial.println(Packet);
@@ -145,6 +145,7 @@ void Start_Drop(){
       ThirdStage=true;
       delay(5000);
       Program_Cycle = 0;
+      Release();
     }
     if(Program_Cycle%5==0){
       char Packet[10] = "OKEE";

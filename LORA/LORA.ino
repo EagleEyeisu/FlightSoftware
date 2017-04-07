@@ -53,6 +53,7 @@ int x;                             //Recieved event number.
 int Lost_Packet = 0;               //Keep track of how many packets are lost.
 char NMEA_Sentence[150];
 boolean NMEAorDROP = true;
+boolean HandShakeHABET = false;
 
 /****GPS****/
 SoftwareSerial ss(11, 10);         //Directs the GPS to read from certain wire ports
@@ -156,6 +157,9 @@ void Radio_Comm(){
   if(NMEAorDROP){
     Send_Packet();
   }
+  else if(HandShakeHABET){
+    Send_Packet();
+  }
   else if(READY_FOR_DROP){//Sends drop signal to HABET.
     Send_Packet();
     READY_FOR_DROP = false;
@@ -173,21 +177,21 @@ void Radio_Comm(){
  * Sends character array over the Feather 32u4.
  */
 void Send_Packet(){
-  if(NMEAorDROP && (Program_Cycle%15==0)){
+  if(NMEAorDROP && (Program_Cycle%12==0)){
     Serial.print("Sending: ");Serial.println(NMEA_Sentence);
     rf95.send(NMEA_Sentence, sizeof(NMEA_Sentence));
     rf95.waitPacketSent();
     Blink();
   }
   else if(HandShakeHABET){
-    Program_Cycle++;
     if(Program_Cycle>25){
       HandShakeHABET = false;
       Serial.println("HandShakeHABET Timed Out.");
       delay(5000);
+      Serial.println("Asking Mega for Drop");
       BoardCommunication(true);//Triggers the switch in I2C and asks mega for Go/NoGo on drop.
     }
-    if(Program_Cycle%5==0){
+    if(Program_Cycle%4==0){
       char Detach[10] = "OKHABET";
       Serial.print("Sending: ");Serial.println(Detach);
       rf95.send(Detach, sizeof(Detach));
@@ -195,7 +199,7 @@ void Send_Packet(){
       Blink();
     }
   }
-  else if(READ_FOR_DROP){
+  else if(READY_FOR_DROP){
     char Detach[10] = "DROP";
     Serial.print("Sending: ");Serial.println(Detach);
     rf95.send(Detach, sizeof(Detach));
@@ -218,6 +222,11 @@ void Retrieve_Packet(){
       NMEAorDROP = false;
       HandShakeHABET = true;
       Program_Cycle = 0;
+    }
+    else if(buf[0]=='O' && buf[1]=='K' && buf[2]=='E' && buf[3]=='E'){
+      Serial.println("Drop Handhsake Recieved.");
+      NMEAorDROP = true;
+      READY_FOR_DROP = false;
     }
   }
   else{
