@@ -80,8 +80,8 @@ boolean chute_enable = false;        //Status of chute readiness.
 boolean chute_deploy = false;        //Status of chute deployment.
 boolean chute_deploy_gyro = false;
 int saftey_counter = 0;              //Saftey counter.
-float PARACHUTE_ARM_HEIGHT = 9144; //249.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
-float PARACHUTE_DEPLOY_HEIGHT = 6096; //247.0;  //6096m == 20,000 feet  **must be less that arm height**
+float PARACHUTE_ARM_HEIGHT = 144; //249.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
+float PARACHUTE_DEPLOY_HEIGHT = 96; //247.0;  //6096m == 20,000 feet  **must be less that arm height**
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true;    //Status for Connection to HABET.
@@ -494,7 +494,7 @@ void Send_I2C(int System_Event){
  * Recieves byte over I2C Connection.
  */
 void Receive_I2C(){
-//  Wire.onReceive(receiveEvent);
+  Wire.onReceive(receiveEvent);
   if(newData){
     Save(2,0,0);
     newData = false;
