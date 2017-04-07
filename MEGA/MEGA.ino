@@ -15,7 +15,8 @@
  *                          Jared Danner      2 way I2C.                                              *
  *03/30/17   2.1            James Wingerter   Added Thermocouple Temperature readings                 *
  *04/03/17   2.1a           Jared Danner      Housekeeping. Cleaned up/Restructured.                  *
- *******************************************************************************************************/
+ *04/06/17   2.1b           James Wingerter   Included gyro_Parachute in loop                         *
+ ******************************************************************************************************/
 
 /****LIBRARIES****/
 #include <TimeLib.h>
@@ -78,8 +79,8 @@ File EagleEyeData;                  //File object used to store data during flig
 boolean chute_enable = false;        //Status of chute readiness.
 boolean chute_deploy = false;        //Status of chute deployment.
 int saftey_counter = 0;              //Saftey counter.
-float PARACHUTE_ARM_HEIGHT = 249.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
-float PARACHUTE_DEPLOY_HEIGHT = 247.0;  //6096m == 20,000 feet  **must be less that arm height**
+float PARACHUTE_ARM_HEIGHT = 7620; //249.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
+float PARACHUTE_DEPLOY_HEIGHT = 6096; //247.0;  //6096m == 20,000 feet  **must be less that arm height**
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true;    //Status for Connection to HABET.
