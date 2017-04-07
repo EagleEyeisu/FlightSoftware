@@ -35,8 +35,8 @@ File EagleEyeData;    //File object used to store data during flight.
 boolean chute_enable = false;       //Status of chute readiness.
 boolean chute_deploy = false;       //Status of chute deployment.
 int saftey_counter = 0;             //Saftey counter.
-int PARACHUTE_ARM_HEIGHT = 7620;    //9144 m == 25,000 feet
-int PARACHUTE_DEPLOY_HEIGHT = 6096; //6096m == 20,000 feet
+int PARACHUTE_ARM_HEIGHT = 120;    //9144 m == 25,000 feet
+int PARACHUTE_DEPLOY_HEIGHT = 96; //6096m == 20,000 feet
 
 /****COMMUNICATION****/
 #define RFM95_CS 8
@@ -144,7 +144,7 @@ void loop(){
   Program_Cycle++;
   Serial.println(".");
   GPSData();                    //Updates altitude using GPS.
-  Save(0,0);                    //Stores Data to SD Card.
+//  Save(0,0);                    //Stores Data to SD Card.
   Radio_Comm();                 //Radio communication.
   parachute();                  //Parachute functions such as enable, deploy, and saftey checks.
   BoardCommunication(false);    //Decides to Send or Recieve I2C information.
