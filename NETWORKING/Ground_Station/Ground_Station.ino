@@ -44,11 +44,11 @@ struct GPS_data{
   float Sat_Count;
 };
 struct GPS_data data;
-  
+
 void setup(){
   delay(1000);
   Serial.begin(4800);
-
+  
   /****Initialization of SD Card reader****/
   pinMode(SD_PIN, OUTPUT);
   if(!SD.begin(SD_PIN)){
@@ -117,6 +117,7 @@ void Start_Drop(){
   else if(Send_Handshake){//SENDS FINAL HANDSHAKE TO HABET.
     Program_Cycle++;
     if(Program_Cycle>25){
+      Send_Handshake = false;
       Serial.println("Final Handshake Timeout.");
     }
     if(Program_Cycle%5==0){//Sends only 1 out of every 5 seconds.
