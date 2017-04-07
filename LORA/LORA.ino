@@ -51,7 +51,6 @@ boolean READY_FOR_DROP = false;    //Gets turned true by Mega deciding to drop b
 boolean newData = false;           //Status of event data.
 int x;                             //Recieved event number.
 int Lost_Packet = 0;               //Keep track of how many packets are lost.
-char Detach[10] = "DROP";
 char NMEA_Sentence[150];
 boolean NMEAorDROP = true;
 
@@ -155,10 +154,6 @@ void loop(){
  */
 void Radio_Comm(){
   if(NMEAorDROP){
-    for(int i=0;i<150;i++){
-      //Serial.print(NMEA_Sentence[i]);
-    }
-    //Serial.println();
     Send_Packet();
   }
   else if(READY_FOR_DROP){//Sends drop signal to HABET.
@@ -184,7 +179,24 @@ void Send_Packet(){
     rf95.waitPacketSent();
     Blink();
   }
+  else if(HandShakeHABET){
+    Program_Cycle++;
+    if(Program_Cycle>25){
+      HandShakeHABET = false;
+      Serial.println("HandShakeHABET Timed Out.");
+      delay(5000);
+      BoardCommunication(true);//Triggers the switch in I2C and asks mega for Go/NoGo on drop.
+    }
+    if(Program_Cycle%5==0){
+      char Detach[10] = "OKHABET";
+      Serial.print("Sending: ");Serial.println(Detach);
+      rf95.send(Detach, sizeof(Detach));
+      rf95.waitPacketSent();
+      Blink();
+    }
+  }
   else if(READ_FOR_DROP){
+    char Detach[10] = "DROP";
     Serial.print("Sending: ");Serial.println(Detach);
     rf95.send(Detach, sizeof(Detach));
     rf95.waitPacketSent();
@@ -201,11 +213,11 @@ void Retrieve_Packet(){
   if(rf95.recv(buf, &len)){//Retrieves the incoming message
     Blink();
     Blink();
-
-    if(buf[0]=='R' && buf[5]=='?'){
-      Serial.print("Recieved: ");Serial.println((char*)buf);
-      BoardCommunication(true);//Triggers the switch in I2C and asks mega for Go/NoGo on drop.
+    if(buf[0]=='S' && buf[1]=='T' && buf[2]=='A' && buf[3]=='R' && buf[4]=='T' && buf[5]=='E' && buf[6]=='E'){
+      Serial.println("Received 'STARTEE' from Habet.");
       NMEAorDROP = false;
+      HandShakeHABET = true;
+      Program_Cycle = 0;
     }
   }
   else{

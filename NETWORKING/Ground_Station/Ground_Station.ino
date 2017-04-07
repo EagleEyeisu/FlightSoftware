@@ -11,8 +11,10 @@
 
 /****LIBRARIES****/
 #include <SD.h>
-#include <SPI.h>
 #include <RH_RF95.h>
+
+/****SYSTEM INFO****/
+int Program_Cycle = 0;
 
 /****SD CARD****/
 File GSData;
@@ -25,7 +27,7 @@ File GSData;
 #define LED 13
 #define RF95_FREQ 433.0
 RH_RF95 rf95(RFM95_CS, RFM95_INT);
-boolean Drop_Sequence = false;
+boolean Drop_Signal = false;
 boolean Send_Handshake = false;
 
 /****GPS****/
@@ -42,7 +44,7 @@ struct GPS_data{
   float Sat_Count;
 };
 struct GPS_data data;
-
+  
 void setup(){
   delay(1000);
   Serial.begin(4800);
@@ -96,6 +98,38 @@ void loop(){
 }
 
 /*
+ * Sends the "ARE YOU READY TO DROP" signal which starts the detach sequence.
+ */
+void Start_Drop(){
+  if(Serial.read()=='a'){
+    Drop_Signal = true;
+    Program_Cycle = 0;
+  }
+  if(Drop_Signal){//SENDS STARTING SIGNAL TO HABET.
+    Program_Cycle++;
+    if(Program_Cycle%5==0){//Sends only 1 out of every 5 seconds.
+      char Packet[10] = "START";
+      Serial.print("Sending: "); Serial.println(Packet);
+      rf95.send(Packet, sizeof(Packet));
+      rf95.waitPacketSent();
+    }
+  }
+  else if(Send_Handshake){//SENDS FINAL HANDSHAKE TO HABET.
+    Program_Cycle++;
+    if(Program_Cycle>25){
+      Serial.println("Final Handshake Timeout.");
+    }
+    if(Program_Cycle%5==0){//Sends only 1 out of every 5 seconds.
+      char Packet[15] = "ENDHABET";
+      Serial.print("Sending: "); Serial.println(Packet);
+      rf95.send(Packet, sizeof(Packet));
+      rf95.waitPacketSent();
+      Send_Handshake = false;
+    }
+  }
+}
+
+/*
  * Receives Data.
  */
 void Receive(){
@@ -103,8 +137,7 @@ void Receive(){
     uint8_t buf[150];
     uint8_t len = sizeof(buf);
     if(rf95.recv(buf, &len)){ //Processes Response
-      if(buf[1]=='G' && buf[2]=='P' && buf[3]=='G' && buf[4]=='G' && !Drop_Sequence){//RECEIVES GPGGA Sentence
-        //Serial.print("Recieved: ");Serial.println((char*)buf);
+      if(buf[1]=='G' && buf[2]=='P' && buf[3]=='G' && buf[4]=='G'){//RECEIVES GPGGA Sentence
         for(int i=0;i<150;i++){
           NMEA_Sentence[i] = buf[i];
         }
@@ -112,13 +145,26 @@ void Receive(){
         Data_Parsing();
         Save(2);
       }
-      else if(buf[0]=='H' && buf[1]=='S' && buf[2]=='1' && Drop_Sequence){//RECEIVES "HS1" (Confirmation that the HABET LORA received the drop signal)
-        Serial.println("DROP PROCESS ON HABET STARTED");
+      else if(buf[0]=='O' && buf[1]=='K' && buf[2]=='G' && buf[3]=='N' && buf[4]=='D'){//First handshake complete. Beyond point of no return.
+        Serial.println("'OKGND' Received from HABET.");
+        Drop_Signal = false;
       }
-      else if(buf[0]=='E' && buf[1]=='N' && buf[2]=='D' && Drop_Sequence){//RECEIVES "END" (Lora on HABET has dropped the craft)
-        Drop_Sequence = false;
+      else if(buf[0]=='F' && buf[1]=='I' && buf[2]=='N' && buf[3]=='A' && buf[4]=='L'){//Ending Transmission from habet. Our signal that the drop cycle is complete.
         Send_Handshake = true;
-        Serial.println("DETACH CONFIRMED");
+        Program_Cycle = 0;
+        Serial.println("DETACH CONFIRMED. Fallling... Standby for Altitude changes.");
+      }
+      else if(buf[0]=='S' && buf[1]=='T' && buf[2]=='A' && buf[3]=='R' && buf[4]=='T' && buf[5]=='E' && buf[6]=='E'){//Receives 'STARTEE'. Milestone marker.
+        Serial.println("HABET HAS SENT 'STARTEE'.");
+      }
+      else if(buf[0]=='O' && buf[1]=='K' && buf[2]=='H' && buf[3]=='A' && buf[4]=='B' && buf[5]=='E' && buf[6]=='T'){//Receives 'OKHABET'. Milestone marker.
+        Serial.println("EE HAS REPLIED TO HABET WITH 'OKHABET'.");
+      }
+      else if(buf[0]=='D' && buf[1]=='R' && buf[2]=='O' && buf[3]=='P'){
+        Serial.println("EE HAS SENT DROP SIGNAL 'DROP' TO HABET.");
+      }
+      else if(buf[0]=='O' && buf[1]=='K' && buf[2]=='E' && buf[3]=='E'){
+        Serial.println("HABET HAS REPLIED TO EE 'OKEE'.");
       }
     }
   }
@@ -213,24 +259,4 @@ float parse_NMEA(int objective){
   }
   float temp = atof(arr);//Converts char array to float
   return temp;
-}
-
-/*
- * Sends the "ARE YOU READY TO DROP" signal which starts the detach sequence.
- */
-void Start_Drop(){
-  if(Serial.read()=='a'){
-    char Packet[10] = "START";
-    Serial.print("Sending: "); Serial.println(Packet);
-    rf95.send(Packet, sizeof(Packet));
-    rf95.waitPacketSent();
-    Drop_Sequence = true;
-  }
-  else if(Send_Handshake){
-    char Packet[15] = "COMPLETE";
-    Serial.print("Sending: "); Serial.println(Packet);
-    rf95.send(Packet, sizeof(Packet));
-    rf95.waitPacketSent();
-    Send_Handshake = false;
-  }
 }
