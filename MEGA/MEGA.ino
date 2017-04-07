@@ -78,8 +78,9 @@ File EagleEyeData;                  //File object used to store data during flig
 /****PARACHUTE****/
 boolean chute_enable = false;        //Status of chute readiness.
 boolean chute_deploy = false;        //Status of chute deployment.
+boolean chute_deploy_gyro = false;
 int saftey_counter = 0;              //Saftey counter.
-float PARACHUTE_ARM_HEIGHT = 7620; //249.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
+float PARACHUTE_ARM_HEIGHT = 9144; //249.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
 float PARACHUTE_DEPLOY_HEIGHT = 6096; //247.0;  //6096m == 20,000 feet  **must be less that arm height**
 
 /****COMMUNICATION****/
@@ -356,6 +357,15 @@ void Save_DOF(int DOF_Selector){
     EagleEyeData.print(" Pitch: ");
     EagleEyeData.println(data.Pitch);
     EagleEyeData.close();
+    chute_deploy_gyro = true;
+    Serial.print("************************************\n");
+    Serial.print("Parachute deployed at: ");
+    Serial.println(data.Altitude);
+    Serial.print("m, Roll: ");
+    Serial.println(data.Roll);
+    Serial.print(" Pitch: ");
+    Serial.println(data.Pitch);
+    Serial.print("************************************\n\n");
   }
   else{
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
@@ -426,7 +436,7 @@ void parachute(){
  * Experimental Deployment relying on orientation.
  */
 void gyroParachute(){
-  if(parachuteRedZone() && chute_enable && (data.Altitude <= PARACHUTE_DEPLOY_HEIGHT)){
+  if(parachuteRedZone() && chute_enable && !chute_deploy_gyro && (data.Altitude <= PARACHUTE_DEPLOY_HEIGHT)){
     Save(0,0,2);
   }
 }
@@ -484,7 +494,7 @@ void Send_I2C(int System_Event){
  * Recieves byte over I2C Connection.
  */
 void Receive_I2C(){
-  Wire.onReceive(receiveEvent);
+//  Wire.onReceive(receiveEvent);
   if(newData){
     Save(2,0,0);
     newData = false;
