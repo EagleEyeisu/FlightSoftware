@@ -15,7 +15,8 @@
  *                          Jared Danner      2 way I2C.                                              *
  *03/30/17   2.1            James Wingerter   Added Thermocouple Temperature readings                 *
  *04/03/17   2.1a           Jared Danner      Housekeeping. Cleaned up/Restructured.                  *
- *******************************************************************************************************/
+ *04/06/17   2.1b           James Wingerter   Included gyro_Parachute in loop                         *
+ ******************************************************************************************************/
 
 /****LIBRARIES****/
 #include <TimeLib.h>
@@ -77,9 +78,10 @@ File EagleEyeData;                  //File object used to store data during flig
 /****PARACHUTE****/
 boolean chute_enable = false;        //Status of chute readiness.
 boolean chute_deploy = false;        //Status of chute deployment.
+boolean chute_deploy_gyro = false;
 int saftey_counter = 0;              //Saftey counter.
-float PARACHUTE_ARM_HEIGHT = 7620.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
-float PARACHUTE_DEPLOY_HEIGHT = 6096.0;  //6096m == 20,000 feet  **must be less that arm height**
+float PARACHUTE_ARM_HEIGHT = 9144; //249.0;     //9144 m == 30,000 feet //7620 m == 25000 feet
+float PARACHUTE_DEPLOY_HEIGHT = 6096; //247.0;  //6096m == 20,000 feet  **must be less that arm height**
 
 /****COMMUNICATION****/
 boolean HABET_Connection = true;    //Status for Connection to HABET.
@@ -130,7 +132,7 @@ void setup(){
   
   /****Parachute deployment Initialize****/
   //Set all the pins low so they do not toggle on Reset or Power on!
-  digitalWrite(RELAY1, LOW);  //Sends a LOW signal
+  digitalWrite(RELAY1, HIGH);  //Sends a LOW signal
   pinMode(RELAY1, OUTPUT);     //Sets RELAY1 as output pin.
   Serial.println("Parachute Online.");
   
@@ -181,6 +183,7 @@ void loop(void){
   BoardCommunication();        //Decides to Send or Recieve I2C information.
   Detach_Orientation();        //Handles detachment.
   DelayHandler();
+  gyroParachute();
 }
 
 /*
@@ -354,6 +357,15 @@ void Save_DOF(int DOF_Selector){
     EagleEyeData.print(" Pitch: ");
     EagleEyeData.println(data.Pitch);
     EagleEyeData.close();
+    chute_deploy_gyro = true;
+    Serial.print("************************************\n");
+    Serial.print("Parachute deployed at: ");
+    Serial.println(data.Altitude);
+    Serial.print("m, Roll: ");
+    Serial.println(data.Roll);
+    Serial.print(" Pitch: ");
+    Serial.println(data.Pitch);
+    Serial.print("************************************\n\n");
   }
   else{
     EagleEyeData = SD.open("FltData.txt", FILE_WRITE);
@@ -398,7 +410,8 @@ void parachute(){
   if(!chute_enable && data.Altitude >= PARACHUTE_ARM_HEIGHT){    //9144 m == 30,000 feet
     saftey_counter++;
     if(saftey_counter >= 4){
-      chute_enable = true;
+      chute_enable = true;  ;
+      
       Serial.print("ENABLED: ");Serial.print(data.Altitude);Serial.println(" meters ");
       Save(0,1,0);
     }
@@ -409,12 +422,12 @@ void parachute(){
     }
   }
   if(!chute_deploy && chute_enable && data.Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
-    digitalWrite(RELAY1, HIGH);//Closes circuit. Provides power to deployment.
+    digitalWrite(RELAY1, LOW);//Closes circuit. Provides power to deployment.
     chute_deploy = true;
     Serial.print("DEPLOYED: ");Serial.print(data.Altitude);Serial.println(" meters");
     Save(0,0,3);
     delay(2000);//Provides power for 2 seconds. Than cuts power and opens the circuit.
-    digitalWrite(RELAY1, LOW);
+    digitalWrite(RELAY1, HIGH);
     Save(0,2,0);
   }
 }
@@ -423,7 +436,7 @@ void parachute(){
  * Experimental Deployment relying on orientation.
  */
 void gyroParachute(){
-  if(parachuteRedZone() && chute_enable && (data.Altitude <= PARACHUTE_DEPLOY_HEIGHT)){
+  if(parachuteRedZone() && chute_enable && !chute_deploy_gyro && (data.Altitude <= PARACHUTE_DEPLOY_HEIGHT)){
     Save(0,0,2);
   }
 }
@@ -481,7 +494,7 @@ void Send_I2C(int System_Event){
  * Recieves byte over I2C Connection.
  */
 void Receive_I2C(){
-  Wire.onReceive(receiveEvent);
+//  Wire.onReceive(receiveEvent);
   if(newData){
     Save(2,0,0);
     newData = false;
@@ -532,6 +545,8 @@ void Detach_Orientation(){
     EagleEyeData.close();
   }
 }
+
+
 
 /*
  * Checks to see if the craft is in the right orientation to deploy.
