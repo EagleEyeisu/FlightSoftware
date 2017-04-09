@@ -54,6 +54,7 @@ int Lost_Packet = 0;               //Keep track of how many packets are lost.
 char NMEA_Sentence[150];
 boolean NMEAorDROP = true;
 boolean HandShakeHABET = false;
+boolean HandShake = false;
 
 /****GPS****/
 SoftwareSerial ss(11, 10);         //Directs the GPS to read from certain wire ports
@@ -223,7 +224,8 @@ void Retrieve_Packet(){
       HandShakeHABET = true;
       Program_Cycle = 0;
     }
-    else if(buf[0]=='O' && buf[1]=='K' && buf[2]=='E' && buf[3]=='E'){
+    else if(buf[0]=='O' && buf[1]=='K' && buf[2]=='E' && buf[3]=='E' && !HandShake){
+      HandShake = true;
       Serial.println("Drop Handhsake Recieved.");
       NMEAorDROP = true;
       READY_FOR_DROP = false;
