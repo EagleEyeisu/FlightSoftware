@@ -140,7 +140,7 @@ void Start_Drop(){
   else if(SecondStage){//SENDS HANDSHAKE WITH EE TO END DROP SIGNAL
     Program_Cycle++;
     if(Program_Cycle>25){
-      SecondStage==false;
+      SecondStage = false;
       Serial.println("Handshake with EE Timed Out.");
       ThirdStage=true;
       delay(5000);

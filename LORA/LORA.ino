@@ -434,23 +434,23 @@ void parachute(){
       chute_enable = true;
       Send_I2C(1);
       //Serial.print("ENABLED: ");Serial.println(data.Altitude);
-      //Save(0,1);
+      Save(0,1);
     }
     else if(data.Altitude <= PARACHUTE_ARM_HEIGHT){//Resets saftey counter to 0
       saftey_counter = 0;
       //Serial.println("Saftey reset to 0.");
-      //Save(0,3);
+      Save(0,3);
     }
   }
   if(!chute_deploy && chute_enable && data.Altitude <= PARACHUTE_DEPLOY_HEIGHT){  //6096m == 20,000 feet
     digitalWrite(RELAY1, HIGH);//This is close the circuit providing power the chute deployment system
     chute_deploy = true;
-    //Save(1,0);
+    Save(1,0);
     Send_I2C(2);
     //Serial.print("DEPLOY: ");Serial.print(data.Altitude);Serial.println(" meters");
     delay(2000);
     digitalWrite(RELAY1, LOW);//Run the current for 2 seconds, then open the circuit and stop the current
-    //Save(0,2);
+    Save(0,2);
   }
 }
 
@@ -483,7 +483,7 @@ void Send_I2C(int System_Event){
 void Receive_I2C(){
   Wire.onReceive(receiveEvent);
   if(newData){
-    //Save(1,0);
+    Save(1,0);
     newData = false;
   }
 }
@@ -503,4 +503,5 @@ void receiveEvent(){
   }
   newData = true;
 }
+
 
