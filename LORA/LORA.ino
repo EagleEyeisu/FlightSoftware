@@ -22,6 +22,9 @@
 /****FLIGHT******/
 float AltPrevious = 0.0, LatPrevious = 0.0, LonPrevious = 0.0;  //These are the previous values(the last known GPS Data), they are used incase the GPS Signal stops.
 int Program_Cycle = 0;
+boolean HABET_Connection = true;   //Status for Connection to HABET.
+boolean DISPATCH_SIGNAL = true;    //Status to send to mega.
+boolean READY_FOR_DROP = false;    //Gets turned true by Mega deciding to drop based on the 9Dof.
 
 //CONSTANT VARIABLES
 /****PINS********/
@@ -34,9 +37,10 @@ File EagleEyeData;    //File object used to store data during flight.
 /****PARACHUTE***/
 boolean chute_enable = false;       //Status of chute readiness.
 boolean chute_deploy = false;       //Status of chute deployment.
+boolean EMERGENCY_DEPLOY = false;
 int saftey_counter = 0;             //Saftey counter.
-int PARACHUTE_ARM_HEIGHT = 120;    //9144 m == 25,000 feet
-int PARACHUTE_DEPLOY_HEIGHT = 96; //6096m == 20,000 feet
+int PARACHUTE_ARM_HEIGHT = 120;     //9144 m == 25,000 feet
+int PARACHUTE_DEPLOY_HEIGHT = 96;   //6096m == 20,000 feet
 
 /****COMMUNICATION****/
 #define RFM95_CS 8
@@ -45,9 +49,6 @@ int PARACHUTE_DEPLOY_HEIGHT = 96; //6096m == 20,000 feet
 #define LED 13                     //Used to flash LED upon message transmission.
 #define RF95_FREQ 433.0            //Frequency used on LoRa. UPDATE WITH HABET
 RH_RF95 rf95(8, 7);                //Directs the radio to read from a certain port.
-boolean HABET_Connection = true;   //Status for Connection to HABET.
-boolean DISPATCH_SIGNAL = true;    //Status to send to mega.
-boolean READY_FOR_DROP = false;    //Gets turned true by Mega deciding to drop based on the 9Dof.
 boolean newData = false;           //Status of event data.
 int x;                             //Recieved event number.
 int Lost_Packet = 0;               //Keep track of how many packets are lost.
@@ -185,10 +186,9 @@ void Send_Packet(){
     Blink();
   }
   else if(HandShakeHABET){
-    if(Program_Cycle>25){
+    if(Program_Cycle>20){
       HandShakeHABET = false;
       Serial.println("HandShakeHABET Timed Out.");
-      delay(5000);
       Serial.println("Asking Mega for Drop");
       BoardCommunication(true);//Triggers the switch in I2C and asks mega for Go/NoGo on drop.
     }
@@ -206,6 +206,19 @@ void Send_Packet(){
     rf95.send(Detach, sizeof(Detach));
     rf95.waitPacketSent();
     Blink();
+  }
+  else if(EMERGENCY_DEPLOY){
+    if(Program_Cycle>25){
+      EMERGENCY_DEPLOY = false;
+      Serial.println("HandShake with GND Timed Out.");
+    }
+    if(Program_Cycle%5==0){
+      char Detach[10] = "EDP";
+      Serial.print("Sending: ");Serial.println(Detach);
+      rf95.send(Detach, sizeof(Detach));
+      rf95.waitPacketSent();
+      Blink();
+    }
   }
 }
 
@@ -230,12 +243,17 @@ void Retrieve_Packet(){
       NMEAorDROP = true;
       READY_FOR_DROP = false;
     }
+    else if(buf[0]=='E' && buf[1]=='D' && buf[2]=='E' && buf[3]=='P' && buf[4]=='L' && buf[5]=='O' && buf[6]=='Y'){
+      Serial.println("EMERGENCY DEPLOY RECEIVED. DEPLOYING NOW.");
+      digitalWrite(RELAY1, HIGH);//This is close the circuit providing power the chute deployment system
+      chute_deploy = true;
+      Save(1,0);
+      Send_I2C(2);
+      delay(2000);
+      digitalWrite(RELAY1, LOW);//Run the current for 2 seconds, then open the circuit and stop the current
+      Save(0,2);
+    }
   }
-  else{
-    Lost_Packet++;
-    Serial.println("Packet Lost");
-  }
-  //Serial.println();
 }
 
 /*

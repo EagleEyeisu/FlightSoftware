@@ -8,6 +8,8 @@ int Program_Cycle = 0;
 boolean FirstStage = false;
 boolean SecondStage = false;
 boolean ThirdStage = false;
+boolean FourthStage = false;
+boolean EMERGENCY_DROP = false;
 
 /****COMMUNICATION****/
 #define RFM95_CS 8
@@ -81,17 +83,23 @@ void Receive(){
         Program_Cycle = 0;
       }
       else if(buf[0]=='O' && buf[1]=='K' && buf[2]=='H' && buf[3]=='A' && buf[4]=='B' && buf[5]=='E' && buf[6]=='T'){
-        FirstStage=false;
+        FirstStage = false;
         Serial.println("Received HandShake from EE");
       }
       else if(buf[0]=='D' && buf[1]=='R' && buf[2]=='O' && buf[3]=='P'){
         Serial.println("Received DROP FROM EE");
-        SecondStage=true;
+        SecondStage = true;
         Program_Cycle = 0;
       }
       else if(buf[0]=='E' && buf[1]=='N' && buf[2]=='D' && buf[3]=='H' && buf[4]=='A' && buf[5]=='B' && buf[6]=='E' && buf[7]=='T'){
-        ThirdStage=false;
+        ThirdStage = false;
         Serial.println("FINAL Handshake Received from GND.");
+      }
+      else if(buf[0]=='E' && buf[1]=='D' && buf[2]=='R' && buf[3]=='O' && buf[4]=='P'){
+        EMERGENCY_DROP = true;
+        Serial.println("EMERGENCY DROP SIGNAL RECEIVED.");
+        Release();
+        Program_Cycle = 0;
       }
     }
   }
@@ -116,9 +124,8 @@ void Start_Drop(){
     Program_Cycle++;
     if(Program_Cycle>25){
       HandShakeGND = false;
-      Serial.println("HandShake 1 with GND Timed out.");
+      Serial.println("HandShake with GND Timed out.");
       FirstStage = true;
-      delay(5000);
       Program_Cycle = 0;
     }
     if(Program_Cycle%5==0){//Sends every 5 seconds.
@@ -128,7 +135,7 @@ void Start_Drop(){
       rf95.waitPacketSent();
     }
   }
-  else if(FirstStage){//SENDS SIGNAL TO EE TO ASK FOR DROP
+  else if(FirstStage){//SENDS SIGNAL TO EE TO ASK FOR DROP.
     Program_Cycle++;
     if(Program_Cycle%5==0){
       char Packet[10] = "STARTEE";
@@ -137,13 +144,12 @@ void Start_Drop(){
       rf95.waitPacketSent();
     }
   }
-  else if(SecondStage){//SENDS HANDSHAKE WITH EE TO END DROP SIGNAL
+  else if(SecondStage){//SENDS HANDSHAKE WITH EE TO END DROP SIGNAL.
     Program_Cycle++;
     if(Program_Cycle>25){
       SecondStage = false;
       Serial.println("Handshake with EE Timed Out.");
-      ThirdStage=true;
-      delay(5000);
+      ThirdStage = true;
       Program_Cycle = 0;
       Release();
     }
@@ -154,9 +160,23 @@ void Start_Drop(){
       rf95.waitPacketSent();
     }
   }
-  else if(ThirdStage){
+  else if(ThirdStage){//SENDS FINAL HANDSHAKE TO GND THAT DROP SEQUENCE IS OVER.
+    Program_Cycle++;
     if(Program_Cycle%5==0){
-      char Packet[10] = "OKEE";
+      char Packet[10] = "FINAL";
+      Serial.print("Sending: "); Serial.println(Packet);
+      rf95.send(Packet, sizeof(Packet));
+      rf95.waitPacketSent();
+    }
+  }
+  if(EMERGENCY_DROP){//EMERGENCY DROP SIGNAL
+    Program_Cycle++;
+    if(Program_Cycle>25){
+      EMERGENCY_DROP = false;
+      Serial.println("Handshake with GND Timed Out.");
+    }
+    if(Program_Cycle%5==0){
+      char Packet[10] = "ED";
       Serial.print("Sending: "); Serial.println(Packet);
       rf95.send(Packet, sizeof(Packet));
       rf95.waitPacketSent();
