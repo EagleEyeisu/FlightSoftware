@@ -102,9 +102,18 @@ void loop(){
 /*
    Sends the "ARE YOU READY TO DROP" signal which starts the detach sequence.
 */
-void Start_Drop() {
-  if(Serial.read()=='1'){//BEGINNING OF NORMAL DETACH PROCESS.
+void Start_Drop(){
+  char input = Serial.read();
+  if(input=='a'){//BEGINNING OF NORMAL DETACH PROCESS.
     Drop_Signal = true;
+    Program_Cycle = 0;
+  }
+  else if(input=='b'){//BEGINNING OF EMERGENCY DETACH FROM HABET
+    EMERGENCY_DETACH = true;
+    Program_Cycle = 0;
+  }
+  else if(input=='c'){
+    EMERGENCY_DEPLOY = true;
     Program_Cycle = 0;
   }
   if(Drop_Signal){//SENDS STARTING SIGNAL TO HABET.
@@ -129,26 +138,18 @@ void Start_Drop() {
       rf95.waitPacketSent();
     }
   }
-  if(Serial.read()=='2'){//BEGINNING OF EMERGENCY DETACH FROM HABET
-    EMERGENCY_DETACH = true;
-    Program_Cycle = 0;
-  }
   if(EMERGENCY_DETACH){//SENDS instant detach signal to HABET.
     Program_Cycle++;
-    if(Program_Cycle%3==0){//Sends every 5 seconds.
+    if(Program_Cycle%5==0){//Sends every 5 seconds.
       char Packet[10] = "EDROP";
       Serial.print("Sending: "); Serial.println(Packet);
       rf95.send(Packet, sizeof(Packet));
       rf95.waitPacketSent();
     }
   }
-  if(Serial.read()=='3'){
-    EMERGENCY_DEPLOY = true;
-    Program_Cycle = 0;
-  }
   if(EMERGENCY_DEPLOY){//SENDS instant detach signal to HABET.
     Program_Cycle++;
-    if(Program_Cycle%3==0){//Sends every 5 seconds.
+    if(Program_Cycle%5==0){//Sends every 5 seconds.
       char Packet[10] = "EDEPLOY";
       Serial.print("Sending: "); Serial.println(Packet);
       rf95.send(Packet, sizeof(Packet));
@@ -186,7 +187,7 @@ void Receive(){
         Serial.println("HABET HAS DROPPED. EMERGENCY DETACH SUCCESSFUL.");
         EMERGENCY_DETACH = false;
       }
-      else if(buf[0]=='E' && buf[1]=='D' && buf[2]=='P'){//Receives confirmation that EE has deployed its chute upon receiving GND's emergency signal.
+      else if(buf[0]=='E' && buf[1]=='P'){//Receives confirmation that EE has deployed its chute upon receiving GND's emergency signal.
         Serial.println("EE HAS DEPLOYED ITS CHUTE. EMERGENCY DEPLOY SUCCESSFUL.");
         EMERGENCY_DEPLOY = false;
       }
@@ -296,3 +297,4 @@ float parse_NMEA(int objective){
   float temp = atof(arr);//Converts char array to float
   return temp;
 }
+

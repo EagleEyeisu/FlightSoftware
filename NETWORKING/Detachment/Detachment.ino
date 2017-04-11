@@ -10,6 +10,7 @@ boolean SecondStage = false;
 boolean ThirdStage = false;
 boolean FourthStage = false;
 boolean EMERGENCY_DROP = false;
+boolean Released = false;
 
 /****COMMUNICATION****/
 #define RFM95_CS 8
@@ -109,11 +110,17 @@ void Receive(){
  * Releases the EagleEyeCraft from HABET.
  */
 void Release(){
-  for(int i=90;i<160;i++){
-    detach_servo.write(i);
-    delay(10);
+  if(!Released){
+    Released = true;
+    for(int i=90;i<160;i++){
+      detach_servo.write(i);
+      delay(10);
+    }
+    Serial.println("Detached");
   }
-  Serial.println("Detached");
+  else{
+    Serial.println("Already Released.");
+  }
 }
 
 /*
@@ -162,7 +169,7 @@ void Start_Drop(){
   }
   else if(ThirdStage){//SENDS FINAL HANDSHAKE TO GND THAT DROP SEQUENCE IS OVER.
     Program_Cycle++;
-    if(Program_Cycle%5==0){
+    if(Program_Cycle%3==0){
       char Packet[10] = "FINAL";
       Serial.print("Sending: "); Serial.println(Packet);
       rf95.send(Packet, sizeof(Packet));

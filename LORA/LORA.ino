@@ -28,7 +28,7 @@ boolean READY_FOR_DROP = false;    //Gets turned true by Mega deciding to drop b
 
 //CONSTANT VARIABLES
 /****PINS********/
-#define RELAY1  28    //Parachute Digital Pin to IN1
+#define RELAY1  12    //Parachute Digital Pin to IN1
 
 /****SD CARD*****/
 File EagleEyeData;    //File object used to store data during flight.
@@ -145,6 +145,7 @@ void setup(){
 void loop(){
   Program_Cycle++;
   Serial.println(".");
+  Blink();
   GPSData();                    //Updates altitude using GPS.
   //Save(0,0);                    //Stores Data to SD Card.
   Radio_Comm();                 //Radio communication.
@@ -180,44 +181,40 @@ void Radio_Comm(){
  */
 void Send_Packet(){
   if(NMEAorDROP && (Program_Cycle%12==0)){
-    Serial.print("Sending: ");Serial.println(NMEA_Sentence);
+    //Serial.print("Sending: ");Serial.println(NMEA_Sentence);
     rf95.send(NMEA_Sentence, sizeof(NMEA_Sentence));
     rf95.waitPacketSent();
-    Blink();
   }
   else if(HandShakeHABET){
-    if(Program_Cycle>20){
+    if(Program_Cycle>25){
       HandShakeHABET = false;
-      Serial.println("HandShakeHABET Timed Out.");
-      Serial.println("Asking Mega for Drop");
+      //Serial.println("HandShakeHABET Timed Out.");
+      //Serial.println("Asking Mega for Drop");
       BoardCommunication(true);//Triggers the switch in I2C and asks mega for Go/NoGo on drop.
     }
     if(Program_Cycle%4==0){
-      char Detach[10] = "OKHABET";
+      char Detach[8] = "OKHABET";
       Serial.print("Sending: ");Serial.println(Detach);
       rf95.send(Detach, sizeof(Detach));
       rf95.waitPacketSent();
-      Blink();
     }
   }
   else if(READY_FOR_DROP){
-    char Detach[10] = "DROP";
+    char Detach[5] = "DROP";
     Serial.print("Sending: ");Serial.println(Detach);
     rf95.send(Detach, sizeof(Detach));
     rf95.waitPacketSent();
-    Blink();
   }
   else if(EMERGENCY_DEPLOY){
     if(Program_Cycle>25){
       EMERGENCY_DEPLOY = false;
-      Serial.println("HandShake with GND Timed Out.");
+      //Serial.println("HandShake with GND Timed Out.");
     }
     if(Program_Cycle%5==0){
-      char Detach[10] = "EDP";
-      Serial.print("Sending: ");Serial.println(Detach);
+      char Detach[3] = "EP";
+      //Serial.print("Sending: ");Serial.println(Detach);
       rf95.send(Detach, sizeof(Detach));
       rf95.waitPacketSent();
-      Blink();
     }
   }
 }
@@ -229,8 +226,6 @@ void Retrieve_Packet(){
   uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
   uint8_t len = sizeof(buf);
   if(rf95.recv(buf, &len)){//Retrieves the incoming message
-    Blink();
-    Blink();
     if(buf[0]=='S' && buf[1]=='T' && buf[2]=='A' && buf[3]=='R' && buf[4]=='T' && buf[5]=='E' && buf[6]=='E'){
       Serial.println("Received 'STARTEE' from Habet.");
       NMEAorDROP = false;
@@ -243,15 +238,15 @@ void Retrieve_Packet(){
       NMEAorDROP = true;
       READY_FOR_DROP = false;
     }
-    else if(buf[0]=='E' && buf[1]=='D' && buf[2]=='E' && buf[3]=='P' && buf[4]=='L' && buf[5]=='O' && buf[6]=='Y'){
-      Serial.println("EMERGENCY DEPLOY RECEIVED. DEPLOYING NOW.");
-      digitalWrite(RELAY1, HIGH);//This is close the circuit providing power the chute deployment system
-      chute_deploy = true;
-      Save(1,0);
-      Send_I2C(2);
-      delay(2000);
-      digitalWrite(RELAY1, LOW);//Run the current for 2 seconds, then open the circuit and stop the current
-      Save(0,2);
+    else if((buf[0]=='E' && buf[1]=='D' && buf[2]=='E' && buf[3]=='P' && buf[4]=='L' && buf[5]=='O' && buf[6]=='Y') || (buf[0]=='F' && buf[1]=='I' && buf[2]=='N' && buf[3]=='A' && buf[4]=='L')){
+      EMERGENCY_DEPLOY = true;
+      if(!chute_deploy){
+        //Serial.println("EMERGENCY DEPLOY RECEIVED. DEPLOYING NOW.");
+        digitalWrite(RELAY1, HIGH);//This is close the circuit providing power the chute deployment system
+        chute_deploy = true;
+        delay(1000);
+        digitalWrite(RELAY1, LOW);//Run the current for 2 seconds, then open the circuit and stop the current
+      }
     }
   }
 }
@@ -512,7 +507,7 @@ void Receive_I2C(){
  * Helper for radio
  */
 void receiveEvent(){
-  Serial.print("Event Received: ");
+  //Serial.print("Event Received: ");
   x = Wire.read();    //Receive byte as an integer
   //Serial.println(x);
   if(x == 9){
