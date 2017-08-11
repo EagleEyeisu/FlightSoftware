@@ -1,7 +1,7 @@
 /****LIBRARIES****/
-#include <SD.h>
-#include <RH_RF95.h>
-#include <Servo.h>
+#include "SD.h"
+#include "RH_RF95.h"
+#include "Servo.h"
 
 /****SYSTEM INFO****/
 int Program_Cycle = 0;

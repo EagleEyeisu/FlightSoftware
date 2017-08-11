@@ -1,5 +1,5 @@
 DIRECTORY PURPOSE:
-	Holds all software for the Eagle Eye program.
+	Holds all software/libraries/files for the Eagle Eye program.
 
 -------------------------------------------------------------------------
 
@@ -10,5 +10,5 @@ HABET_Detach:
 	Anchors Eagle Eye to HABET. Responible for releasing Eagle Eye.
 
 Mission_Control:
-	Main ground system. Relays telemetry data from all nodes.
+	Main ground system. Displays telemetry data from all nodes.
 	Responsible for triggering certain commands.

@@ -14,10 +14,10 @@
  *******************************************************************************************************/
 
 /****LIBRARIES****/
-#include <SD.h>
-#include <SoftwareSerial.h>
-#include <Wire.h>
-#include <RH_RF95.h>
+#include "SD.h"
+#include "SoftwareSerial.h"
+#include "Wire.h"
+#include "RH_RF95.h"
  
 /****FLIGHT******/
 float AltPrevious = 0.0, LatPrevious = 0.0, LonPrevious = 0.0;  //These are the previous values(the last known GPS Data), they are used incase the GPS Signal stops.
