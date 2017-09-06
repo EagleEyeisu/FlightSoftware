@@ -36,7 +36,6 @@ void setup(){
 
   //Initializes the Radio.
   Radio_Initialize();
-
   
 }
 
@@ -59,8 +58,8 @@ void loop(){
   //Reads in a new NMEA sentence. 
   GPS_Manager();
   
-  //Updates the craft's struct. This pulls data from the previously
-  //   read in NMEA sentence and the 
+  //Updates the craft's struct. This pulls data from all periphals,
+  //   and network to update to the most current situation.
   Data_Manager();
 
   //Communicates with the Mega to check for certain events happening

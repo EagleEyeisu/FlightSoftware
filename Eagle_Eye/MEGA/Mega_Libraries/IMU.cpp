@@ -36,7 +36,7 @@ void IMU::IMU_Initialize()
  */
 void IMU::IMU_Manager()
 {
-	//Turns true when the LoRa has sent signal '8' to start the dropping process. 
+	//Turns true when the MEGA has received the signal '8' to start the dropping process. 
 	if (Detach_Request) {
 		
 		//Checks to see if chute is enabled and the craft is in the correct orientation, or

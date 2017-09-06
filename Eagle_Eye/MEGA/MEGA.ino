@@ -69,6 +69,5 @@ void loop(void){
   //Stores the current cycle's data to the SD Card.
   Save_Data();
 
-  //Delays for half a second. (500 milliseconds)
-  delay(500);
+  delay(100);
 }

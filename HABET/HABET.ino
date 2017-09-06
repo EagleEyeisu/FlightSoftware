@@ -37,4 +37,6 @@ void loop() {
   //Passively watches for the LoRa Event Number or the Command Sent varaible
   //   to prompt the detachment of Eagle Eye from HABET.
   Servo_Manager();
+
+  delay(100);
 }

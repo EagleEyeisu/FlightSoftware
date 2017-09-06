@@ -40,4 +40,6 @@ void loop(){
 
   //Saves all local data to the SD card.
   Save_Data();
+
+  delay(100);
 }

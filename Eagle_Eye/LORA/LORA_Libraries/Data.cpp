@@ -71,7 +71,7 @@ float Data::Parse(char[] message, int objective){
 	for(i=0;i<120;i++){
 		
 		//Checks to see if the current iterator's position is a comma. 
-		if(NMEA_Sentence[i] == ','){
+		if(message[i] == ','){
 			
 			//If so, it iterators the comma counter by 1.
 			Comma_Counter++;
@@ -80,10 +80,10 @@ float Data::Parse(char[] message, int objective){
 		else if(Comma_Counter == GoalNumber){
 			
 			//Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
-			if(NMEA_Sentence[i] != ','){
+			if(message[i] != ','){
 				
 				//Copies the message's character to the temporary array.
-				tempArr[t] = NMEA_Sentence[i];
+				tempArr[t] = message[i];
 				
 				//Iterator used to tell how long the temporary array is.
 				tempIter++;
