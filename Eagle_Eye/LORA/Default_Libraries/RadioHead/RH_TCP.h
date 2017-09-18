@@ -5,8 +5,8 @@
 #ifndef RH_TCP_h
 #define RH_TCP_h
 
-#include <RHGenericDriver.h>
-#include <RHTcpProtocol.h>
+#include "RHGenericDriver.h"
+#include "RHTcpProtocol.h"
 
 /////////////////////////////////////////////////////////////////////
 /// \class RH_TCP RH_TCP.h <RH_TCP.h>

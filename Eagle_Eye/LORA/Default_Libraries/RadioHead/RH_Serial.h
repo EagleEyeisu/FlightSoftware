@@ -9,7 +9,7 @@
 #ifndef RH_Serial_h
 #define RH_Serial_h
 
-#include <RHGenericDriver.h>
+#include "RHGenericDriver.h"
 
 // Special characters
 #define STX 0x02

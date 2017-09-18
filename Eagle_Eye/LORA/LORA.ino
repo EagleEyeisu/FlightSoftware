@@ -1,21 +1,32 @@
 /****LIBRARIES****/
 
 //NON EAGLE EYE
-#include "Default_Libraries/SD.h"
-#include "Default_Libraries/SoftwareSerial.h"
-#include "Default_Libraries/Wire.h"
-#include "Default_Libraries/RH_RF95.h"
-#include "Default_Libraries/TimeLib.h"
+#include "Default_Libraries/SD/src/SD.h"
+#include "Default_Libraries/SoftwareSerial/src/SoftwareSerial.h"
+#include "Default_Libraries/Wire/src/Wire.h"
+#include "Default_Libraries/RadioHead/RH_RF95.h"
 
 //EAGLE EYE'S
-#include "LORA_Libraries/Data.h"
-#include "LORA_Libraries/GPS.h"
-#include "LORA_Libraries/I2C.h"
-#include "LORA_Libraries/Para.h"
-#include "LORA_Libraries/Radio.h"
-#include "LORA_Libraries/Save.h"
+#include "Data.h"
+#include "GPS.h"
+#include "I2C.h"
+#include "Para.h"
+#include "Radio.h"
+#include "Save.h"
 
 
+//Constructors (Objects that can reference their respective functions)
+Data Data;
+GPS GPS;
+I2C I2C;
+Para Para;
+Radio Radio;
+Save Save;
+
+
+/**
+ * INITIALIZES ALL REQUIRED PERIPHIALS AND DEPENDENCIES.
+ */
 void setup(){
 
   //Creates a serial communication line between the arduino and the serial port 
@@ -23,19 +34,19 @@ void setup(){
   Serial.begin(115200);
 
   //Initializes the Parachute and its power relay.
-  Para_Initialize();
+  Para.Initialize();
 
   //Initializes the SD Card.
-  SD_Initialize();
+  Save.Initialize();
 
   //Initializes the Inter-Intergrated Circuit (I^2C) protocol.
-  I2C_Initialize();
+  I2C.Initialize();
 
   //Initializes the GPS.
-  GPS_Initialize();
+  GPS.Initialize();
 
   //Initializes the Radio.
-  Radio_Initialize();
+  Radio.Initialize();
   
 }
 
@@ -56,26 +67,26 @@ void setup(){
 void loop(){
 
   //Reads in a new NMEA sentence. 
-  GPS_Manager();
+  GPS.Manager(Data&, GPS&, I2C&, Para&, Radio&, Save&);
   
   //Updates the craft's struct. This pulls data from all periphals,
   //   and network to update to the most current situation.
-  Data_Manager();
+  Data.Manager(Data&, GPS&, I2C&, Para&, Radio&, Save&);
 
   //Communicates with the Mega to check for certain events happening
   //   throughout the system.
-  I2C_Manager();
+  I2C.Manager(false, Data&, GPS&, I2C&, Para&, Radio&, Save&);
 
   //Watches over the craft's changing situation and responds accordingly
   //   by either arming/deploying or disabling the parachute.
-  Para_Manager();
+  Para.Manager(Data&, GPS&, I2C&, Para&, Radio&, Save&);
 
   //Responsible for grabbing all of the craft's current information, 
   //   turning that data into an array that can be sent out via radio.
   //   Also reads in incoming messages.
-  Radio_Manager();
+  Radio.Manager(Data&, GPS&, I2C&, Para&, Radio&, Save&);
   
   //Saves all local data to the SD card.
-  Save_Data();
+  Save.Save_Data(Data&, GPS&, I2C&, Para&, Radio&, Save&);
   
 }

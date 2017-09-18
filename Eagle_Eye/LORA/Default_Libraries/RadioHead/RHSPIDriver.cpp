@@ -3,7 +3,7 @@
 // Copyright (C) 2014 Mike McCauley
 // $Id: RHSPIDriver.cpp,v 1.10 2015/12/16 04:55:33 mikem Exp $
 
-#include <RHSPIDriver.h>
+#include "RHSPIDriver.h"
 
 RHSPIDriver::RHSPIDriver(uint8_t slaveSelectPin, RHGenericSPI& spi)
     : 

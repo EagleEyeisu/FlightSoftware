@@ -11,7 +11,7 @@
 // Copyright (C) 2011 Mike McCauley
 // $Id: RHRouter.cpp,v 1.7 2015/08/13 02:45:47 mikem Exp $
 
-#include <RHRouter.h>
+#include "RHRouter.h"
 
 RHRouter::RoutedMessage RHRouter::_tmpMessage;
 

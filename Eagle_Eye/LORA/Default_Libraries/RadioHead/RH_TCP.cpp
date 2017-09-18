@@ -3,12 +3,12 @@
 // Copyright (C) 2014 Mike McCauley
 // $Id: RH_TCP.cpp,v 1.6 2017/01/12 23:58:00 mikem Exp $
 
-#include <RadioHead.h>
+#include "RadioHead.h"
 
 // This can only build on Linux and compatible systems
 #if (RH_PLATFORM == RH_PLATFORM_UNIX) 
 
-#include <RH_TCP.h>
+#include "RH_TCP.h"
 #include <sys/types.h>
 #include <errno.h>
 #include <sys/socket.h>

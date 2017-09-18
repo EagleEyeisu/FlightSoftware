@@ -8,7 +8,7 @@
 #else
  #include <HardwareSerial.h>
 #endif
-#include <RHCRC.h>
+#include "RHCRC.h"
 
 RH_Serial::RH_Serial(HardwareSerial& serial)
     :

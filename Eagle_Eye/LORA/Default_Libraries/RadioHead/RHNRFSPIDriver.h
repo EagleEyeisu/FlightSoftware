@@ -6,8 +6,8 @@
 #ifndef RHNRFSPIDriver_h
 #define RHNRFSPIDriver_h
 
-#include <RHGenericDriver.h>
-#include <RHHardwareSPI.h>
+#include "RHGenericDriver.h"
+#include "RHHardwareSPI.h"
 
 class RHGenericSPI;
 

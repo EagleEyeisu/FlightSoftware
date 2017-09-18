@@ -11,7 +11,7 @@
 // Copyright (C) 2011 Mike McCauley
 // $Id: RHReliableDatagram.cpp,v 1.17 2017/03/08 09:30:47 mikem Exp mikem $
 
-#include <RHReliableDatagram.h>
+#include "RHReliableDatagram.h"
 
 ////////////////////////////////////////////////////////////////////
 // Constructors

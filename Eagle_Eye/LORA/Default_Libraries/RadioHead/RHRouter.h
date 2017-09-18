@@ -7,7 +7,7 @@
 #ifndef RHRouter_h
 #define RHRouter_h
 
-#include <RHReliableDatagram.h>
+#include "RHReliableDatagram.h"
 
 // Default max number of hops we will route
 #define RH_DEFAULT_MAX_HOPS 30

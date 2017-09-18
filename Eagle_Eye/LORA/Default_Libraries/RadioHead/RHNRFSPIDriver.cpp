@@ -3,7 +3,7 @@
 // Copyright (C) 2014 Mike McCauley
 // $Id: RHNRFSPIDriver.cpp,v 1.3 2015/12/16 04:55:33 mikem Exp $
 
-#include <RHNRFSPIDriver.h>
+#include "RHNRFSPIDriver.h"
 
 RHNRFSPIDriver::RHNRFSPIDriver(uint8_t slaveSelectPin, RHGenericSPI& spi)
     : 

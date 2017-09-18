@@ -6,7 +6,7 @@
 #ifndef RHSoftwareSPI_h
 #define RHSoftwareSPI_h
 
-#include <RHGenericSPI.h>
+#include "RHGenericSPI.h"
 
 /////////////////////////////////////////////////////////////////////
 /// \class RHSoftwareSPI RHSoftwareSPI.h <RHSoftwareSPI.h>

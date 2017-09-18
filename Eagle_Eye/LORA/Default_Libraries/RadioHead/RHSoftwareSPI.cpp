@@ -3,7 +3,7 @@
 // Copyright (C) 2014 Chris Lapa
 // Contributed by Chris Lapa
 
-#include <RHSoftwareSPI.h>
+#include "RHSoftwareSPI.h"
 
 RHSoftwareSPI::RHSoftwareSPI(Frequency frequency, BitOrder bitOrder, DataMode dataMode)
     :

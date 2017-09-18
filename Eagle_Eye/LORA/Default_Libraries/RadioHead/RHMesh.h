@@ -7,7 +7,7 @@
 #ifndef RHMesh_h
 #define RHMesh_h
 
-#include <RHRouter.h>
+#include "RHRouter.h"
 
 // Types of RHMesh message, used to set msgType in the RHMeshHeader
 #define RH_MESH_MESSAGE_TYPE_APPLICATION                    0
