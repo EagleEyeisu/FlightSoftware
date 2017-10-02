@@ -2,25 +2,32 @@
  * DATA.h is responsible for updating the programs main struct to the current most values.
  */
 
-#ifndef DATA_h
-#define DATA_h
+#ifndef DATA_H
+#define DATA_H
 
 #include <Arduino.h>
-  
+
 class DATA
 {
   public:
-  
-	//Constructor
+	
+	//Constuctor
 	DATA();
-  
-	//Parses passed in message by using commas as the identifiers.
-	float Parse(char message[], int objective);
-  
-	//Responsible for pulling current sensor data from peripherals.
+	
+  	//Responsible for pulling current sensor data from peripherals.
 	void manager();
 	
+	//Reads in external pressure and calculates altitude.
+	float getAltitude(float _Pressure);
 	
+	//Runs initialzation script for the Barometer.
+	void initialize();
+
+
+	
+	
+	//Object used to communicate and pull information from the BMP085. (Pressure Sensor)
+	Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 	
 	//Stores all of Eagle Eye's current flight data.
 	//   The difference between this struct and the one initalized in Radio.h is that this information
@@ -30,9 +37,6 @@ class DATA
 	
 		//Altitude of the craft gathered from GPS.
 		float Altitude = 0.0;
-
-    //Current distance to target in meters.
-    float TargetDistance = 0.0;
 	
 		//Latitude of the craft gathered from GPS.
 		float Latitude = 0.0;
@@ -40,11 +44,11 @@ class DATA
 		//Longitude of the craft gathered from GPS.
 		float Longitude = 0.0;
 		
+		//GPS Fixation of the craft gathered from the GPS.
+		float GPS_Fix = 0.0;
+		
 		//Satellite Count of the craft gathered from the GPS.
-		float SatCount = 0.0;
-
-    //Speed in meters per second.
-    float Speed = 0.0;
+		float Satellite_Count = 0.0;
 		
 		//LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
 		float LE = 0.0;
@@ -52,9 +56,6 @@ class DATA
 		//Mega Event. This is assigned as needed throughout the program. Signals the Mega had a 
 		//   specific event.
 		float ME = 0.0;
-
-    //Time of flight. Used for data capture in in SD card.
-    char Time[10];
 
 		//Holds the crafts previous altitude.
 		float altPrevious = 0.0;
@@ -66,13 +67,12 @@ class DATA
 		float lonPrevious = 0.0;
 
 	};
-	struct Flight_Data Local;
+	static struct Flight_Data Local;
+	
+	//Object used to store the store the data pulled from the BMP085.
+	sensors_event_t event;
 
-  //Target Latitude for craft.
-  float TARGET_LAT = 42.8080;
-  
-  //Target Longitude for craft.
-  float TARGET_LON = -92.2582;
-  
 };
+
 #endif
+

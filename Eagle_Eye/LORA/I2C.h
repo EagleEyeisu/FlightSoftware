@@ -11,42 +11,30 @@ class I2C
 {
   public:
 
-  //Constructor
-  I2C();
+	//Constructor
+	I2C();
   
 	//Runs initialzation script for the I2C protocol.
-	void Initialize();
-		
+	void initialize();
+	
 	//Processes all incoming and outgoing 
-	void Manager(bool DROP_SIGNAL, class Data_in, class GPS_in, class I2C_in, class Para_in, class Radio_in, class Save_in);
-		
+	void manager(bool DROP_SIGNAL);
+	
 	//Reads in the incoming I2C message.
 	void Receive();
-		
+	
 	//Reads in the byte and asses if new data has been obtained.
-	void Receive_Byte();
-		
+	void receiveByte();
+	
 	//Sends the passed in integer over I2C.
-	static void Transfer(int System_Event);
-		
-		
-
-
-  //Holds the passed in class objects to gain access to their references.
-  class Data;
-  class GPS;
-  //class I2C;
-  class Para;
-  class Radio;
-  class Save;
-  
-	//Used in the detachment from HABET. Turned true by receiving '8' from LoRa.
-	//   Once turned true, the IMU will decide if the craft is in the correct oreintation to drop.
-	bool Detach_Request = false;
-		
+	static void Transfer(int systemEvent);
+	
+	
+	
+	
 	//Status for I2C direction. False = (LoRa -> Mega), True = (Mega -> LoRa)
 	bool DISPATCH_SIGNAL = true;
-		
+	
 	//Status for Connection to HABET.
 	bool HABET_Connection = true;
 
@@ -58,7 +46,7 @@ class I2C
 	bool READY_FOR_DROP = false;
 
 	//Event Number.
-  int Received_Event;
+	int receivedEvent;
 
 };
 #endif

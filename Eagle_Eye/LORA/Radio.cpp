@@ -1,19 +1,20 @@
 /**
- * Radio.ccp holds all functions related the radio port/module infused inside the LoRa FeatherWing 
+ * RADIO.ccp holds all functions related the radio port/module infused inside the LoRa FeatherWing 
  *    development micro controller.
  */
 
 
-#include "Data.h"
-#include "Default_Libraries/RadioHead/RH_RF95.h"
-#include "Radio.h"
 #include <Arduino.h>
+#include "RADIO.h"
+#include "DATA.h"
+#include <RH_RF95.h>
+#include "Globals.h"
 
 
 /**
  * Constructor used to reference all other variables & functions.
  */
-Radio::Radio()
+RADIO::RADIO()
 {
 	
 }
@@ -22,72 +23,72 @@ Radio::Radio()
 /**
  * Parses and returns the radio transmission's altitude.
  */
-float getAltitude(uint8_t buf)
+float RADIO::getRadioAltitude(uint8_t buf)
 {
-	return (Data::Parse(buf,1));
+	return (Data.Parse(buf,1));
 }
 
 
 /**
  * Parses and returns the radio transmission's Command Received.
  */
-float getCommandReceived(uint8_t buf)
+float RADIO::getCommandReceived(uint8_t buf)
 {
-	return (Data::Parse(buf,9));
+	return (Data.Parse(buf,9));
 }
 
 
 /**
  * Parses and returns the radio transmission's Command Sent.
  */
-float getCommandSent(uint8_t buf)
+float RADIO::getCommandSent(uint8_t buf)
 {
-	return (Data::Parse(buf,8));
+	return (Data.Parse(buf,8));
 }
 
 
 /**
  * Parses and returns the radio transmission's Craft ID.
  */
-float getCraftID(uint8_t buf)
+float RADIO::getCraftID(uint8_t buf)
 {
-	return (Data::Parse(buf,10));
+	return (Data.Parse(buf,10));
 }
 
 
 /**
  * Parses and returns the radio transmission's latitude.
  */
-float getLatitude(uint8_t buf)
+float RADIO::getRadioLatitude(uint8_t buf)
 {
-	return (Data::Parse(buf,2));
+	return (Data.Parse(buf,2));
 }
 
 
 /**
  * Parses and returns the radio transmission's longitude.
  */
-float getLongitude(uint8_t buf)
+float RADIO::getRadioLongitude(uint8_t buf)
 {
-	return (Data::Parse(buf,3));
+	return (Data.Parse(buf,3));
 }
 
 
 /**
  * Parses and returns the radio transmission's LoRa Event.
  */
-float getLoRaEvent(uint8_t buf)
+float RADIO::getLoRaEvent(uint8_t buf)
 {
-	return (Data::Parse(buf,4));
+	return (Data.Parse(buf,4));
 }
 
 
 /**
  * Parses and returns the radio transmission's Release Status.
  */
-float getReleaseStatus(uint8_t buf)
+float RADIO::getReleaseStatus(uint8_t buf)
 {
-	return (Data::Parse(buf,6));
+	return (Data.Parse(buf,6));
 }
 
 
@@ -97,16 +98,16 @@ float getReleaseStatus(uint8_t buf)
  *    HABET -> 5
  *    MC    -> 7
  */
-float getTimeStamp(uint8_t buf, int selector)
+float RADIO::getTimeStamp(uint8_t buf, int selector)
 {
-	return Data::Parse(buf, selector);
+	return (Data.Parse(buf, selector));
 }
 
 
 /**
  * Assigns correct pins to the radio output port. Tests connections and variables.
  */
-void Radio::Initialize()
+void RADIO::initialize()
 {
 	//Assigns pin 13 to have an output power connection to the LoRa's onboard LED.
 	pinMode(LED, OUTPUT);
@@ -125,22 +126,19 @@ void Radio::Initialize()
 	
 	//Turns the radio output high to compelte setup.
 	digitalWrite(RFM95_RST, HIGH);
-	
-	//Directs the radio object to focus on two specific ports.
-  RH_RF95 rf95(8,7);
   
 	//Checks for the creation of the radio object and its physical connection attribute.
 	//If invalid connection, the program will stall and print an error message.
 	if(!rf95.init()){
 		
-		Serial.println("LoRa radio init failed");
+		//Serial.println("LoRa radio init failed");
 		while (1);
 		
 	}
 	//Valid connection, program proceeds as planned.
 	else{
 		
-		Serial.println("LoRa radio init OK!");
+		//Serial.println("LoRa radio init OK!");
 		
 	}
 	
@@ -148,44 +146,37 @@ void Radio::Initialize()
 	//If invalid connection, the program will stall and print an error message.
 	if(!rf95.setFrequency(RF95_FREQ)){
 		
-		Serial.println("setFrequency failed");
+		//Serial.println("setFrequency failed");
 		while (1);
 		
 	}
 	//Valid connection, program proceeds as planned.
 	else{
 		
-		Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+		//Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
 		
 	}
 	
 	//Sets the max power to be used to in the amplification of the signal being sent out.
 	rf95.setTxPower(23, false);
-	Serial.println();
+	//Serial.println();
 }
 
 
 /**
  * Manages all radio comms either incoming or outgoing.
  */
-void Radio::Manager(class Data_in, class GPS_in, class I2C_in, class Para_in, class Radio_in, class Save_in)
+void RADIO::manager()
 {
-
-  Data = Data_in;
-  GPS = GPS_in;
-  I2C = I2C_in;
-  Para = Para_in;
-  //Radio = Radio_in;
-  Save = Save_in;
   
 	//Reads in radio transmission if available.
-	Receive();
+	Radio.radioReceive();
 	
 	//Checks for a specific Craft ID. '999.9' signals the start of operation.
-	if(Network.Craft_ID == 999.9 && !Checked_In){
+	if(Network.Craft_ID == 999.9 && !Radio.checkedIn){
 		
 		//Responds to Mission Control with the correct ID to signal this node is here and listening.
-		RollCall();
+		Radio.rollCall();
 		
 	}
 	//After Roll Call is complete, Mission Control will broadcast the start signal. Appropriate delays are
@@ -211,7 +202,7 @@ void Radio::Manager(class Data_in, class GPS_in, class I2C_in, class Para_in, cl
 		start = millis();
 		
 		//Sends the transmission via radio.
-		Broadcast();
+		Radio.broadcast();
 	}
 }
 
@@ -219,7 +210,7 @@ void Radio::Manager(class Data_in, class GPS_in, class I2C_in, class Para_in, cl
 /**
  * Responsible for reading in signals over the radio antenna.
  */
-void Radio::Receive()
+void RADIO::radioReceive()
 {
   
 	//Creates a temporary varaible to read in the incoming transmission. 
@@ -240,31 +231,31 @@ void Radio::Receive()
 		
 		
 		//Reads in the time stamp for HABET's last broadcast.
-		float temp_HABET = getTimeStamp(buf, 5);
+		float tempHABET = Radio.getTimeStamp(buf, 5);
 		
 		//Compares the currently brought in time stamp to the one stored onboad.
-		if(temp_HABET > Network.H_TS){
+		if(tempHABET > Radio.Network.H_TS){
 			
 			//If the incoming signal has more up-to-date versions, we overwrite our saved version with
 			//   the new ones.
-			Network.H_TS = temp_HABET;
-			Network.Release_Status = getReleaseStatus(buf);
+			Network.H_TS = tempHABET;
+			Network.Release_Status = Radio.getReleaseStatus(buf);
 			
 		}
 		
 		
 		
 		//Reads in the time stamp for Mission Control's last broadcast.
-		float temp_MS = getTimeStamp(buf, 7);
+		float tempMC = Radio.getTimeStamp(buf, 7);
 		
 		//Compares the currently brought in time stamp to the one stored onboad.
-		if(temp_MS > Network.MS_TS){
+		if(tempMC > Network.MC_TS){
 			
 			//If the incoming signal has more up-to-date versions, we overwrite our saved version with
 			//   the new ones.
-			Network.MS_TS = temp_MS;
-			Network.Command_Sent = getCommandSent(buf);
-			Network.Command_Received = getCommandReceived(buf);
+			Network.MC_TS = tempMC;
+			Network.Command_Sent = Radio.getCommandSent(buf);
+			Network.Command_Received = Radio.getCommandReceived(buf);
 		}
 		
 	}
@@ -274,31 +265,40 @@ void Radio::Receive()
 /**
  * Alters the craft ID of the radio transmission and broadcasts back to Mission Control.
  */
-void Radio::RollCall()
+void RADIO::rollCall()
 {
 	//Updates the Craft_ID to Eagle Eye's specific ID #.
 	Network.Craft_ID = 3.0;
 	
 	//Sends the transmission via radio.
-	Broadcast();
+	Radio.broadcast();
 	
 	//Updates Checked_In Status.
-	Checked_In = true;
+	checkedIn = true;
 }
 
 
 /**
  * Responsible for sending out messages via the radio antenna.
  */
-void Radio::Broadcast()
+void RADIO::broadcast()
 {
   
   //Updates the time object to hold the most current operation time.
   Network.L_TS = millis();
+
+  //Updates the Networks struct to reflect the crafts most uptodate postioning before 
+  //   it broadcasts the signal on the network.
+  Network.Altitude = Data.Local.Altitude;
+  Network.Latitude = Data.Local.Latitude;
+  Network.Longitude = Data.Local.Longitude;
+  
+  //Alter this line so when ground recieves, it resets Lora's LE to 0.
+  Network.LE = Data.Local.LE;
   
   //Casting all float values to a character array with commas saved in between values
   //   so the character array can be parsed when received by another craft.
-  char Transmission[] = {char(Network.L_TS),
+  char transmission[] = {char(Network.L_TS),
                          ',',
                          char(Network.Altitude),
                          ',',
@@ -312,7 +312,7 @@ void Radio::Broadcast()
                          ',',
                          char(Network.Release_Status),
                          ',',
-                         char(Network.MS_TS),
+                         char(Network.MC_TS),
                          ',',
                          char(Network.Command_Sent),
                          ',',
@@ -321,10 +321,10 @@ void Radio::Broadcast()
                          char(Network.Craft_ID)
                          };
 	
-	//Serial.print("Radio Sending: ");Serial.println(message);
-	
+	//Serial.print("Radio Sending: ");Serial.println(transmission);
+  
 	//Sends message passed in as paramter via antenna.
-	rf95.send(Transmission, sizeof(Transmission));
+	rf95.send(transmission, sizeof(transmission));
 		
 	//Pauses all operations until the micro controll has guaranteed the transmission of the
 	//   signal. 

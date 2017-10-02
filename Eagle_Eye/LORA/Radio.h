@@ -2,144 +2,133 @@
  * Radio.h holds all declarations and varaibles related to the radio.ccp file.
  */
 
-#ifndef Radio_h
-#define Radio_h
+#ifndef RADIO_h
+#define RADIO_h
 
 #include <Arduino.h>
 
-class Radio
+class RADIO
 {
   public:
   
-  //Constructor
-  Radio();
+	//Constructor
+	RADIO();
   	
-  //Returns the transmission's Altitude.
-  float getAltitude(uint8_t buf);
-  		
-  //Returns the transmission's CR variable.
-  float getCommandRecieve(uint8_t buf);
-  		
-  //Returns the transmission's CS variable.
-  float getCommandSent(uint8_t buf);
-  		
-  //Returns the transmission's craft ID.
-  float getCraftID(uint8_t buf);
-  		
-  //Returns the transmission's Latitude.
-  float getLatitude(uint8_t buf);
-  		
-  //Returns the transmission's Longitude.
-  float getLongitude(uint8_t buf);
-  		
-  //Returns the transmission's Latitude.
+	//Returns the transmission's Altitude.
+	float getRadioAltitude(uint8_t buf);
+  	
+	//Returns the transmission's CR variable.
+	float getCommandReceived(uint8_t buf);
+	
+	//Returns the transmission's CS variable.
+	float getCommandSent(uint8_t buf);
+  	
+	//Returns the transmission's craft ID.
+	float getCraftID(uint8_t buf);
+  	
+	//Returns the transmission's Latitude.
+	float getRadioLatitude(uint8_t buf);
+  	
+	//Returns the transmission's Longitude.
+	float getRadioLongitude(uint8_t buf);
+  	
+	//Returns the transmission's Latitude.
 	float getLoRaEvent(uint8_t buf);
-		
+	
 	//Returns the transmission's Release Status.
 	float getReleaseStatus(uint8_t buf);
-		
+	
 	//Returns the transmission's time stamp.
 	float getTimeStamp(uint8_t buf, int selector);
-		
+	
 	//Runs initialzation script for the Radio.
-	void Initialize();
+	void initialize();
 
 	//Passively watches for incoming radio transmissions from Mission Control and other crafts.
-	void Manager(class Data_in, class GPS_in, class I2C_in, class Para_in, class Radio_in, class Save_in);
-		
+	void manager();
+	
 	//Receives incoming transmission.
-	void Receive();
-		
+	void radioReceive();
+	
 	//Responds to the RollCall signal sent from Mission Control.
-	void RollCall();
-		
+	void rollCall();
+	
 	//Sends the desired signal out over the radio antenna.
-	void Broadcast();
-		
-		
-
-
-  //Holds the passed in class objects to gain access to their references.
-  class Data;
-  class GPS;
-  class I2C;
-  class Para;
-  //class Radio;
-  class Save;
-  
+	void broadcast();
+	
+	
+	
+	
 	//Chip select pin for the radio.
-	#define RFM95_CS 8
-		
+	const byte RFM95_CS = 8;
+	
 	//Intialization pin for radio.
-	#define RFM95_INT 7
-		
+	const byte RFM95_INT = 7;
+	
 	//Reset pin onboard the radio.
-	#define RFM95_RST 4
-		
+	const byte RFM95_RST = 4;
+	
 	//Pins used to blink an LED for currently unknown purpose.
-	#define LED 13
-		
+	const byte LED = 13;
+	
 	//Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
 	#define RF95_FREQ 433.0
-
-  //Directs the radio object to focus on two specific ports.
-  RH_RF95 rf95;
-		
+ 	
 	//Status of the craft replying to Mission Control with its node #.
-	bool Checked_In = false;
-		
+	bool checkedIn = false;
+	
 	//Stores all information related to the network of the Eagle Eye program.
 	//   This struct reads specific indexes and than rebroadcasts the updated transmission to
 	//   the other nodes in the network. 
 	struct Network_Data {
-			
+		
 		/**
 		 * The first four varaibles are accessed and overseen by the Eagle Eye craft.
 		 */
-			
+		
 		//Each of these is defined in the Data.h struct. Refer to its documentation as needed.
 		float L_TS = 0.0;
 		float Altitude = 0.0;
 		float Latitude = 0.0;
 		float Longitude = 0.0;
 		float LE = 0.0;
-			
+		
 		/**
 		 * The below varaible is overseen by HABET_Detach.
 		 */
-			
+		
 		//HABET's ms Time stamp.
 		float H_TS = 0.0;
-			
+		
 		//Release status '0' -> not released, '1' -> released.
 		float Release_Status = 0.0;
 		
 		/**
 		 * The last 3 variables are overseen by Mission Control.
 		 */
-			
+		
 		//Mission Control's ms Time stamp.
-		float MS_TS = 0.0;
+		float MC_TS = 0.0;
 		
 		//Command_Sent will be what triggers a command on another craft (Eagle Eye). 
 		float Command_Sent = 0.0;
-			
+		
 		//Command_Received will be turned 1 when the Command_Sent receahes its destination. 
 		//   Used as a handhshake, but primary purpose is to be able to verify that an action 
 		//   reached its destination via Mission Control.
 		float Command_Received = 0.0;
-			
+		
 		/**
 		 * This varaible is updated by each craft right before the array is broadcasted.
 		 */
-			
+		
 		//Craft_ID is used to tell which craft is currently broadcasting the signal. This allows
 		//   for Mission Control to have a sense of if information is being relayed through nodes,
 		//   or if we have a direct line of communication with each node. LoRa's ID is capital 'C'.
 		float Craft_ID = 0.0;
 	};
   
-  static struct Network_Data Network;
+  struct Network_Data Network;
 
   unsigned int start = 0;
   

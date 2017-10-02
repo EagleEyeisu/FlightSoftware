@@ -1,23 +1,24 @@
 /****LIBRARIES****/
 
 //NON EAGLE EYE
-#include "Default_Libraries/Wire.h"
-#include "Default_Libraries/Adafruit_Sensor.h"
-#include "Default_Libraries/Adafruit_BMP085_U.h"
-#include "Default_Libraries/Adafruit_LSM9DS0.h"
-#include "Default_Libraries/Adafruit_Simple_AHRS.h"
-#include "Default_Libraries/Servo.h"
-#include "Default_Libraries/SD.h"
-#include "Default_Libraries/Adafruit_MAX31855.h"
-#include "Default_Libraries/SPI.h"
+#include "Default_Libraries/AHRS/Adafruit_Simple_AHRS.h"
+#include "Default_Libraries/BMP085/Adafruit_BMP085_U.h"
+#include "Default_Libraries/LSM9DS0/Adafruit_LSM9DS0.h"
+#include "Default_Libraries/MAX31855/Adafruit_MAX31855.h"
+#include "Default_Libraries/SD/src/SD.h"
+#include "Default_Libraries/Sensor/Adafruit_Sensor.h"
+#include "Default_Libraries/Servo/src/Servo.h"
+#include "Default_Libraries/SPI/src/SPI.h"
+#include "Default_Libraries/Time/TimeLib.h"
+#include "Default_Libraries/Wire/src/Wire.h"
 
 //EAGLE EYE'S
-#include "Mega_Libraries/Data.h"
-#include "Mega_Libraries/I2C.h"
-#include "Mega_Libraries/IMU.h"
-#include "Mega_Libraries/Para.h"
-#include "Mega_Libraries/Save.h"
-#include "Mega_Libraries/Thermo.h"
+#include "Mega_Libraries/Data/DATA.h"
+#include "Mega_Libraries/I2C/I2C.h"
+#include "Mega_Libraries/IMU/IMU.h"
+#include "Mega_Libraries/Para/PARA.h"
+#include "Mega_Libraries/Save/SAVE.h"
+#include "Mega_Libraries/Thermo/THERMO.h"
 
 
 /**
@@ -30,44 +31,44 @@ void setup(){
   Serial.begin(115200);
 
   //Initializes the Pressure Sensor.
-  Pressure_Initialize()
+  Press.initialize()
   
   //Initializes the Parachute and its power relay.
-  Para_Initialize();
+  Para.initialize();
 
   //Initializes the SD Card.
-  SD_Initialize();
+  Save.initialize();
 
   //Initializes the Inter-Intergrated Circuit (I^2C) protocol.
-  I2C_Initialize();
+  I2C.initialize();
 
   //Initializes the Interial Measurement Unit (IMU).
-  IMU_Initialize();
+  IMU.initialize();
 
   //Initializes the Thermocouple.
-  Thermo_Initialize();
+  Thermo.initialize();
 }
 
 
 /**
  * MAIN PROGRAM CODE.
  */
-void loop(void){
+void loop(){
 
   //Reads in all needed values from periphals.
-  Data_Manager();
+  Data.manager();
 
   //Decides to Send or Recieve I2C information.
-  I2C_Manager();
+  Comm.manager();
 
   //Watches for LoRa to ask for permission to drop.
-  IMU_Manager();
+  IMU.manager();
   
   //Repsonsible for Enablement & Deployment of the paracute.
-  Para_Manager();
+  Para.manager();
 
   //Stores the current cycle's data to the SD Card.
-  Save_Data();
+  Save.saveData();
 
   delay(100);
 }

@@ -1,44 +1,36 @@
 /**
- * Para.h holds predefinitions for all methods and declares used variables.
+ * PARA.h holds predefinitions for all methods and declares used variables.
  */
 
-#ifndef Para_h
-#define Para_h
+#ifndef PARA_h
+#define PARA_h
 
 #include <Arduino.h>
 
-class Para
+class PARA
 {
   public:
 	
 	//Constructor
-	Para();
+	PARA();
 	
 	//Runs initialzation script for the Parachute.
-	void Initialize();
-		
+	void initialize();
+	
 	//Manages all parachute functions. Monitors and reacts accordingly based on crafts situation.
-	void Manager(class Data_in, class GPS_in, class I2C_in, class Para_in, class Radio_in, class Save_in);
-		
-		
-		
-
-  //Holds the passed in class objects to gain access to their references.
-  class Data;
-  class GPS;
-  class I2C;
-  //class Para;
-  class Radio;
-  class Save;
-  
+	void manager();
+	
+	
+	
+	
 	//Digitial pin used to connect the the Parachute's Relay.
-	#define RELAY1  12
+	const byte RELAY1 = 12;
 		
 	//Status of chute deployment.
-	bool chute_deploy = false;
+	bool chuteDeploy = false;
 
 	//Status of chute readiness.
-	bool chute_enable = false;
+	bool chuteEnable = false;
 		
 	//Triggered by recieving a certain radio signal ('EDEPLOY' or 'FINAL') from Mission Control.
 	//   When turned true, instantaneously (no checks for chute enablement or altitude) deploys the parachute. 
@@ -57,7 +49,7 @@ class Para
 	float PARACHUTE_DEPLOY_HEIGHT = 96;
 
 	//Counter used to timeout after 4 seconds. Used in the parachute ENABLEMENT process.
-	int saftey_counter = 0;
+	int safteyCounter = 0;
 
 };
 

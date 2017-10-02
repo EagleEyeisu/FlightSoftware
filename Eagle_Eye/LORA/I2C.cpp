@@ -3,11 +3,12 @@
  * between the LORA and MEGA via I2C protocol.
  */
 
-
-#include "Data.h"
-#include "I2C.h"
-#include "Wire.h"
+ 
 #include <Arduino.h>
+#include "I2C.h"
+#include "DATA.h"
+#include "Globals.h"
+#include <Wire.h>
 
 
 /**
@@ -22,27 +23,21 @@ I2C::I2C()
 /**
  * Assigns the proper address to the current micro controller.
  */
-void I2C::Initialize()
+void I2C::initialize()
 {
 	//Sets the address for the current micro controller.
 	//   Mega - 0
 	//   LoRa - 1
 	Wire.begin(1);
-	Serial.println("Comms Address Set.");
+	//Serial.println("Comms Address Set.");
 }
 
 
 /**
  * Controls what message gets sent where much like an old telephone switchboard operator.
  */
-void I2C::Manager(bool DROP_SIGNAL, class Data_in, class GPS_in, class I2C_in, class Para_in, class Radio_in, class Save_in)
+void I2C::manager(bool DROP_SIGNAL)
 {
-  Data = Data_in;
-  GPS = GPS_in;
-  //I2C = I2C_in;
-  Para = Para_in;
-  Radio = Radio_in;
-  Save = Save_in;
   
 	//Special senario that signals to the Mega for communication switch. 
 	if(DROP_SIGNAL){
@@ -54,7 +49,7 @@ void I2C::Manager(bool DROP_SIGNAL, class Data_in, class GPS_in, class I2C_in, c
 		//Switches the direciton of I2C Communication. From (LoRa -> Mega) / To (Mega -> LoRa)
 		DISPATCH_SIGNAL = false;
 		
-		Serial.println("Receiving Mode");
+		//Serial.println("Receiving Mode");
 	}
 	//Checks for an incoming signal from the Mega.
 	if(!DISPATCH_SIGNAL){
@@ -70,9 +65,10 @@ void I2C::Manager(bool DROP_SIGNAL, class Data_in, class GPS_in, class I2C_in, c
  */
 void I2C::Receive()
 {
+  
 	//Reads in byte if serial port is not empty.
 	if(Wire.available()){
-    Receive_Byte();
+		receiveByte();
 	}
 	
 	//newData turns true when a new byte has been read in from the 
@@ -81,7 +77,7 @@ void I2C::Receive()
 	if (newData) {
 		
 		//Updates the Mega Event variable for data logging purposes.
-		Data.Local.ME = Received_Event;
+		Data.Local.ME = receivedEvent;
 		
 		//Resets the 'newData' check.
 		newData = false;
@@ -93,26 +89,26 @@ void I2C::Receive()
 /**
  * Reads in byte from serial port.
  */
-void I2C::Receive_Byte()
+void I2C::receiveByte()
 {
-	Serial.print("Event Recieved: ");
-	
+	//Serial.print("Event Recieved: ");
+  
 	//Receive byte as an integer
-	Received_Event = Wire.read();
+	receivedEvent = Wire.read();
 	
-	Serial.println(Received_Event);
+	//Serial.println(receivedEvent);
 	
 	//Special senario for receiving the Go Ahead for drop singal from the Mega.
-	if(Received_Event == 9){
+	if(receivedEvent == 9){
 		
 		//The final saftey check in the DETACHMENT process from HABET. 
 		READY_FOR_DROP = true;
 		
 	}
 	//Special senario for receiving the Handshake from the Mega confirming the switch in I2C direction.
-	else if(Received_Event == 13){
+	else if(receivedEvent == 13){
 		
-		Serial.println("Handshake Recieved");
+		//Serial.println("Handshake Recieved");
     
 	}
 	
@@ -125,16 +121,16 @@ void I2C::Receive_Byte()
 /**
  * Sends byte over I2C Connection.
  */
-void I2C::Transfer(int System_Event)
+void I2C::Transfer(int systemEvent)
 {
 	//Assigns the LE (LoRa_Event) to be saved.
-	Data.Local.LE = System_Event;
-	
+	Data.Local.LE = systemEvent;
+  
 	//Assigns address of the receiving board.
 	Wire.beginTransmission(1);
 	
 	//Sends the message.
-	Wire.write(System_Event);
+	Wire.write(systemEvent);
 	
 	//Closes the transmission.
 	Wire.endTransmission();
