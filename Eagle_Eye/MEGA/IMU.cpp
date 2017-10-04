@@ -6,12 +6,27 @@
 
 
 #include "IMU.h"
+#include "DATA.h"
+#include "Globals.h"
+#include <Adafruit_LSM9DS0.h>
+#include <Adafruit_Simple_AHRS.h>
+#include <Adafruit_Sensor.h>
+#include <Arduino.h>
+
+
+/**
+ * Constructor used to reference all other variables & functions.
+ */
+IMU::IMU()
+{
+  
+}
 
 
 /**
  * Tests connection to IMU.
  */
-void IMU::IMU_Initialize()
+void IMU::initialize()
 {
 	//If invalid connection, the program will stall and print an error message.
 	if(!lsm.begin()){
@@ -24,7 +39,7 @@ void IMU::IMU_Initialize()
 	}
 	
 	//Sets specific calibration values. DO NOT CHANGE.
-	lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_2G);
+	lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
 	lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
 	lsm.setupGyro(lsm.LSM9DS0_GYROSCALE_245DPS);
 	
@@ -34,39 +49,9 @@ void IMU::IMU_Initialize()
 /**
  * Responsible relaying to the LoRa that the craft is in the correct orientation to detach.
  */
-void IMU::IMU_Manager()
+void IMU::manager()
 {
-	//Turns true when the MEGA has received the signal '8' to start the dropping process. 
-	if (Detach_Request) {
-		
-		//Checks to see if chute is enabled and the craft is in the correct orientation, or
-		//   if the timeout has occured with the chute being enabled..
-		if ((ParachuteRedZone() && chute_enable) || (chute_enable && timeout >= 20)) {
-			
-			//Time out after 20 cycles. This is temporary, only looking to see if it actually is the correct
-			//   orientation when ready for drop.
-			if (timeout >= 20) {
-				
-				//Updates Mega's Event to log the detachment GO ahead.
-				data.ME = 9;
-				Serial.println("Timed out. LAUNCH");
-			}
-			
-			//Sends detach GO Ahead to LoRa.
-			Send_I2C(9);
-			Serial.println("Sent Detach Signal");
-			
-			//Resets the variables.
-			Detach_Request = false;
-			timeout = 0;
-			
-			//Assigns the correct Mega Event number.
-			data.ME = 9;
-		}
-		else {
-			timeout++;
-		}
-	}
+	
 }
 
 
@@ -77,10 +62,12 @@ float IMU::getRoll()
 {
 	//Updates object calibration to use most current IMU information.
 	Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
-	
+
+  sensors_vec_t   orientation;
+  
 	//Checks for connection to IMU.
 	if(ahrs.getOrientation(&orientation)){
-		return (180 - abs(orientation.roll));
+		return (orientation.roll);
 	}
 }
 
@@ -92,10 +79,12 @@ float IMU::getPitch()
 {
 	//Updates object calibration to use most current IMU information.
 	Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
-	
+
+  sensors_vec_t   orientation;
+  
 	//Checks for connection to IMU.
 	if(ahrs.getOrientation(&orientation)){
-		return (abs(orientation.pitch));
+		return (orientation.pitch);
 	}
 }
 
@@ -107,17 +96,11 @@ float IMU::getYaw()
 {
 	//Updates object calibration to use most current IMU information.
 	Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
-	
+
+  sensors_vec_t   orientation;
+  
 	//Checks for connection to IMU.
 	if(ahrs.getOrientation(&orientation)){
-		return (orientation.yaw);
+		return (orientation.heading);
 	}
-}
-
-
-/**
- * Checks to see if the craft is in the right orientation to deploy.
- */
-bool ParachuteRedZone(){
-  return !(data.Roll >= 135 && data.Pitch <= 45);
 }

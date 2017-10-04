@@ -4,51 +4,59 @@
  */
 
 
+
 #include "I2C.h"
+#include "DATA.h"
+#include "Globals.h"
+#include <Wire.h>
+#include <Arduino.h>
+
+
+
+/**
+ * Constructor used to reference all other variables & functions.
+ */
+I2C::I2C()
+{
+  
+}
 
 
 /**
  * Assigns the proper address to the current micro controller.
  */
-void I2C::I2C_Initialize()
+void I2C::initialize()
 {
 	//Sets the address for the current micro controller.
 	//   Mega - 0
 	//   LoRa - 1
 	Wire.begin(0);
-	Serial.println("Comms Address Set.");
+	//Serial.println("Comms Address Set.");
 }
 
 
 /**
  * Controls what message gets sent where much like an old telephone switchboard operator.
  */
-void I2C::I2C_Manager()
+void I2C::manager()
 {
 	
 	//When this is false, the program only trys to receive messages.
 	if (!DISPATCH_SIGNAL) {
 		
 		//Checks for incoming communication.
-		I2C_SwitchBoard(false, DISPATCH_SIGNAL, 0); 
+		switchBoard(false, DISPATCH_SIGNAL, 0); 
 	}
 	
 	//Sends handshake to LoRa upon communication switch.
-	if (I2C_DirectionSwitch == 1) { 
+	if (directionSwitch == 1) { 
 	
 		//Sends the communication switch signal to LoRa.
-		I2C_Send(13);
+		Transfer(13);
 		
 		//Increments the iterator to only allow for this senario to happen once.
-		I2C_DirectionSwitch++;
+		directionSwitch++;
 	}
-	
-	
-	//Used to send a test signal back to LoRa.
-	
-	//if(Serial.read() == 's' && DISPATCH_SIGNAL) {
-	//	I2C(false,true,0);
-	//}
     
 }
 
@@ -62,7 +70,7 @@ void I2C::I2C_Manager()
  * 12 - Brake On
  * 13 - Communication Switch
  */
-void I2C::I2C_SwitchBoard(bool Local, bool Send, int System_Event)
+void I2C::switchBoard(bool Local, bool Send, int systemEvent)
 {
 	//Sends or Receives an event from or to the other micro controller.
 	if (!Local) {
@@ -71,13 +79,13 @@ void I2C::I2C_SwitchBoard(bool Local, bool Send, int System_Event)
 		if (Send) { 
 			
 			//Sends event signal to LoRa.
-			I2C_Send(System_Event);
+			Transfer(systemEvent);
 		}
 		//Receive event.
 		else { 
 		
 			//Reads in byte from other micro controller.
-			Receive_I2C();
+			Receive();
 			
 		}
 	}
@@ -85,7 +93,7 @@ void I2C::I2C_SwitchBoard(bool Local, bool Send, int System_Event)
 	else {
 		
 		//Assigns the ME (Mega_Event) to be saved. 
-		data.ME = System_Event;
+		Data.Local.ME = systemEvent;
 	}
 }
 
@@ -93,16 +101,16 @@ void I2C::I2C_SwitchBoard(bool Local, bool Send, int System_Event)
 /**
  * Sends byte over I2C Connection.
  */
-void I2C::I2C_Send(int System_Event)
+void I2C::Transfer(int systemEvent)
 {
 	//Assigns the ME (Mega_Event) to be saved.
-	data.ME = System_Event;
+	Data.Local.ME = systemEvent;
 	
 	//Assigns address of the receiving board.
-	Wire.beginTransmission(1);
+	Wire.beginTransmission(0);
 	
 	//Sends the message.
-	Wire.write(System_Event);
+	Wire.write(systemEvent);
 	
 	//Closes the transmission.
 	Wire.endTransmission();
@@ -112,10 +120,12 @@ void I2C::I2C_Send(int System_Event)
 /**
  * Recieves byte over I2C Connection.
  */
-void I2C::I2C_Receieve()
+void I2C::Receive()
 {
 	//Reads in byte if serial port is not empty.
-	Wire.onReceive(Receive_Byte());
+  if(Wire.available()){
+    receiveByte();
+  }
 	
 	//newData turns true when a new byte has been read in from the 
 	//   serial port. Prevents the repeated recording of the same 
@@ -123,7 +133,7 @@ void I2C::I2C_Receieve()
 	if (newData) {
 		
 		//Updates the Lora Event variable for data logging purposes.
-		data.LE = Receieved_Event;
+		Data.Local.LE = receievedEvent;
 		
 		//Resets the 'newData' check.
 		newData = false;
@@ -134,35 +144,35 @@ void I2C::I2C_Receieve()
 /**
  * Reads in byte from serial port.
  */
-void I2C::Receive_Byte()
+void I2C::receiveByte()
 {
-	Serial.print("Event Recieved: ");
+	//Serial.print("Event Recieved: ");
 	
 	//Receive byte as an integer
-	Receieved_Event = Wire.read();
+	receievedEvent = Wire.read();
 	
-	Serial.println(Receieved_Event);
+	//Serial.println(receievedEvent);
 	
 	//Special senario for communication switch. From LoRa -> Mega, to Mega -> LoRa.
-	if (Receieved_Event == 8) {
+	if (receievedEvent == 8) {
 		
 		//Program now sends messages instead of receiving them.
 		DISPATCH_SIGNAL = true;
 		
 		//Triggers the check for if the craft is in the correct orientation to detach from HABET.
-		DETACH_REQUEST = true;
+		Detach_Request = true;
 		
-		Serial.print("Sending Mode");
+		//Serial.print("Sending Mode");
 		
 		//Used to directly trigger the handshake TO the LoRa micro controller. 
-		I2C_DirectionSwitch = 1;
+		directionSwitch = 1;
 	}
 	//Special senario for the detachment of the Eagle Eye craft from HABET.
-	else if (Receieved_Event == 4) {
+	else if (receievedEvent == 4) {
 		
 		//Eagle Eye is now disconnected from HABET.
 		HABET_Connection = false;
-		Serial.println("Detached");
+		//Serial.println("Detached");
 	}
 	
 	//Tells the program that the received message is different from that of the previously

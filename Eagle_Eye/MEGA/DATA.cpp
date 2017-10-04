@@ -3,8 +3,13 @@
  */
 
 
-#include <Arduino.h>
 #include "DATA.h"
+#include "IMU.h"
+#include "THERMO.h"
+#include "Globals.h"
+#include <Arduino.h>
+#include <Adafruit_BMP085_U.h>
+#include <Adafruit_MAX31855.h>
 
 
 /**
@@ -21,26 +26,34 @@ DATA::DATA()
  */
 void DATA::manager()
 {
+
+  //Object used to store the store the data pulled from the BMP085.
+  sensors_event_t event;
+  
 	//Creates new 'event' with the most current pressure sensor data.
 	bmp.getEvent(&event);
 
-	Local.Altitude = getAltitude(event.pressure);
-	Local.TempExt = getTempExt();
+	Local.Altitude = Data.getAltitude(event.pressure);
+	Local.TempExt = Thermo.getTempExt();
 	Local.Pressure = event.pressure;
-	Local.Roll = getRoll();
-	Local.Pitch = getPitch();
-	Local.Yaw = getYaw();
+	Local.Roll = Imu.getRoll();
+	Local.Pitch = Imu.getPitch();
+  Local.Yaw = Imu.getYaw();
 	//Local.LE and Local.ME update on their own throughout the program & are reset to 0 after being saved.
 
 	//Prints out data struct to the screen for debugging/following alone purposes.
-	Serial.print("Altitude:    "); 		Serial.print(Local.Altitude); Serial.println(" m");
-	Serial.print("Temperature: "); 		Serial.print(Local.TempExt); Serial.println(" C");
-	Serial.print("Pressure:    "); 		Serial.print(Local.Pressure); Serial.println(" hPa");
-	Serial.print("Roll:  "); 			Serial.println(Local.Roll);
-	Serial.print("Pitch: "); 			Serial.println(Local.Pitch);
-	Serial.print("Yaw:   "); 			Serial.println(Local.Yaw);
-	Serial.print("LoRa Event: "); 		Serial.println(Local.LE);
-	Serial.print("Mega Event: "); 		Serial.println(Local.ME);
+  Serial.print("Time:        ");    Serial.println(Local.Time);
+	Serial.print("Altitude:    "); 		Serial.print(Local.Altitude);       Serial.println(" m");
+  Serial.print("GPSAltitude: ");    Serial.print(Local.GPSAltitude);    Serial.println(" m");
+	Serial.print("Temperature: "); 		Serial.print(Local.TempExt);        Serial.println(" C");
+	Serial.print("Pressure:    "); 		Serial.print(Local.Pressure);       Serial.println(" hPa");
+	Serial.print("Roll:        "); 	  Serial.println(Local.Roll);
+	Serial.print("Pitch:       "); 		Serial.println(Local.Pitch);
+	Serial.print("Yaw:         ");    Serial.println(Local.Yaw);
+  Serial.print("Speed:       ");    Serial.print(Local.Speed);          Serial.println(" mps");
+  Serial.print("Distance:    ");    Serial.print(Local.TargetDistance); Serial.println(" m");
+	Serial.print("LoRa Event:  "); 		Serial.println(Local.LE);
+	Serial.print("Mega Event:  "); 		Serial.println(Local.ME);
 	Serial.print("-------------------------------------------");
 	Serial.println();
 }
@@ -50,7 +63,7 @@ void DATA::manager()
  * Derives Crafts altitude based on current atmosphereic pressure.
  *    DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD TO BY JAMES/JARED.
  */
-float getAltitude(float _Pressure)
+float DATA::getAltitude(float _Pressure)
 {
 	//Converts the incoming pressure (hPa) into (mPa).
 	float pressure = _Pressure / 10.0;
@@ -86,7 +99,7 @@ float getAltitude(float _Pressure)
 	}
 	
 	//BELOW 11,000m (Pressure > 67.05)
-	else {                                          
+	else {
 		leftTop = 44397.5;
 		rightTop = 18437 * pow(pressure, 0.190259);
 		alt = leftTop - rightTop;
@@ -99,7 +112,7 @@ float getAltitude(float _Pressure)
 /**
  * Tests connection to Barometer.
  */
-void Data::initialize()
+void DATA::initialize()
 {
 	//If invalid connection, the program will stall and print an error message.
 	if(!bmp.begin()){

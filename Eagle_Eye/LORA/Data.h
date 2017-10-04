@@ -53,7 +53,7 @@ class DATA
 		//   specific event.
 		float ME = 0.0;
 
-    //Time of flight. Used for data capture in in SD card.
+    //Time of flight. Used for data capture in SD card.
     char Time[10];
 
 		//Holds the crafts previous altitude.

@@ -53,7 +53,7 @@ void setup(void)
 
 void loop(void) 
 {
-  sensors_vec_t   orientation;
+  
 
   // Use the simple AHRS function to get the current orientation.
   if (ahrs.getOrientation(&orientation))
