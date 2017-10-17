@@ -30,6 +30,33 @@ class IMU
 	
 	//Returns the current Yaw angle.
 	float getYaw();
+
+  //Returns the difference between target and current heading and switches turn booleans accordingly
+  float angleToTarget();
+
+  //Returns difference between target and current altitudes and switches up/down booleans accordingly
+  float checkAltitude();
+
+  //Tolerance for heading angle
+  float angleTolerance = 5;
+
+  //Tolerance for difference in altitudes
+  float altitudeTolerance = 200;
+
+  \\Tolerance for distance to target
+  float distanceTolerance = 20;
+
+  //Booleans to determine right/left turning action
+  bool turnRight = false;
+  bool turnLeft = false;
+
+  //Booleans to determine upward/downward motion action
+  bool moveUp = false;
+  bool moveDown = false;
+
+  //Booleans to determine forward/backward motion action
+  bool moveForward = false;
+  bool moveBackward = false;
 	
 };
 

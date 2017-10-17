@@ -12,6 +12,7 @@
 #include <Adafruit_Simple_AHRS.h>
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
+#include <Math.h>
 
 
 /**
@@ -19,7 +20,9 @@
  */
 IMU::IMU()
 {
-  
+  angleToTarget();
+  checkAltitude();
+  checkDistance();
 }
 
 
@@ -103,4 +106,77 @@ float IMU::getYaw()
 	if(ahrs.getOrientation(&orientation)){
 		return (orientation.heading);
 	}
+}
+
+/**
+ * Returns the difference between target and current heading and switches turn booleans accordingly
+ */
+float IMU::angleToTarget()
+{
+  float dlat = Data.TARGET_LAT - Data.Latitude;
+  float dlon = Data.TARGET_LON - Data.Longitude;
+
+  float target = Math.atan(dlat/-dlon)*(180/Math.M_PI);
+  if(dlong > 0 && dlat < 0){
+    target += 180;
+  }
+  else if (dlon < 0 && dlat < 0){
+    target -= 180;
+  }
+
+  float angle = target - getYaw();
+  if(angle > 180){
+    angle -= 360;
+  }
+  else if(angle < -180){
+    angle += 360;
+  }
+
+  if(angle > angleTolerance){
+    turnRight = true;
+  }
+  else if(angle < -angleTolerance){
+    turnLeft = true;
+  }
+  else{
+    turnRight = false;
+    turnLeft = false;
+  }
+
+  return angle;
+}
+
+/**
+ * Returns difference between target and current altitudes and switches up/down booleans accordingly
+ */
+float IMU::checkAltitude()
+{
+  float diffAlt = Data.TARGET_ALTITUDE - Data.Altitude;
+
+  if(diffAlt > altitudeTolerance){
+    moveUp = true;
+  }
+  else if(diffAlt < -altitudeTolerance){
+    moveDown = true;
+  }
+  else{
+    moveUp = false;
+    moveDown = false;
+  }
+
+  return diffAlt;
+}
+
+/**
+ * 
+ */
+float IMU::checkDistance()
+{
+  if(Data.TargetDistance > distanceTolerance){
+     moveForward = true;
+  }else{
+     moveForward = false;
+  }
+}
+
 }
