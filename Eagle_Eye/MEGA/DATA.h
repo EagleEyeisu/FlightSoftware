@@ -22,9 +22,8 @@ class DATA
 	
 	//Runs initialzation script for the Barometer.
 	void initialize();
-
-
-
+  
+  
   
 	
 	//Stores all of Eagle Eye's current flight data.
@@ -32,31 +31,31 @@ class DATA
 	//   is saves gathered/used/saved locally. The Radio.h struct holds all the network information
 	//   being passed between crafts (nodes).
 	struct Flight_Data {
-	
+	  
 		//Altitude of the craft.
 		float Altitude = 0.0;
-
+    
     //Altitude of the craft. (from LoRa)
     float GPSAltitude = 0.0;
-	
+	  
 		//Latitude of the craft.
 		float Latitude = 0.0;
 		
 		//Longitude of the craft.
 		float Longitude = 0.0;
-
+    
     //Roll value of teh craft.
     float Roll = 0.0;
-
+    
     //Pitch value of the craft.
     float Pitch = 0.0;
     
     //Yaw value of the craft.
     float Yaw = 0.0;
-
+    
     //External atmosphereic pressure.
     float Pressure = 0.0;
-
+    
     //External temperature of craft.
     float TempExt = 0.0;
     
@@ -66,16 +65,17 @@ class DATA
 		//Mega Event. This is assigned as needed throughout the program. Signals the Mega had a 
 		//   specific event.
 		float ME = 0.0;
-
+    
     //Speed in meters per second. (Brought over from LoRa)
     float Speed = 0.0;
     
     //Current distance to target in meters. (Brought over from LoRa)
     float TargetDistance = 0.0;
-
+    
     //Time of flight. Used for data capture in SD card. (Brought over from LoRa)
     char Time[10];
     
+<<<<<<< HEAD
     //Target Latitude
     float TARGET_LAT;
 
@@ -85,9 +85,13 @@ class DATA
     //Target Altitude
     float TARGET_ALTITUDE;
     
+=======
+>>>>>>> f4f0a061dbbaa25f9f2de38a20d201a60ac642bd
 	};
 	struct Flight_Data Local;
 
+  //Byte array to be filled via CAN from LoRa.
+  char NDP[120];
 };
 
 #endif
