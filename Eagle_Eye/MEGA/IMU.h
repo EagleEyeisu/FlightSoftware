@@ -37,13 +37,16 @@ class IMU
   //Returns difference between target and current altitudes and switches up/down booleans accordingly
   float checkAltitude();
 
+  //
+  float checkDistance();
+
   //Tolerance for heading angle
   float angleTolerance = 5;
 
   //Tolerance for difference in altitudes
   float altitudeTolerance = 200;
 
-  \\Tolerance for distance to target
+  //Tolerance for distance to target
   float distanceTolerance = 20;
 
   //Booleans to determine right/left turning action

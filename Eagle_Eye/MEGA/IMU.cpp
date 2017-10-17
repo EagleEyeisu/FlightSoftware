@@ -12,7 +12,7 @@
 #include <Adafruit_Simple_AHRS.h>
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
-#include <Math.h>
+#include <math.h>
 
 
 /**
@@ -20,9 +20,7 @@
  */
 IMU::IMU()
 {
-  angleToTarget();
-  checkAltitude();
-  checkDistance();
+  
 }
 
 
@@ -54,7 +52,9 @@ void IMU::initialize()
  */
 void IMU::manager()
 {
-	
+	angleToTarget();
+  checkAltitude();
+  checkDistance();
 }
 
 
@@ -113,11 +113,11 @@ float IMU::getYaw()
  */
 float IMU::angleToTarget()
 {
-  float dlat = Data.TARGET_LAT - Data.Latitude;
-  float dlon = Data.TARGET_LON - Data.Longitude;
+  float dlat = Data.Local.TARGET_LAT - Data.Local.Latitude;
+  float dlon = Data.Local.TARGET_LON - Data.Local.Longitude;
 
-  float target = Math.atan(dlat/-dlon)*(180/Math.M_PI);
-  if(dlong > 0 && dlat < 0){
+  float target = atan(dlat/-dlon)*(180/M_PI);
+  if(dlon > 0 && dlat < 0){
     target += 180;
   }
   else if (dlon < 0 && dlat < 0){
@@ -151,7 +151,7 @@ float IMU::angleToTarget()
  */
 float IMU::checkAltitude()
 {
-  float diffAlt = Data.TARGET_ALTITUDE - Data.Altitude;
+  float diffAlt = Data.Local.TARGET_ALTITUDE - Data.Local.Altitude;
 
   if(diffAlt > altitudeTolerance){
     moveUp = true;
@@ -172,11 +172,9 @@ float IMU::checkAltitude()
  */
 float IMU::checkDistance()
 {
-  if(Data.TargetDistance > distanceTolerance){
+  if(Data.Local.TargetDistance > distanceTolerance){
      moveForward = true;
   }else{
      moveForward = false;
   }
-}
-
 }

@@ -75,7 +75,6 @@ class DATA
     //Time of flight. Used for data capture in SD card. (Brought over from LoRa)
     char Time[10];
     
-<<<<<<< HEAD
     //Target Latitude
     float TARGET_LAT;
 
@@ -85,8 +84,7 @@ class DATA
     //Target Altitude
     float TARGET_ALTITUDE;
     
-=======
->>>>>>> f4f0a061dbbaa25f9f2de38a20d201a60ac642bd
+
 	};
 	struct Flight_Data Local;
 
