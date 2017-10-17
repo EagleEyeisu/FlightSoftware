@@ -8,7 +8,6 @@
 #include "DATA.h"
 #include "I2C.h"
 #include "IMU.h"
-//#include "PARA.h"
 #include "SAVE.h"
 #include "THERMO.h"
 #include "Globals.h"
@@ -18,7 +17,6 @@
 DATA Data;
 I2C Comm;
 IMU Imu;
-//PARA Para;
 SAVE Save;
 THERMO Thermo;
 
@@ -44,9 +42,6 @@ void setup(){
 
   //Initializes the Pressure Sensor.
   Data.initialize();
-  
-  //Initializes the Parachute and its power relay.
-  //Para.initialize();
 
   //Initializes the SD Card.
   Save.initialize();
@@ -67,15 +62,9 @@ void loop(){
 
   //Reads in all needed values from periphals.
   Data.manager();
-
-  //Decides to Send or Recieve I2C information.
-  Comm.manager();
-
+  
   //Watches for LoRa to ask for permission to drop.
   Imu.manager();
-  
-  //Repsonsible for Enablement & Deployment of the paracute.
-  //Para.manager();
 
   //Stores the current cycle's data to the SD Card.
   Save.saveData();

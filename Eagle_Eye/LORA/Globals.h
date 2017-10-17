@@ -4,7 +4,6 @@
 extern class DATA Data;
 extern class GPS Gps;
 extern class I2C Comm;
-extern class PARA Para;
 extern class RADIO Radio;
 extern class SAVE Save;
 

@@ -74,6 +74,7 @@ void GPS::manager()
     Data.Local.altPrevious = Data.Local.Altitude;
     Data.Local.latPrevious = Data.Local.Latitude;
     Data.Local.lonPrevious = Data.Local.Longitude;
+    Data.Local.TDPrevious = Data.Local.TargetDistance;
   }
 }
 
@@ -83,7 +84,7 @@ void GPS::manager()
  */
 float GPS::DistanceToTarget(){
   
-  float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), Data.TARGET_LAT, Data.TARGET_LON) / 100;
+  float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), Data.TargetLat, Data.TargetLon) / 100;
 
   return distance;
 }
@@ -98,4 +99,6 @@ void GPS::revertStruct()
   Data.Local.Altitude = Data.Local.altPrevious;
   Data.Local.Latitude = Data.Local.latPrevious;
   Data.Local.Longitude = Data.Local.lonPrevious;
+  Data.Local.Speed = 0.0;
+  Data.Local.TargetDistance = Data.Local.TDPrevious;
 }

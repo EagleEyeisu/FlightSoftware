@@ -4,7 +4,6 @@
 extern class DATA Data;
 extern class I2C Comm;
 extern class IMU Imu;
-extern class PARA Para;
 extern class SAVE Save;
 extern class THERMO Thermo;
 

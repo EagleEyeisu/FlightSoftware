@@ -116,6 +116,5 @@ void DATA::manager()
 	Serial.print("LoRa Event: ");    Serial.println(Local.LE);
 	Serial.print("Mega Event: ");    Serial.println(Local.ME);
 	Serial.println("-------------------------------------------");
-	Serial.println();
   
 }

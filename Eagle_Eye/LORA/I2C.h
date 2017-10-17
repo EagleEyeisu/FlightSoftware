@@ -10,7 +10,7 @@
 class I2C
 {
   public:
-
+  
 	//Constructor
 	I2C();
   
@@ -18,36 +18,20 @@ class I2C
 	void initialize();
 	
 	//Processes all incoming and outgoing 
-	void manager(bool DROP_SIGNAL);
+	void manager();
+  
+  //Builds byte array to be sent via Controller Access Network.
+  void preLoadCAN();
 	
-	//Reads in the incoming I2C message.
-	void Receive();
-	
-	//Reads in the byte and asses if new data has been obtained.
-	void receiveByte();
-	
-	//Sends the passed in integer over I2C.
-	static void Transfer(int systemEvent);
-	
-	
-	
-	
-	//Status for I2C direction. False = (LoRa -> Mega), True = (Mega -> LoRa)
-	bool DISPATCH_SIGNAL = true;
-	
-	//Status for Connection to HABET.
-	bool HABET_Connection = true;
+	//Sends the NDP byte array via CAN bus.
+	void upLoadCAN();
 
-	//Purpose is to stop message spamming from either micro controller.
-	//   Turns true if data is recieved from from LoRa.
-	bool newData = false;      
 
-	//Turned true when Mega replies with Go Ahead for drop.
-	bool READY_FOR_DROP = false;
 
-	//Event Number.
-	int receivedEvent;
-
+  
+  //Neighbor Discovery Protocol to be sent via I2C CAN bus.
+  String NDP = "";
+  
 };
 #endif
 
