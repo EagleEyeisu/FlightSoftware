@@ -75,14 +75,10 @@ class DATA
   float TargetLat = 42.8080;
   
   //Target Longitude for craft.
-<<<<<<< HEAD
-  float TARGET_LON = -92.2582;
+  float TargetLon = -92.2582;
 
   //Target Altitude for the craft.
-  float TARGET_ALTITUDE = 10000.0;
-=======
-  float TargetLon = -92.2582;
->>>>>>> f4f0a061dbbaa25f9f2de38a20d201a60ac642bd
+  float TargetAltitude = 10000.0;
   
 };
 #endif
