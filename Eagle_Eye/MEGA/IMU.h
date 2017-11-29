@@ -16,38 +16,41 @@ class IMU
   //Constructor
   IMU();
   
-	//Runs initialzation script for the IMU.
-	void initialize();
-	
-	//Responsible relaying to the LoRa that the craft is in the correct orientation to detach.
+  //Runs initialzation script for the IMU.
+  void initialize();
+
+  //Responsible relaying to the LoRa that the craft is in the correct orientation to detach.
   void manager();
-	
-	//Returns the crafts current Roll angle.
-	float getRoll();
-	
-	//Returns the current Pitch angle.
-	float getPitch();
-	
-	//Returns the current Yaw angle.
-	float getYaw();
+  
+  //Returns the crafts current Roll angle.
+  float getRoll();
+  
+  //Returns the current Pitch angle.
+  float getPitch();
+  
+  //Returns the current Yaw angle.
+  float getYaw();
 
   //Returns the difference between target and current heading and switches turn booleans accordingly
-  float angleToTarget();
+  void angleToTarget();
 
   //Returns difference between target and current altitudes and switches up/down booleans accordingly
-  float checkAltitude();
+  void checkAltitude();
 
-  //
-  float checkDistance();
+  //Compares current altitude against target altitude. Sets corresponding booleans.
+  void checkDistance();
 
+  //Current angle to the target.
+  float ATT = 0.0;
+  
   //Tolerance for heading angle
-  float angleTolerance = 5;
+  float angleTolerance = 5.0;
 
   //Tolerance for difference in altitudes
-  float altitudeTolerance = 200;
+  float altitudeTolerance = 200.0;
 
   //Tolerance for distance to target
-  float distanceTolerance = 20;
+  float distanceTolerance = 20.0;
 
   //Booleans to determine right/left turning action
   bool turnRight = false;

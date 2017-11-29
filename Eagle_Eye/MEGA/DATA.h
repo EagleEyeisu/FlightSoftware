@@ -13,13 +13,43 @@ class DATA
 	
 	//Constuctor
 	DATA();
-	
+ 
+	//Parses passed in message by using commas as the identifiers.
+  float Parse(String message, int objective);
+  
   //Responsible for pulling current sensor data from peripherals.
 	void manager();
 	
 	//Reads in external pressure and calculates altitude.
 	float getAltitude(float _Pressure);
-	
+
+  //Reads in the altitude from the CAN Network.
+  float getGPSAltitude();
+
+  //Reads in the latitude from the CAN Network.
+  float getGPSLatitude();
+
+  //Reads in the longitude from the CAN Network.
+  float getGPSLongitude();
+
+  //Reads in the taret altitude from the CAN Network.
+  float getGPSTargetAlt();
+
+  //Reads in the target latitude from the CAN Network.
+  float getGPSTargetLat();
+
+  //Reads in the taret longitude from the CAN Network.
+	float getGPSTargetLon();
+  
+  //Reads in the taret distance from the CAN Network.
+  float getGPSTargetDistance();
+
+  //Reads in the target Distance from the CAN Network.
+  float getGPSSpeed();
+
+  //Reads in the time of the LoRa from the CAN Network.
+  void getGPSTime();
+  
 	//Runs initialzation script for the Barometer.
 	void initialize();
   
@@ -31,20 +61,13 @@ class DATA
 	//   is saves gathered/used/saved locally. The Radio.h struct holds all the network information
 	//   being passed between crafts (nodes).
 	struct Flight_Data {
-	  
+
+    //INFORMATION IS LCOAL TO THE MEGA.
+    
 		//Altitude of the craft.
 		float Altitude = 0.0;
     
-    //Altitude of the craft. (from LoRa)
-    float GPSAltitude = 0.0;
-	  
-		//Latitude of the craft.
-		float Latitude = 0.0;
-		
-		//Longitude of the craft.
-		float Longitude = 0.0;
-    
-    //Roll value of teh craft.
+    //Roll value of the craft.
     float Roll = 0.0;
     
     //Pitch value of the craft.
@@ -65,31 +88,41 @@ class DATA
 		//Mega Event. This is assigned as needed throughout the program. Signals the Mega had a 
 		//   specific event.
 		float ME = 0.0;
+
+
+    //BELOW INFORMATION IS BROUGHT OVER FROM LORA.
     
-    //Speed in meters per second. (Brought over from LoRa)
-    float Speed = 0.0;
+    
+    //Altitude of the craft. (Brought over from LoRa)
+    float GPSAltitude = 0.0;
+
+    //Latitude of the craft.
+    float Latitude = 0.0;
+    
+    //Longitude of the craft.
+    float Longitude = 0.0;
+
+    //Target Altitude (Brought over from LoRa)
+    float GPSTargetAlt = 0.0;
+    
+    //Target Latitude (Brought over from LoRa)
+    float GPSTargetLat = 0.0;
+    
+    //Target Longitude (Brought over from LoRa)
+    float GPSTargetLon = 0.0;
     
     //Current distance to target in meters. (Brought over from LoRa)
-    float TargetDistance = 0.0;
+    float GPSTargetDistance = 0.0;
+    
+    //Speed in meters per second. (Brought over from LoRa)
+    float GPSSpeed = 0.0;
     
     //Time of flight. Used for data capture in SD card. (Brought over from LoRa)
-    char Time[10];
+    char GPSTime[10];
     
-    //Target Latitude
-    float TARGET_LAT;
-
-    //Target Longitude
-    float TARGET_LON;
-
-    //Target Altitude
-    float TARGET_ALTITUDE;
-    
-
 	};
 	struct Flight_Data Local;
 
-  //Byte array to be filled via CAN from LoRa.
-  char NDP[120];
 };
 
 #endif

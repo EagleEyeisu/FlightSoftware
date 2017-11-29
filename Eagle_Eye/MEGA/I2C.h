@@ -24,9 +24,14 @@ class I2C
   //Neighbor Discovery Protocol to be sent via I2C CAN bus.
   String NDP;
 
+  //Status for reception of the first 32 bits over the CAN bus.
   bool First8 = false;
 
-  bool Last8 = false;
+  //Status for reception of the second 32 bits over the CAN bus.
+  bool Second8 = false;
+
+  //Status for reception of the third 32 bits over the CAN bus.
+  bool Third8 = false;
 };
 
 #endif

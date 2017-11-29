@@ -56,16 +56,16 @@ void I2C::preLoadCAN(){
   /**
    *                EXAMPLE OF CONTROLLER ACCESS NETWORK PROTOCOL PACKET
    *            
-   * $ ,GPSAltitude, Latitude, Longitude, TargetLat, TargetLon, Roll, Pitch, Yaw, Speed , TargetDistance, Time, $
-   *         1           2         3          4           5       6     7     8     9          10          11
-   *             (Spaces only for show. Also variables are as named on Mega.)
+   * $,Altitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$
+   *      1          2         3          4          5          6            7           8      9
+   *             
    */
-
+    
   //Creates a temporary string to hold all need information.
   String temp = "";
 
   //Each line below appends a certain divider or value to the string.
-  temp += '$';
+  temp += '$'; 
   temp += ',';
   temp += Data.Local.Altitude,6;
   temp += ',';
@@ -73,11 +73,15 @@ void I2C::preLoadCAN(){
   temp += ',';
   temp += Data.Local.Longitude;
   temp += ',';
-  temp += Data.TargetLat;
+  temp += Data.Local.TargetAlt;
   temp += ',';
-  temp += Data.TargetLon;
+  temp += Data.Local.TargetLat;
+  temp += ',';
+  temp += Data.Local.TargetLon;
   temp += ',';
   temp += Data.Local.TargetDistance;
+  temp += ',';
+  temp += Data.Local.Speed;
   temp += ',';
   temp += Data.Local.Time;
   temp += ',';
@@ -96,10 +100,12 @@ void I2C::upLoadCAN()
 {
   //Iterator
   int i = 0;
+
+  //Sends the first installment of 32 characters to the Mega. (0-32)
   
 	//Assigns address of the receiving board.
 	Wire.beginTransmission(8);
-
+  
 	//Sends the message.
 	while(i<32){
     Wire.write(NDP[i]);
@@ -109,14 +115,31 @@ void I2C::upLoadCAN()
 	
 	//Closes the transmission.
 	Wire.endTransmission();
-
+  
   delay(100);
-
+  
+  //Sends the second installment of 32 characters to the Mega. (32-64)
   
   Wire.beginTransmission(8);
   
   //Sends the message.
   while(i<64){
+    Wire.write(NDP[i]);
+    Serial.print(NDP[i]);
+    i++;
+  }
+  
+  //Closes the transmission.
+  Wire.endTransmission();
+
+  delay(100);
+
+  //Sends the third installment of 32 characters to the Mega. (64-96)
+  
+  Wire.beginTransmission(8);
+  
+  //Sends the message.
+  while(i<96){
     Wire.write(NDP[i]);
     Serial.print(NDP[i]);
     i++;

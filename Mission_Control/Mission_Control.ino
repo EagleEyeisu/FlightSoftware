@@ -1,14 +1,14 @@
 /****LIBRARIES****/
 
 //NON EAGLE EYE
-#include "Default_Libraries/RH_RF95.h"
-#include "Default_Libraries/SD.h"
-#include "Default_Libraries/TimeLib.h"
+#include <RH_RF95.h>
+#include <SD.h>
+#include <TimeLib.h>
 
 //EAGLE EYE'S
-#include "MC_Libraries/Data.h"
-#include "MC_Libraries/Radio.h"
-#include "MC_Libraires/Save.h"
+#include "Data.h"
+#include "Radio.h"
+#include "Save.h"
 
 
 /**

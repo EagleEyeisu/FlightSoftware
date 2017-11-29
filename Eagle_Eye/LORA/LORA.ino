@@ -46,7 +46,7 @@ void setup(){
 
 
 /**
- * Handles Event Logging. Sends MEGA milestone updates/errors.
+ * MAIN PROGRAM CODE.
  */
 void loop(){
   
@@ -69,5 +69,5 @@ void loop(){
   //Saves all local data to the SD card.
   //Save.saveData();
 
-  delay(4000);
+  delay(10000);
 }

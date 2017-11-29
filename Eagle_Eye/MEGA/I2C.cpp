@@ -48,10 +48,11 @@ void receiveEvent(int howmany)
 {
   Serial.println("Interrupt Triggered");
 
-  if(Comm.First8 && Comm.Last8){
+  if(Comm.First8 && Comm.Second8 && Comm.Third8){
     Comm.NDP = "";
     Comm.First8 = false;
-    Comm.Last8 = false;
+    Comm.Second8 = false;
+    Comm.Third8 = false;
   }
   
   //Checks for data on the wire.
@@ -65,11 +66,17 @@ void receiveEvent(int howmany)
   }
   
   if(!Comm.First8){
+    
     Comm.First8 = true;
   }
-  else if(!Comm.Last8){
-    Comm.Last8 = true;
-    Serial.print("FULL: "); Serial.println(Comm.NDP);
+  else if(!Comm.Second8){
+    
+    Comm.Second8 = true;
+  }
+  else if(!Comm.Third8){
+    
+    Comm.Third8 = true;
+    //Serial.println(Comm.NDP);
   }
   
 }

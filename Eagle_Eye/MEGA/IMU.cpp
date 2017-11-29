@@ -2,11 +2,14 @@
   IMU.cpp handles all of Eagle Eye's IMU data.
   This include all orientation data including:
   gyroscope, accelerometer, and magnetometer.
+  This file also holds values used in the 
+  calculation of the crafts orientatin.
 */
 
 
 #include "IMU.h"
 #include "DATA.h"
+#include "MOTOR.h"
 #include "Globals.h"
 #include <Adafruit_LSM9DS0.h>
 #include <Adafruit_Simple_AHRS.h>
@@ -29,20 +32,20 @@ IMU::IMU()
  */
 void IMU::initialize()
 {
-	//If invalid connection, the program will stall and print an error message.
-	if(!lsm.begin()){
-		Serial.print("PROBLEM WITH 9DOF");
-		while(1);
-	}
-	//Valid connection, program proceeds as planned.
-	else{
-		Serial.println("9Dof Online.");
-	}
-	
-	//Sets specific calibration values. DO NOT CHANGE.
-	lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
-	lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
-	lsm.setupGyro(lsm.LSM9DS0_GYROSCALE_245DPS);
+  //If invalid connection, the program will stall and print an error message.
+  if(!lsm.begin()){
+	Serial.print("PROBLEM WITH 9DOF");
+	while(1);
+  }
+  //Valid connection, program proceeds as planned.
+  else{
+	Serial.println("9Dof Online.");
+  }
+
+  //Sets specific calibration values. DO NOT CHANGE.
+  lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
+  lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
+  lsm.setupGyro(lsm.LSM9DS0_GYROSCALE_245DPS);
 	
 }
 
@@ -52,8 +55,13 @@ void IMU::initialize()
  */
 void IMU::manager()
 {
-	angleToTarget();
+  //Calculates the angle between the crafts current heading and the target.
+  angleToTarget();
+
+  //Checks the difference between where we want to be and where we actual are in terms of altitude.
   checkAltitude();
+
+  //Calculates the distance in meters from the craft to the target location.
   checkDistance();
 }
 
@@ -63,15 +71,15 @@ void IMU::manager()
  */
 float IMU::getRoll()
 {
-	//Updates object calibration to use most current IMU information.
-	Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
+  //Updates object calibration to use most current IMU information.
+  Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
 
   sensors_vec_t   orientation;
   
-	//Checks for connection to IMU.
-	if(ahrs.getOrientation(&orientation)){
-		return (orientation.roll);
-	}
+  //Checks for connection to IMU.
+  if(ahrs.getOrientation(&orientation)){
+	return (orientation.roll);
+  }
 }
 
 
@@ -80,15 +88,15 @@ float IMU::getRoll()
  */
 float IMU::getPitch()
 {
-	//Updates object calibration to use most current IMU information.
-	Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
+  //Updates object calibration to use most current IMU information.
+  Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
 
   sensors_vec_t   orientation;
   
-	//Checks for connection to IMU.
-	if(ahrs.getOrientation(&orientation)){
-		return (orientation.pitch);
-	}
+  //Checks for connection to IMU.
+  if(ahrs.getOrientation(&orientation)){
+	return (orientation.pitch);
+  }
 }
 
 
@@ -97,24 +105,25 @@ float IMU::getPitch()
  */
 float IMU::getYaw()
 {
-	//Updates object calibration to use most current IMU information.
-	Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
+  //Updates object calibration to use most current IMU information.
+  Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
 
   sensors_vec_t   orientation;
   
-	//Checks for connection to IMU.
-	if(ahrs.getOrientation(&orientation)){
-		return (orientation.heading);
-	}
+  //Checks for connection to IMU.
+  if(ahrs.getOrientation(&orientation)){
+	return (orientation.heading);
+  }
 }
 
 /**
- * Returns the difference between target and current heading and switches turn booleans accordingly
+ * Sets certain booleans true depending on the crafts orientation.
  */
-float IMU::angleToTarget()
+void IMU::angleToTarget()
 {
-  float dlat = Data.Local.TARGET_LAT - Data.Local.Latitude;
-  float dlon = Data.Local.TARGET_LON - Data.Local.Longitude;
+  
+  float dlat = Data.Local.GPSTargetLat - Data.Local.Latitude;
+  float dlon = Data.Local.GPSTargetLon - Data.Local.Longitude;
 
   float target = atan(dlat/-dlon)*(180/M_PI);
   if(dlon > 0 && dlat < 0){
@@ -124,7 +133,7 @@ float IMU::angleToTarget()
     target -= 180;
   }
 
-  float angle = target - getYaw();
+  float angle = target - Imu.getYaw();
   if(angle > 180){
     angle -= 360;
   }
@@ -142,16 +151,15 @@ float IMU::angleToTarget()
     turnRight = false;
     turnLeft = false;
   }
-
-  return angle;
+  ATT = angle;
 }
 
 /**
- * Returns difference between target and current altitudes and switches up/down booleans accordingly
+ * Sets certain booleans true depending on the crafts orientation.
  */
-float IMU::checkAltitude()
+void IMU::checkAltitude()
 {
-  float diffAlt = Data.Local.TARGET_ALTITUDE - Data.Local.Altitude;
+  float diffAlt = Data.Local.GPSTargetAlt - Data.Local.GPSAltitude;
 
   if(diffAlt > altitudeTolerance){
     moveUp = true;
@@ -163,18 +171,17 @@ float IMU::checkAltitude()
     moveUp = false;
     moveDown = false;
   }
-
-  return diffAlt;
 }
 
 /**
  * 
  */
-float IMU::checkDistance()
+void IMU::checkDistance()
 {
-  if(Data.Local.TargetDistance > distanceTolerance){
-     moveForward = true;
-  }else{
-     moveForward = false;
+  if(Data.Local.GPSTargetDistance > distanceTolerance){
+    moveForward = true;
+  }
+  else{
+    moveForward = false;
   }
 }

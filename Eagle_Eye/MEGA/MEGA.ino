@@ -8,6 +8,7 @@
 #include "DATA.h"
 #include "I2C.h"
 #include "IMU.h"
+#include "MOTOR.h"
 #include "SAVE.h"
 #include "THERMO.h"
 #include "Globals.h"
@@ -19,6 +20,7 @@ I2C Comm;
 IMU Imu;
 SAVE Save;
 THERMO Thermo;
+MOTOR Movement;
 
 //Object used to pull and store the Thermocouple's information.
 Adafruit_MAX31855 thermocouple(31, 30, 32);
@@ -32,7 +34,7 @@ Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 
 
 /**
- * Method initializes the main hardware components.
+ * INITIALIZES ALL REQUIRED PERIPHIALS AND DEPENDENCIES.
  */
 void setup(){
 
@@ -52,6 +54,9 @@ void setup(){
   //Initializes the Interial Measurement Unit (IMU).
   Imu.initialize();
 
+  //Initializes all ESC's, TurboFans, & Servos.
+  Movement.initialize();
+  
 }
 
 
@@ -66,8 +71,11 @@ void loop(){
   //Watches for LoRa to ask for permission to drop.
   Imu.manager();
 
+  //Dynamically updates the orientation & position of the craft. 
+  Movement.manager();
+
   //Stores the current cycle's data to the SD Card.
   Save.saveData();
 
-  delay(5000);
+  delay(10000);
 }

@@ -32,7 +32,7 @@ void SAVE::saveData()
 	
 	//All flight data is consolidated into one char array. All values are casted (turned into) to chars
   //   to be saved.
-  char temp[] = {char(Data.Local.Time),
+  char temp[] = {char(Data.Local.GPSTime),
                  ',',
                  char(Data.Local.Altitude),
                  ',',
@@ -40,9 +40,9 @@ void SAVE::saveData()
                  ',',
                  char(Data.Local.Longitude),
                  ',',
-                 char(Data.Local.Speed),
+                 char(Data.Local.GPSSpeed),
                  ',',
-                 char(Data.Local.TargetDistance),
+                 char(Data.Local.GPSTargetDistance),
                  ',',
                  char(Data.Local.LE),
                  ',',
