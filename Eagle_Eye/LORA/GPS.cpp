@@ -9,6 +9,7 @@
 #include <SoftwareSerial.h>
 #include <TinyGPSPlus.h>
 #include "Globals.h"
+#include <math.h>
 
 
 /**
@@ -84,8 +85,14 @@ void GPS::manager()
  */
 float GPS::DistanceToTarget(){
   
+<<<<<<< HEAD
   float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), Data.Local.TargetLat, Data.Local.TargetLon) / 100;
 
+=======
+  //float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), Data.TARGET_LAT, Data.TARGET_LON) / 100;
+  float distance = sqrt(pow((Data.Local.Latitude - Data.TargetLat),2)+pow((Data.Local.Longitude - Data.TargetLon),2));
+  
+>>>>>>> origin/test
   return distance;
 }
 

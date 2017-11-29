@@ -71,6 +71,7 @@ class DATA
     //Target Latitude for craft.
     float TargetLat = 42.02681;
   
+<<<<<<< HEAD
     //Target Longitude for craft.
     float TargetLon = -93.654103;
 
@@ -79,6 +80,13 @@ class DATA
 
 	};
 	struct Flight_Data Local;
+=======
+  //Target Longitude for craft.
+  float TargetLon = -92.2582;
+
+  //Target Altitude for the craft.
+  float TargetAltitude = 10000.0;
+>>>>>>> origin/test
   
 };
 #endif
