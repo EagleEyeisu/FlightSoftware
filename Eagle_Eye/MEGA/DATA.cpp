@@ -126,7 +126,7 @@ void DATA::manager()
   Serial.print("Time:        ");    Serial.println(Local.GPSTime);
   Serial.print("Altitude:    ");    Serial.print(Local.GPSAltitude,2);     Serial.println(" m");
   Serial.print("Latitude:    ");    Serial.println(Local.Latitude,6);
-  Serial.print("Longitude:   ");    Serial.println(Local.Latitude,6);
+  Serial.print("Longitude:   ");    Serial.println(Local.Longitude,6);
   Serial.print("TargetLat:   ");    Serial.println(Local.GPSTargetLat,6);
   Serial.print("TargetLon:   ");    Serial.println(Local.GPSTargetLon,6);
   Serial.print("Speed:       ");    Serial.print(Local.GPSSpeed);          Serial.println(" mps");
