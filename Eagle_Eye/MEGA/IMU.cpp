@@ -125,7 +125,7 @@ void IMU::angleToTarget()
   float dlat = Data.Local.GPSTargetLat - Data.Local.Latitude;
   float dlon = Data.Local.GPSTargetLon - Data.Local.Longitude;
 
-  float target = atan(dlat/-dlon)*(180/M_PI);
+  float target = atan(dlat/-dlon)*(180.0/M_PI);
   if(dlon > 0 && dlat < 0){
     target += 180;
   }
