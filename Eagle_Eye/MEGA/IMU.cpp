@@ -125,15 +125,13 @@ void IMU::angleToTarget()
   float dlat = Data.Local.GPSTargetLat - Data.Local.Latitude;
   float dlon = Data.Local.GPSTargetLon - Data.Local.Longitude;
 
-  float target = atan(dlat/-dlon)*(180.0/M_PI);
-  if(dlon > 0 && dlat < 0){
-    target += 180;
-  }
-  else if (dlon < 0 && dlat < 0){
-    target -= 180;
-  }
+  float target = atan2(dlat,-dlon)*(180.0/M_PI);
+  if(target <= 90)
+    target += 90;
+  else
+    target = target - 270;
 
-  float angle = target - Imu.getYaw();
+  float angle = Imu.getYaw() - target;
   if(angle > 180){
     angle -= 360;
   }
@@ -143,9 +141,11 @@ void IMU::angleToTarget()
 
   if(angle > angleTolerance){
     turnRight = true;
+    turnLeft = false;
   }
   else if(angle < -angleTolerance){
     turnLeft = true;
+    turnRight = false;
   }
   else{
     turnRight = false;
