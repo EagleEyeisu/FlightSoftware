@@ -218,7 +218,7 @@ void MOTOR::rotateLevel()
   
       //Writes the values to the servos.
       servoRight.write(pos);
-      servoLeft.write(pos);
+      servoLeft.write(pos-170);
       delay(10);
     }
   }
