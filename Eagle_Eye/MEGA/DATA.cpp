@@ -112,25 +112,25 @@ void DATA::manager()
 	//   the program & are reset to 0 after being saved.
 
 	//Prints out data struct to the screen for debugging/following alone purposes.
-  Serial.println("     MEGA INFORMATION     ");
-	Serial.print("Altitude:    "); 		Serial.print(Local.Altitude,2);     Serial.println(" m");
-	Serial.print("Temperature: "); 		Serial.print(Local.TempExt);        Serial.println(" C");
-	Serial.print("Pressure:    "); 		Serial.print(Local.Pressure);       Serial.println(" hPa");
-	Serial.print("Roll:        "); 	  Serial.println(Local.Roll);
-	Serial.print("Pitch:       "); 		Serial.println(Local.Pitch);
-	Serial.print("Yaw:         ");    Serial.println(Local.Yaw);
-  Serial.print("LoRa Event:  ");    Serial.println(Local.LE);
-  Serial.print("Mega Event:  ");    Serial.println(Local.ME);
+  //Serial.println("     MEGA INFORMATION     ");
+	//Serial.print("Altitude:    "); 		Serial.print(Local.Altitude,2);     Serial.println(" m");
+	//Serial.print("Temperature: "); 		Serial.print(Local.TempExt);        Serial.println(" C");
+	//Serial.print("Pressure:    "); 		Serial.print(Local.Pressure);       Serial.println(" hPa");
+	//Serial.print("Roll:        "); 	  Serial.println(Local.Roll);
+	//Serial.print("Pitch:       "); 		Serial.println(Local.Pitch);
+	//Serial.print("Yaw:         ");    Serial.println(Local.Yaw);
+  //Serial.print("LoRa Event:  ");    Serial.println(Local.LE);
+  //Serial.print("Mega Event:  ");    Serial.println(Local.ME);
 
-  Serial.println("     LORA INFORMATION     ");
-  Serial.print("Time:        ");    Serial.println(Local.GPSTime);
-  Serial.print("Altitude:    ");    Serial.print(Local.GPSAltitude,2);     Serial.println(" m");
-  Serial.print("Latitude:    ");    Serial.println(Local.Latitude,6);
-  Serial.print("Longitude:   ");    Serial.println(Local.Longitude,6);
-  Serial.print("TargetLat:   ");    Serial.println(Local.GPSTargetLat,6);
-  Serial.print("TargetLon:   ");    Serial.println(Local.GPSTargetLon,6);
-  Serial.print("Speed:       ");    Serial.print(Local.GPSSpeed);          Serial.println(" mps");
-  Serial.print("Distance:    ");    Serial.print(Local.GPSTargetDistance); Serial.println(" m");
+  //Serial.println("     LORA INFORMATION     ");
+  //Serial.print("Time:        ");    Serial.println(Local.GPSTime);
+  //Serial.print("Altitude:    ");    Serial.print(Local.GPSAltitude,2);     Serial.println(" m");
+  //Serial.print("Latitude:    ");    Serial.println(Local.Latitude,6);
+  //Serial.print("Longitude:   ");    Serial.println(Local.Longitude,6);
+  //Serial.print("TargetLat:   ");    Serial.println(Local.GPSTargetLat,6);
+  //Serial.print("TargetLon:   ");    Serial.println(Local.GPSTargetLon,6);
+  //Serial.print("Speed:       ");    Serial.print(Local.GPSSpeed);          Serial.println(" mps");
+  //Serial.print("Distance:    ");    Serial.print(Local.GPSTargetDistance); Serial.println(" m");
 
   Serial.println("     MOTOR INFORMATION    ");
   Serial.print("Move Forward: ");   Serial.println(Imu.moveForward);

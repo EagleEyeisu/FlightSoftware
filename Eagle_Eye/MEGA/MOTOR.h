@@ -94,12 +94,6 @@ class MOTOR
   
   //Used in rotating the servos. (designed to be exact opposite of pos)
   int opp = 90; 
-  
-  //If true, will trigger the motors to orient themselves to rotate the craft right.
-  bool turnRight = true;
-  
-  //If true, will trigger the motors to orient themselves to rotate the craft left.
-  bool turnLeft = false;
 
   enum Orientation {NONE,RIGHT,LEFT,FORWARD,UP,DOWN};
   enum Orientation state = NONE;

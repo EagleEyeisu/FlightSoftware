@@ -32,12 +32,15 @@ void MOTOR::manager()
   //   |     No      |        |     Yaw     |        |   Forward   |       |   Vertical  |
   //   |  Movement   |   -->  |  Correction |   -->  | & Backward  |  -->  |  Correction |
   //   ---------------        ---------------        ---------------       ---------------
+
+  Imu.turnRight = false;
+  Imu.turnLeft = true;
   
   //Checks for the need for Yaw Correction.
-  if(turnRight || turnLeft){
+  if(Imu.turnRight || Imu.turnLeft){
 
     //Checks for the need to rotate Right.
-    if(turnRight){
+    if(Imu.turnRight){
 
       //Checks to see the crafts current movement.
       if(state != RIGHT){
@@ -54,7 +57,7 @@ void MOTOR::manager()
       }
     }
     //Checks for the need to rotate Left.
-    else if(turnLeft){
+    else if(Imu.turnLeft){
 
       //Checks to see the crafts current movement.
       if(state != LEFT){
@@ -150,7 +153,8 @@ void MOTOR::rotateRight()
 {
   //Updates the state machine to reflect the current movement.
   state = RIGHT;
-  //Serial.println("Turning Right");
+  Serial.println("Turning Right: ");
+  Serial.println(state);
   
   //Applies those values to the servo. Rotates each side counter to each other.
   for (pos = pos; pos >= 0; pos -= 1){
@@ -171,12 +175,13 @@ void MOTOR::rotateLeft()
 {
   //Updates the state machine to reflect the current movement.
   state = LEFT;
-  //Serial.println("Turning Left"); 
+  Serial.println("Turning Left: ");
+  Serial.println(state); 
   
   //Applies values to the servo. Rotates each side counter to each other.
   for (pos = pos; pos <= 170; pos += 1){
-    servoLeft.write(pos);
-    servoRight.write(170-pos);
+    servoLeft.write(170-pos);
+    servoRight.write(pos);
     delay(50);
   }
 
