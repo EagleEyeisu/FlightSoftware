@@ -33,8 +33,7 @@ void MOTOR::manager()
   //   |  Movement   |   -->  |  Correction |   -->  | & Backward  |  -->  |  Correction |
   //   ---------------        ---------------        ---------------       ---------------
 
-  Imu.turnRight = false;
-  Imu.turnLeft = true;
+  Imu.moveForward = true; // THIS SHOULD BE FALSE. UPDATED FOR LAST TEST TO MAKE IT GO FORWARD
   
   //Checks for the need for Yaw Correction.
   if(Imu.turnRight || Imu.turnLeft){

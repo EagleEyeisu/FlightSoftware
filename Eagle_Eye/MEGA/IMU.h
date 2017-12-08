@@ -44,7 +44,7 @@ class IMU
   float ATT = 0.0;
   
   //Tolerance for heading angle
-  float angleTolerance = 5.0;
+  float angleTolerance = 10.0;
 
   //Tolerance for difference in altitudes
   float altitudeTolerance = 200.0;
@@ -61,7 +61,7 @@ class IMU
   bool moveDown = false;
 
   //Booleans to determine forward/backward motion action
-  bool moveForward = false;
+  bool moveForward = true;  
   bool moveBackward = false;
 	
 };
