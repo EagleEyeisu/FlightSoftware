@@ -13,6 +13,11 @@ class DATA
   
   //Constructor
   DATA();
+
+  //Responsible for pulling current sensor data from peripherals.
+  void displayInfo();
+
+  
   
 	//Parses passed in message by using commas as the identifiers.
 	float Parse(char[] message, int objective);

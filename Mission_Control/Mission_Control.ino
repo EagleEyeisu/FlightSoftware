@@ -48,6 +48,9 @@ void loop(){
   //   Also reads in incoming messages.
   Radio.manager();
 
+  //Displays current information of craft. 
+  Data.displayInfo();
+  
   //Saves all local data to the SD card.
   //Save.saveData();
 

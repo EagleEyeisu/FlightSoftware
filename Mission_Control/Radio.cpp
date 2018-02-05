@@ -200,7 +200,6 @@ void RADIO::manager()
 		
 		//Sends the transmission via radio.
 		Radio.broadcast();
-		
 	}
 }
 
@@ -328,7 +327,7 @@ void RADIO::broadcast()
 /*
  * Blinks LED.
  */
-void RADIO::blinkLED(){
+void blinkLED(){
 
   //ON
   digitalWrite(LED, HIGH);

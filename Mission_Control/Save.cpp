@@ -7,6 +7,7 @@
 #include <Arduino.h>
 #include "Save.h"
 #include "Data.h"
+#include "Radio.h"
 #include <SD.h>
 #include "Globals.h"
 
@@ -23,31 +24,31 @@ SAVE::SAVE()
 /**
  * Manages the saving process. Constructs the below array and saves to the SD Card. 
  */
-void Save::Save_Data()
+void Save::saveData()
 {
 	
 	//Creates temporary array of floats and fills it with appropriate info.
-	float[] temp = {char(Network.L_TS),
+	float[] temp = {char(Radio.Network.L_TS),
                   ',',
-      				    char(Network.Altitude),
+      				    char(Radio.Network.Altitude),
                   ',',
-      				    char(Network.Latitude),
+      				    char(Radio.Network.Latitude),
                   ',',
-      				    char(Network.Longitude),
+      				    char(Radio.Network.Longitude),
                   ',',
-      				    char(Network.LE),
+      				    char(Radio.Network.LE),
                   ',',
-      				    char(Network.H_TS),
+      				    char(Radio.Network.H_TS),
                   ',',
-      				    char(Network.Release_Status),
+      				    char(Radio.Network.Release_Status),
                   ',',
-      				    char(Network.MS_TS),
+      				    char(Radio.Network.MS_TS),
                   ',',
-      				    char(Network.Command_Sent),
+      				    char(Radio.Network.Command_Sent),
                   ',',
-      					  char(Network.Command_Received),
+      					  char(Radio.Network.Command_Received),
                   ',',
-      					  char(Network.Craft_ID)
+      					  char(Radio.Network.Craft_ID)
       					};
 
   //File object used to access the SD card.
@@ -63,7 +64,7 @@ void Save::Save_Data()
 /**
  * Assigns correct pin to connect to the SD card. Tests connection.
  */
-void Save::SD_Initialize()
+void Save::initialize()
 {
 	//Sets GPIO pin 10 to communicate to the SD card.
 	pinMode(SD_PIN, OUTPUT);

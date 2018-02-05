@@ -339,7 +339,7 @@ void RADIO::broadcast()
 /*
  * Blinks LED.
  */
-void RADIO::blinkLED(){
+void blinkLED(){
 
   //ON
   digitalWrite(LED, HIGH);

@@ -126,7 +126,7 @@ class RADIO
 		
 		//Craft_ID is used to tell which craft is currently broadcasting the signal. This allows
 		//   for Mission Control to have a sense of if information is being relayed through nodes,
-		//   or if we have a direct line of communication with each node. LoRa's ID is capital 'C'.
+		//   or if we have a direct line of communication with each node.
 		float Craft_ID = 0.0;
 	}
 	struct Network_Data Network;

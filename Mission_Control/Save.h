@@ -2,26 +2,29 @@
  * Save.h declares functions and varaibles used in Storage.cpp.
  */
 
-#ifndef Save_h
-#define Save_h
+#ifndef SAVE_h
+#define SAVE_h
 
-class Save
+#include <Arduino.h>
+
+class SAVE
 {
   public:
+
+  //Constructor
+  SAVE();
   
 	//Saves struct (current flight data), to SD card in correct format.
-	void Save_Data();
+	void saveData();
 	
-  	//Runs initialzation script for the SD card.
-	void SD_Initialize();
+  //Runs initialzation script for the SD card.
+	void initialize();
 	
 
-	
-	//File object used to access the SD card.
-  	File SDCard;
-	
-	//Digital connection pin for SD card. 
-	#define SD_PIN 10
+
+  
+  //Digital connection pin for SD card. 
+  const byte SD_PIN = 10;
 };
 
 #endif
