@@ -4,7 +4,7 @@
 
 
 #include <Arduino.h>
-#include "DATA.h"
+#include "Data.h"
 #include "GPS.h"
 #include <stdlib.h>
 #include "Globals.h"
@@ -106,7 +106,7 @@ float DATA::Parse(char message[], int objective){
 /**
  * Updates the main struct for the LoRa. 
  */
-void DATA::manager()
+void DATA::displayInfo()
 {
 	//Local.LE and Local.ME update on their own throughout the program & are reset to 0 after being saved.
 

@@ -40,7 +40,7 @@ void setup(){
   Comm.initialize();
 
   //Initializes the Radio.
-  //Radio.initialize();
+  Radio.initialize();
   
 }
 
@@ -55,7 +55,7 @@ void loop(){
   
   //Updates the craft's struct. This pulls data from all periphals,
   //   and network to update to the most current situation.
-  Data.manager();
+  Data.displayInfo();
 
   //Communicates with the Mega to check for certain events happening
   //   throughout the system.
@@ -64,7 +64,7 @@ void loop(){
   //Responsible for grabbing all of the craft's current information, 
   //   turning that data into an array that can be sent out via radio.
   //   Also reads in incoming messages.
-  //Radio.manager();
+  Radio.manager();
   
   //Saves all local data to the SD card.
   //Save.saveData();

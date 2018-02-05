@@ -3,79 +3,91 @@
  *    development micro controller.
  */
 
-
+#include <Arduino.h>
 #include "Radio.h"
+#include "Data.h"
+#include <RH_RF95.h>
+#include "Globals.h"
+
+
+/**
+ * Constructor used to reference all other variables & functions.
+ */
+RADIO::RADIO()
+{
+  
+}
 
 
 /**
  * Parses and returns the radio transmission's altitude.
  */
-float Radio::getAltitude(uint8_t buf)
+float RADIO::getRadioAltitude(uint8_t buf)
 {
-	return (Parse(buf,1))
+  return (Data.Parse(buf,1));
 }
 
 
 /**
  * Parses and returns the radio transmission's Command Received.
  */
-float Radio::getCommandReceived(uint8_t buf)
+float RADIO::getCommandReceived(uint8_t buf)
 {
-	return (Parse(buf,9))
+  return (Data.Parse(buf,9));
 }
 
 
 /**
  * Parses and returns the radio transmission's Command Sent.
  */
-float Radio::getCommandSent(uint8_t buf)
+float RADIO::getCommandSent(uint8_t buf)
 {
-	return (Parse(buf,8))
+  return (Data.Parse(buf,8));
 }
 
 
 /**
  * Parses and returns the radio transmission's Craft ID.
  */
-float Radio::getCraftID(uint8_t buf)
+float RADIO::getCraftID(uint8_t buf)
 {
-	return (Parse(buf,10))
+  return (Data.Parse(buf,10));
 }
 
 
 /**
  * Parses and returns the radio transmission's latitude.
  */
-float Radio::getLatitude(uint8_t buf)
+float RADIO::getRadioLatitude(uint8_t buf)
 {
-	return (Parse(buf,2))
+  return (Data.Parse(buf,2));
 }
 
 
 /**
  * Parses and returns the radio transmission's longitude.
  */
-float Radio::getLongitude(uint8_t buf)
+float RADIO::getRadioLongitude(uint8_t buf)
 {
-	return (Parse(buf,3))
+  return (Data.Parse(buf,3));
 }
 
 
 /**
  * Parses and returns the radio transmission's LoRa Event.
  */
-float Radio::getLoRaEvent(uint8_t buf)
+float RADIO::getLoRaEvent(uint8_t buf)
 {
-	return (Parse(buf,4))
+  return (Data.Parse(buf,4));
 }
 
 
 /**
  * Parses and returns the radio transmission's Release Status.
  */
-float Radio::getReleaseStatus(uint8_t buf)
+float RADIO::getReleaseStatus(uint8_t buf)
 {
-	return (Parse(buf,6))
+  return (Data.Parse(buf,6));
 }
 
 
@@ -85,16 +97,16 @@ float Radio::getReleaseStatus(uint8_t buf)
  *    HABET -> 5
  *    MC    -> 7
  */
-float Radio::getTimeStamp(uint8_t buf, int selector)
+float RADIO::getTimeStamp(uint8_t buf, int selector)
 {
-	return Parse(buf, selector);
+  return (Data.Parse(buf, selector));
 }
 
 
 /**
  * Assigns correct pins to the radio output port. Tests connections and variables.
  */
-void Radio::Radio_Initialize()
+void RADIO::initialize()
 {
 	//Assigns pin 13 to have an output power connection to the LoRa's onboard LED.
 	pinMode(LED, OUTPUT);
@@ -154,18 +166,19 @@ void Radio::Radio_Initialize()
 /**
  * Manages all radio comms either incoming or outgoing.
  */
-void Radio::Radio_Manager()
+void RADIO::manager()
 {
 	//Reads in radio transmission if available.
-	Radio_Receive();
+	Radio.radioReceive();
 	
 	//Checks for a specific Craft ID. '999.9' signals the start of operation.
-	if(Network.Craft_ID == 999.9 && !Checked_In){
+	if(Network.Craft_ID == 999.9 && !Radio.checkedIn){
 		
 		//Responds to Mission Control with the correct ID to signal this node is here and listening.
-		RollCall();
+		Radio.rollCall();
 		
 	}
+ 
 	//After Roll Call is complete, Mission Control will broadcast the start signal. Appropriate delays are
 	//   distributed below to initally sync the network to a 5 second split. This makes for a 15 second revolution.
 	//
@@ -186,7 +199,7 @@ void Radio::Radio_Manager()
 		start = millis();
 		
 		//Sends the transmission via radio.
-		Radio_Send();
+		Radio.broadcast();
 		
 	}
 }
@@ -195,7 +208,7 @@ void Radio::Radio_Manager()
 /**
  * Responsible for reading in signals over the radio antenna.
  */
-void Radio::Radio_Receieve()
+void RADIO::radioReceieve()
 {
 	//Creates a temporary varaible to read in the incoming transmission. 
 	uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
@@ -205,7 +218,10 @@ void Radio::Radio_Receieve()
 	
 	//Reads in the avaiable radio transmission, than checks if it is corrupt or complete.
 	if(rf95.recv(buf, &len)) {
-		
+
+    //Blinks LED.
+    blinkLED();
+    
 		//This whole section is comparing the currently held varaibles from the last radio update
 		//   to that of the newly received signal. Updates the LoRa's owned variables and copies
 		//   down the other nodes varaibles. If the time LoRa currently holds the most updated values
@@ -214,22 +230,22 @@ void Radio::Radio_Receieve()
 		
 		
 		//Reads in the time stamp for HABET's last broadcast.
-		float temp_HABET = getTimeStamp(buf, 5);
+		float temp_HABET = Radio.getTimeStamp(buf, 5);
 		
 		//Compares the currently brought in time stamp to the one stored onboad.
-		if(temp_HABET > H_TS){
+		if(temp_HABET > Radio.Network.H_TS){
 			
 			//If the incoming signal has more up-to-date versions, we overwrite our saved version with
 			//   the new ones.
 			Network.H_TS = temp_HABET;
-			Network.Release_Status = getReleaseStatus(buf);
+			Network.Release_Status = Radio.getReleaseStatus(buf);
 			
 		}
 		
 		
 		
 		//Reads in the time stamp for Mission Control's last broadcast.
-		float temp_LoRa = getTimeStamp(buf, 0);
+		float temp_LoRa = Radio.getTimeStamp(buf, 0);
 		
 		//Compares the currently brought in time stamp to the one stored onboad.
 		if(temp_LoRa > L_TS){
@@ -237,10 +253,10 @@ void Radio::Radio_Receieve()
 			//If the incoming signal has more up-to-date versions, we overwrite our saved version with
 			//   the new ones.
 			Network.L_TS = temp_LoRa;
-			Network.Altitude = getAltitude(buf);
-			Network.Latitude = getLatitude(buf);
-			Network.Longitude = getLongitude(buf);
-			Network.LE = getLoRaEvent(buf);
+			Network.Altitude = Radio.getAltitude(buf);
+			Network.Latitude = Radio.getLatitude(buf);
+			Network.Longitude = Radio.getLongitude(buf);
+			Network.LE = Radio.getLoRaEvent(buf);
 			
 		}
 		
@@ -251,61 +267,74 @@ void Radio::Radio_Receieve()
 /**
  * Alters the craft ID of the radio transmission and broadcasts back to Mission Control.
  */
-void Radio::Roll_Call()
+void RADIO::rollCall()
 {
 	//Updates the Craft_ID to Mission Control's specific ID #.
 	Network.Craft_ID = 1.0;
 	
 	//Sends the transmission via radio.
-	Radio_Send();
+	Radio.broadcast();
 	
 	//Updates Checked_In Status.
-	Checked_In = true;
+	checkedIn = true;
 }
 
 
 /**
  * Creates an array to be sent out via Radio. Fills that array with correct values and returns it.
  */
-float[] Radio::Construct_Transmission()
+void RADIO::broadcast()
 {
+  
 	//Updates the time object to hold the most current operation time.
-	Time = millis();
-	Network.MS_TS = Time;
+	Network.MS_TS = millis();
 	
-	//Temp array to be filled with the Network components.
-	float[] temp = {Network.L_TS,
-				    Network.Altitude,
-				    Network.Latitude,
-				    Network.Longitude,
-				    Network.LE,
-				    Network.H_TS,
-				    Network.Release_Status,
-				    Network.MS_TS,
-				    Network.Command_Sent,
-					Network.Command_Received,
-					Network.Craft_ID
-					};
-				   
-	//Returns the filled array.
-	return temp;
+  //Casting all float values to a character array with commas saved in between values
+  //   so the character array can be parsed when received by another craft.
+  char transmission[] = {char(Network.L_TS),
+                         ',',
+                         char(Network.Altitude),
+                         ',',
+                         char(Network.Latitude),
+                         ',',
+                         char(Network.Longitude),
+                         ',',
+                         char(Network.LE),
+                         ',',
+                         char(Network.H_TS),
+                         ',',
+                         char(Network.Release_Status),
+                         ',',
+                         char(Network.MC_TS),
+                         ',',
+                         char(Network.Command_Sent),
+                         ',',
+                         char(Network.Command_Received),
+                         ',',
+                         char(Network.Craft_ID)
+                         };
+  
+  //Serial.print("Radio Sending: ");Serial.println(transmission);
+  
+  //Sends message passed in as paramter via antenna.
+  rf95.send(transmission, sizeof(transmission));
+    
+  //Pauses all operations until the micro controll has guaranteed the transmission of the
+  //   signal. 
+  rf95.waitPacketSent();
 }
 
 
-/**
- * Responsible for sending out messages via the radio antenna.
+/*
+ * Blinks LED.
  */
-void Radio::Radio_Send()
-{	
-	//Fills out a character array with the updated Network components.
-	float[] Transmission = Construct_Transmission();
-	
-	//Serial.print("Radio Sending: ");Serial.println(message);
-	
-	//Sends message passed in as paramter via antenna.
-	rf95.send(Transmission, sizeof(Transmission));
-		
-	//Pauses all operations until the micro controll has guarrenteed the transmission of the
-	//   signal. 
-	rf95.waitPacketSent();
+void RADIO::blinkLED(){
+
+  //ON
+  digitalWrite(LED, HIGH);
+
+  delay(10);
+
+  //OFF
+  digitalWrite(LED, LOW);
 }

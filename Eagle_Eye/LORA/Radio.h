@@ -2,8 +2,8 @@
  * Radio.h holds all declarations and varaibles related to the radio.ccp file.
  */
 
-#ifndef RADIO_h
-#define RADIO_h
+#ifndef Radio_h
+#define Radio_h
 
 #include <Arduino.h>
 
@@ -55,6 +55,9 @@ class RADIO
 	
 	//Sends the desired signal out over the radio antenna.
 	void broadcast();
+
+  //Blinks the LED on the LoRa uC to show a signal has been received.
+  void blinkLED();
 	
 	
 	
@@ -68,7 +71,7 @@ class RADIO
 	//Reset pin onboard the radio.
 	const byte RFM95_RST = 4;
 	
-	//Pins used to blink an LED for currently unknown purpose.
+	//Pins used to blink an LED to signal receival packet.
 	const byte LED = 13;
 	
 	//Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
@@ -130,7 +133,9 @@ class RADIO
   
   struct Network_Data Network;
 
+  //Used in the computation of the radio system. 
   unsigned int start = 0;
   
 };
+
 #endif

@@ -4,8 +4,20 @@
  *    event/altitude/etc.. Now is it saved in one decently long string that is seperated by commas -> ','
  */
 
-
+#include <Arduino.h>
 #include "Save.h"
+#include "Data.h"
+#include <SD.h>
+#include "Globals.h"
+
+
+/**
+ * Constructor used to reference all other variables & functions.
+ */
+SAVE::SAVE()
+{
+  
+}
 
 
 /**
@@ -15,20 +27,32 @@ void Save::Save_Data()
 {
 	
 	//Creates temporary array of floats and fills it with appropriate info.
-	float[] temp = {
-					Network.L_TS,
-				    Network.Altitude,
-				    Network.Latitude,
-				    Network.Longitude,
-				    Network.LE,
-				    Network.H_TS,
-				    Network.Release_Status,
-				    Network.MS_TS,
-				    Network.Command_Sent,
-					Network.Command_Received,
-					Network.Craft_ID
-					};
-		
+	float[] temp = {char(Network.L_TS),
+                  ',',
+      				    char(Network.Altitude),
+                  ',',
+      				    char(Network.Latitude),
+                  ',',
+      				    char(Network.Longitude),
+                  ',',
+      				    char(Network.LE),
+                  ',',
+      				    char(Network.H_TS),
+                  ',',
+      				    char(Network.Release_Status),
+                  ',',
+      				    char(Network.MS_TS),
+                  ',',
+      				    char(Network.Command_Sent),
+                  ',',
+      					  char(Network.Command_Received),
+                  ',',
+      					  char(Network.Craft_ID)
+      					};
+
+  //File object used to access the SD card.
+  File Storage;
+  
 	//Opens up SD card and saves the data capsule.
 	SDCard = SD.open("MS_FltData", FILE_WRITE);
 	SDCard.println(temp);

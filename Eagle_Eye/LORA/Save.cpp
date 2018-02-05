@@ -6,8 +6,8 @@
 
 
 #include <Arduino.h>
-#include "SAVE.h"
-#include "DATA.h"
+#include "Save.h"
+#include "Data.h"
 #include <SD.h>
 #include "Globals.h"
 

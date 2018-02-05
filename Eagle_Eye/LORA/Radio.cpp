@@ -5,8 +5,8 @@
 
 
 #include <Arduino.h>
-#include "RADIO.h"
-#include "DATA.h"
+#include "Radio.h"
+#include "Data.h"
 #include <RH_RF95.h>
 #include "Globals.h"
 
@@ -179,23 +179,24 @@ void RADIO::manager()
 		Radio.rollCall();
 		
 	}
+ 
 	//After Roll Call is complete, Mission Control will broadcast the start signal. Appropriate delays are
 	//   distributed below to initally sync the network to a 5 second split. This makes for a 15 second revolution.
-	//
+	//   
 	//   MS - starts instantly
-	//   HABET - delays 5 seconds
-	//   EE - delays 10 seconds
+	//   HABET - delays .. seconds  <- NOT CURRENTLY INCLUDED.
+	//   EE - delays 5 seconds
 	else if(Network.Craft_ID == 555.5){
 		
-		//Delays 10 seconds.
-		delay(10000);
-
+		//Delays 5 seconds.
+		delay(5000);
+    
     //Starts the broadcasting timer.
     start = millis();
 		
 	}
 	//Each of the 3 crafts have 5 seconds to broadcast. That means each craft will broadcast every 15 seconds.
-	//   15000milliseconds = 15 seconds.
+	//   15000 milliseconds = 15 seconds.
 	else if(millis() - start >= 15000){
 		
 		//Resets the counter. This disables broadcasting again until 15 seconds has passed.
@@ -219,14 +220,17 @@ void RADIO::radioReceive()
 	//Gets the length of the above temporary varaible.
 	uint8_t len = sizeof(buf);
 	
-	//Reads in the avaiable radio transmission, than checks if it is corrupt or complete.
+	//Reads in the avaiable radio transmission, then checks if it is corrupt or complete.
 	if(rf95.recv(buf, &len)) {
+
+    //Blinks LED.
+    blinkLED();
 		
 		//This whole section is comparing the currently held varaibles from the last radio update
 		//   to that of the newly received signal. Updates the craft's owned variables and copies
 		//   down the other nodes varaibles. If the timestamp indicates that this craft currently 
-		//	 holds the most updated valuesfor another node (ie: LoRa's time stamp is higher than the 
-		//   new signal's), it replaces those vars.
+		//	 holds the most updated values for another node (ie: LoRa's time stamp is higher than the 
+		//   new signal's), it replaces those variables.
 		
 		
 		
@@ -268,7 +272,7 @@ void RADIO::radioReceive()
 void RADIO::rollCall()
 {
 	//Updates the Craft_ID to Eagle Eye's specific ID #.
-	Network.Craft_ID = 3.0;
+	Network.Craft_ID = 2.0;
 	
 	//Sends the transmission via radio.
 	Radio.broadcast();
@@ -286,8 +290,8 @@ void RADIO::broadcast()
   
   //Updates the time object to hold the most current operation time.
   Network.L_TS = millis();
-
-  //Updates the Networks struct to reflect the crafts most uptodate postioning before 
+  
+  //Updates the Networks struct to reflect the crafts most up-to-date postioning before
   //   it broadcasts the signal on the network.
   Network.Altitude = Data.Local.Altitude;
   Network.Latitude = Data.Local.Latitude;
@@ -329,4 +333,19 @@ void RADIO::broadcast()
 	//Pauses all operations until the micro controll has guaranteed the transmission of the
 	//   signal. 
 	rf95.waitPacketSent();
+}
+
+
+/*
+ * Blinks LED.
+ */
+void RADIO::blinkLED(){
+
+  //ON
+  digitalWrite(LED, HIGH);
+
+  delay(10);
+
+  //OFF
+  digitalWrite(LED, LOW);
 }

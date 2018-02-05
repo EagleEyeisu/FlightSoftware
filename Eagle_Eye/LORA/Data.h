@@ -2,8 +2,8 @@
  * DATA.h is responsible for updating the programs main struct to the current most values.
  */
 
-#ifndef DATA_h
-#define DATA_h
+#ifndef Data_h
+#define Data_h
 
 #include <Arduino.h>
   
@@ -18,7 +18,7 @@ class DATA
 	float Parse(char message[], int objective);
   
 	//Responsible for pulling current sensor data from peripherals.
-	void manager();
+	void displayInfo();
 	
 	
 	
@@ -79,9 +79,6 @@ class DATA
 
 	};
 	struct Flight_Data Local;
-
-  //Target Altitude for the craft.
-  float TargetAltitude = 10000.0;
   
 };
 #endif
