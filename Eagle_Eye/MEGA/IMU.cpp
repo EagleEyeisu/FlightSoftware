@@ -121,17 +121,16 @@ float IMU::getYaw()
  */
 void IMU::angleToTarget()
 {
-  
-  float dlat = Data.Local.GPSTargetLat - Data.Local.Latitude;
-  float dlon = Data.Local.GPSTargetLon - Data.Local.Longitude;
+  float lat1 = Data.Local.Latitude;
+  float lon1 = Data.Local.Longitude;
+  float lat2 = Data.Local.GPSTargetLat;
+  float lon2 = Data.Local.GPSTargetLon;
 
-  float target = atan2(dlat,-dlon)*(180.0/M_PI);
-  if(target <= 90)
-    target += 90;
-  else
-    target = target - 270;
+  float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
+  float y = sin(lon2-lon1) * cos(lat2); 
+  float bearing = atan2(y, x);
 
-  float angle = Imu.getYaw() - target;
+  float angle = Imu.getYaw() - bearing;
   if(angle > 180){
     angle -= 360;
   }
@@ -140,12 +139,12 @@ void IMU::angleToTarget()
   }
 
   if(angle > angleTolerance){
-    turnRight = true;
-    turnLeft = false;
+    turnRight = false;
+    turnLeft = true;
   }
   else if(angle < -angleTolerance){
-    turnLeft = true;
-    turnRight = false;
+    turnLeft = false;
+    turnRight = true;
   }
   else{
     turnRight = false;
