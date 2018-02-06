@@ -2,8 +2,8 @@
  * Radio.h holds all declarations and varaibles related to the radio.ccp file.
  */
 
-#ifndef Radio_h
-#define Radio_h
+#ifndef RADIO_h
+#define RADIO_h
 
 #include <Arduino.h>
 
