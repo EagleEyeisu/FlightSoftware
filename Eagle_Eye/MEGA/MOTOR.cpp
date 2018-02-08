@@ -97,6 +97,49 @@ void MOTOR::manager()
       state = FORWARD;
     }
   }
+ 
+  //checks for the need to move up or down
+  else if(Imu.moveup || Imu.movedown){
+
+    //Pulls the PDM Waveform below its cutoff to shut the motors off.
+    ////   This is to prevent any extra force on the servo to Turbofan housing.
+    applybreak();
+
+    //Rotates all servos back to their original position so that all turbofans
+    //  are pointing up.
+    rotateLevel();
+    
+    //checks to see the crafts current movement
+    if(state != UP){
+      
+      //
+      if(Imu.moveup){
+
+        //
+        spinUp();
+
+        //updates crafts current state to reflect the change
+        state = UP;
+      }  
+    }
+
+    //
+    if(state != DOWN){
+
+      //
+      if(Imu.movedown){
+
+        //
+        spinDown();
+
+        //updates crafts current state to reflect the change
+        state = DOWN;
+      }
+    }
+
+    
+  }
+  
   
   
   
@@ -247,9 +290,10 @@ void MOTOR::applyBreak()
  * Compares the current throttle status to the "desired" throttle.
  *    Increments the PDM signal if the craft needs to throttle up.
  */
- /*
+
 void MOTOR::spinUp()
 {
+  throttle = 1000;
   while(throttle > currentThrottle){
 
     Serial.println(currentThrottle + INCREMENT_AMOUNT);
@@ -270,9 +314,10 @@ void MOTOR::spinUp()
  * Compares the current throttle status to the "desired" throttle.
  *    Decrements the PDM signal if the craft needs to throttle down.
  */
- /*
+ 
 void MOTOR::spinDown()
 {
+  throttle = 900;
   while(currentThrottle > throttle){
 
     Serial.println(currentThrottle - INCREMENT_AMOUNT);
