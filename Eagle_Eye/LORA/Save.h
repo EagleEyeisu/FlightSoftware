@@ -1,5 +1,5 @@
 /**
- * SAVE.h declares functions and varaibles used in Storage.cpp.
+ * Save.h declares functions and varaibles used in Storage.cpp.
  */
 
 #ifndef SAVE_h
@@ -22,9 +22,7 @@ class SAVE
 	
 	
 	
-	
 	//Digital connection pin for SD card. 
 	const byte SD_PIN = 10;
-
 };
 #endif

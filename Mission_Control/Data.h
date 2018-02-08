@@ -2,28 +2,35 @@
  * Data.h is responsible for updating the programs main struct to the current most values.
  */
 
-#ifndef Data_h
-#define Data_h
+#ifndef DATA_h
+#define DATA_h
 
-class Data
+#include <Arduino.h>
+
+class DATA
 {
   public:
+  
+  //Constructor
+  DATA();
 
+  //Responsible for pulling current sensor data from peripherals.
+  void displayInfo();
+
+  
+  
 	//Parses passed in message by using commas as the identifiers.
 	float Parse(char[] message, int objective);
-	
-	
-	
-	
-	//This timer is used for syncing the mesh network. Every craft as 5 seconds to talk. 
-	//   When this timer is at 0, that means the craft just broadcasted its data. When this
-	//   this timer hits 15, it resets to 0. This insures that the 2 other nodes have their 5
-	//   seconds to talk. 3nodes * 5seconds = 15seconds for a total netowrk revolution. 
-	unsigned long start = 0;
-	
-	//Timer object used for tracking overall operation time of the craft.
-	time_t Time;
 
+  //false = Direct Line of Commuication to Craft. (Eagle Eye Blimp)
+  //   true = Receiving information through another craft. Not direct from Eagle Eye.
+  //
+  //   THIS WILL NOT BE IMPLEMENTED UNTIL THIRD NODE IS BROUGHT ONLINE. PLACEHOLDER.
+  //
+  bool flyByWire = false;
+  
+  
+  
 };
 
 #endif

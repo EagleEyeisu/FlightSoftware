@@ -6,9 +6,19 @@
 #include <TimeLib.h>
 
 //EAGLE EYE'S
+#include "Globals.h"
 #include "Data.h"
 #include "Radio.h"
 #include "Save.h"
+
+
+/*****CONSTRUCTORS*****/ //(Objects that can reference their respective functions & variables)
+DATA Data;
+RADIO Radio;
+SAVE Save;
+
+//Directs the radio object to focus on two specific ports.
+RH_RF95 rf95(8,7);
 
 
 /**
@@ -21,10 +31,10 @@ void setup(){
   Serial.begin(115200);
 
   //Initializes the SD Card.
-  SD_Initialize();
+  Save.initialize();
 
   //Initializes the Radio.
-  Radio_Initialize();
+  Radio.initialize();
 }
 
 
@@ -36,10 +46,13 @@ void loop(){
   //Responsible for grabbing all of the craft's current information, 
   //   turning that data into an array that can be sent out via radio.
   //   Also reads in incoming messages.
-  Radio_Manager();
+  Radio.manager();
 
+  //Displays current information of craft. 
+  Data.displayInfo();
+  
   //Saves all local data to the SD card.
-  Save_Data();
+  //Save.saveData();
 
   delay(100);
 }

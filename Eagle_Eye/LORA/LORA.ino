@@ -40,7 +40,7 @@ void setup(){
   Comm.initialize();
 
   //Initializes the Radio.
-  //Radio.initialize();
+  Radio.initialize();
   
 }
 
@@ -52,10 +52,6 @@ void loop(){
   
   //Reads in a new NMEA sentence.
   Gps.manager();
-  
-  //Updates the craft's struct. This pulls data from all periphals,
-  //   and network to update to the most current situation.
-  Data.manager();
 
   //Communicates with the Mega to check for certain events happening
   //   throughout the system.
@@ -64,7 +60,10 @@ void loop(){
   //Responsible for grabbing all of the craft's current information, 
   //   turning that data into an array that can be sent out via radio.
   //   Also reads in incoming messages.
-  //Radio.manager();
+  Radio.manager();
+
+  //Displays current information of craft. 
+  Data.displayInfo();
   
   //Saves all local data to the SD card.
   //Save.saveData();

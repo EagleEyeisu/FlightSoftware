@@ -4,7 +4,7 @@
 
 
 #include <Arduino.h>
-#include "DATA.h"
+#include "Data.h"
 #include "GPS.h"
 #include <stdlib.h>
 #include "Globals.h"
@@ -104,13 +104,13 @@ float DATA::Parse(char message[], int objective){
 
 
 /**
- * Updates the main struct for the LoRa. 
+ * Prints information to screen. 
  */
-void DATA::manager()
+void DATA::displayInfo()
 {
 	//Local.LE and Local.ME update on their own throughout the program & are reset to 0 after being saved.
 
-	//Prints out data struct to the screen for debugging/following alone purposes.
+	//Prints out data struct to the screen for debugging/following along purposes.
   Serial.print("Time:       ");    Serial.println(Local.Time);
 	Serial.print("Altitude:   ");    Serial.print(Local.Altitude);       Serial.println(" m");
 	Serial.print("Latitude:   ");    Serial.println(Local.Latitude,6);
@@ -121,5 +121,4 @@ void DATA::manager()
 	Serial.print("LoRa Event: ");    Serial.println(Local.LE);
 	Serial.print("Mega Event: ");    Serial.println(Local.ME);
 	Serial.println("-------------------------------------------");
-  
 }
