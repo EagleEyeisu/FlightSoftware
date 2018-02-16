@@ -85,7 +85,7 @@ void GPS::manager()
  */
 float GPS::DistanceToTarget(){
 
-  float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), Data.TARGET_LAT, Data.TARGET_LON) / 100;
+  float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), gps.location.lng(), Data.Local.TargetLat, Data.Local.TargetLon) / 100;
   
   return distance;
 }

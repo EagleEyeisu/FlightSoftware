@@ -51,17 +51,14 @@ class RADIO
 	void radioReceive();
 	
 	//Responds to the RollCall signal sent from Mission Control.
-	void rollCall();
+  void rollCall();
 	
 	//Sends the desired signal out over the radio antenna.
 	void broadcast();
 
-  //Blinks the LED on the LoRa uC to show a signal has been received.
-  void blinkLED();
 	
-	
-	
-	
+
+  
 	//Chip select pin for the radio.
 	const byte RFM95_CS = 8;
 	
@@ -70,9 +67,6 @@ class RADIO
 	
 	//Reset pin onboard the radio.
 	const byte RFM95_RST = 4;
-	
-	//Pins used to blink an LED to signal receival packet.
-	const byte LED = 13;
 	
 	//Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
 	#define RF95_FREQ 433.0

@@ -9,6 +9,7 @@
 #include "Data.h"
 #include <RH_RF95.h>
 #include "Globals.h"
+#include <Wire.h>
 
 
 /**
@@ -109,9 +110,6 @@ float RADIO::getTimeStamp(uint8_t buf, int selector)
  */
 void RADIO::initialize()
 {
-	//Assigns pin 13 to have an output power connection to the LoRa's onboard LED.
-	pinMode(LED, OUTPUT);
-	
 	//Assigns pin 4 to have an output singal connection to the LoRa's radio port.
 	pinMode(RFM95_RST, OUTPUT);
 	
@@ -222,9 +220,6 @@ void RADIO::radioReceive()
 	
 	//Reads in the avaiable radio transmission, then checks if it is corrupt or complete.
 	if(rf95.recv(buf, &len)) {
-
-    //Blinks LED.
-    blinkLED();
 		
 		//This whole section is comparing the currently held varaibles from the last radio update
 		//   to that of the newly received signal. Updates the craft's owned variables and copies
@@ -333,19 +328,4 @@ void RADIO::broadcast()
 	//Pauses all operations until the micro controll has guaranteed the transmission of the
 	//   signal. 
 	rf95.waitPacketSent();
-}
-
-
-/*
- * Blinks LED.
- */
-void blinkLED(){
-
-  //ON
-  digitalWrite(LED, HIGH);
-
-  delay(10);
-
-  //OFF
-  digitalWrite(LED, LOW);
 }

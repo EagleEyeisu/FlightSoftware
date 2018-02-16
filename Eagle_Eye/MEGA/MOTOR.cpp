@@ -53,6 +53,7 @@ void MOTOR::manager()
 
         //Rotates the craft clockwise.
         rotateRight();
+        spinUp();
       }
     }
     //Checks for the need to rotate Left.
@@ -99,11 +100,11 @@ void MOTOR::manager()
   }
  
   //checks for the need to move up or down
-  else if(Imu.moveup || Imu.movedown){
+  else if(Imu.moveUp || Imu.moveDown){
 
     //Pulls the PDM Waveform below its cutoff to shut the motors off.
-    ////   This is to prevent any extra force on the servo to Turbofan housing.
-    applybreak();
+    //   This is to prevent any extra force on the servo to Turbofan housing.
+    Movement.applyBreak();
 
     //Rotates all servos back to their original position so that all turbofans
     //  are pointing up.
@@ -113,7 +114,7 @@ void MOTOR::manager()
     if(state != UP){
       
       //
-      if(Imu.moveup){
+      if(Imu.moveUp){
 
         //
         spinUp();
@@ -127,7 +128,7 @@ void MOTOR::manager()
     if(state != DOWN){
 
       //
-      if(Imu.movedown){
+      if(Imu.moveDown){
 
         //
         spinDown();
@@ -137,7 +138,6 @@ void MOTOR::manager()
       }
     }
 
-    
   }
   
   
@@ -293,7 +293,7 @@ void MOTOR::applyBreak()
 
 void MOTOR::spinUp()
 {
-  throttle = 1000;
+  throttle = 1050;
   while(throttle > currentThrottle){
 
     Serial.println(currentThrottle + INCREMENT_AMOUNT);
@@ -330,4 +330,4 @@ void MOTOR::spinDown()
   
   motor.writeMicroseconds(throttle);
   currentThrottle = throttle;
-}*/
+}

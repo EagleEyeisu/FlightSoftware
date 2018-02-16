@@ -31,7 +31,7 @@ void I2C::initialize()
 	//   Mega - 0
 	//   LoRa - 1
 	Wire.begin();
-	Serial.println("I2C Bus Address Set.");
+	//Serial.println("I2C Bus Address Set.");
 }
 
 
@@ -109,7 +109,7 @@ void I2C::upLoadCAN()
 	//Sends the message.
 	while(i<32){
     Wire.write(NDP[i]);
-    Serial.print(NDP[i]);
+    //Serial.print(NDP[i]);
     i++;
 	}
 	
@@ -125,7 +125,7 @@ void I2C::upLoadCAN()
   //Sends the message.
   while(i<64){
     Wire.write(NDP[i]);
-    Serial.print(NDP[i]);
+    //Serial.print(NDP[i]);
     i++;
   }
   
@@ -141,12 +141,12 @@ void I2C::upLoadCAN()
   //Sends the message.
   while(i<96){
     Wire.write(NDP[i]);
-    Serial.print(NDP[i]);
+    //Serial.print(NDP[i]);
     i++;
   }
   
   //Closes the transmission.
   Wire.endTransmission();
   
-  Serial.println();
+  //Serial.println();
 }
