@@ -6,7 +6,7 @@ DIRECTORY PURPOSE:
 Eagle_Eye:
 	All software for EE onboard micro controllers. 
 
-HABET_Detach:
+HABET:
 	Anchors Eagle Eye to HABET. Responible for releasing Eagle Eye.
 
 Mission_Control:
