@@ -33,7 +33,9 @@ void MOTOR::manager()
   //   |  Movement   |   -->  |  Correction |   -->  | & Backward  |  -->  |  Correction |
   //   ---------------        ---------------        ---------------       ---------------
 
-  Imu.moveForward = true; // THIS SHOULD BE FALSE. UPDATED FOR LAST TEST TO MAKE IT GO FORWARD
+  Imu.moveForward = true;
+  Imu.turnLeft = true;
+  Imu.turnRight = false;
   
   //Checks for the need for Yaw Correction.
   if(Imu.turnRight || Imu.turnLeft){
@@ -53,7 +55,7 @@ void MOTOR::manager()
 
         //Rotates the craft clockwise.
         rotateRight();
-        spinUp();
+        
       }
     }
     //Checks for the need to rotate Left.
@@ -104,7 +106,7 @@ void MOTOR::manager()
 
     //Pulls the PDM Waveform below its cutoff to shut the motors off.
     //   This is to prevent any extra force on the servo to Turbofan housing.
-    Movement.applyBreak();
+    applyBreak();
 
     //Rotates all servos back to their original position so that all turbofans
     //  are pointing up.
@@ -117,7 +119,7 @@ void MOTOR::manager()
       if(Imu.moveUp){
 
         //
-        spinUp();
+        //spinUp();
 
         //updates crafts current state to reflect the change
         state = UP;
@@ -131,7 +133,7 @@ void MOTOR::manager()
       if(Imu.moveDown){
 
         //
-        spinDown();
+        //spinDown();
 
         //updates crafts current state to reflect the change
         state = DOWN;
@@ -184,7 +186,7 @@ void MOTOR::initialize()
   //Digitally connects the servos to their respective pins.
   servoRight.attach(SERVO_PIN1); // Adds servo to a certain pin
   servoLeft.attach(SERVO_PIN2); // Adds servo to a certain pin
-  
+
 }
 
 
@@ -201,7 +203,7 @@ void MOTOR::rotateRight()
   //Applies those values to the servo. Rotates each side counter to each other.
   for (pos = pos; pos >= 0; pos -= 1){
     servoRight.write(pos);
-    servoLeft.write(170-pos);
+    servoLeft.write(pos);
     delay(50);
   }
 
@@ -222,7 +224,7 @@ void MOTOR::rotateLeft()
   
   //Applies values to the servo. Rotates each side counter to each other.
   for (pos = pos; pos <= 170; pos += 1){
-    servoLeft.write(170-pos);
+    servoLeft.write(pos);
     servoRight.write(pos);
     delay(50);
   }
@@ -241,31 +243,31 @@ void MOTOR::rotateLeft()
 void MOTOR::rotateLevel()
 {
   //Checks if current position is below 75 degrees.
-  if (pos<75){
+  if (pos<90){
 
     //Iterates up to the 75 degree mark.
-    while (pos<75){
+    while (pos<90){
 
       //Increments the position varaible.
       pos = pos + 1;
 
       //Writes the values to the servos.
       servoRight.write(pos);
-      servoLeft.write(pos-170);
+      servoLeft.write(pos);
       delay(10);
     }
   }
-  //Checks if motor position is above 75 degrees.
-  else if (pos>75){
+  //Checks if motor position is above 90 degrees.
+  else if (pos>90){
 
-    //Iterates down to the 75th degree mark.
-    while(pos>75){
+    //Iterates down to the 90th degree mark.
+    while(pos>90){
       //Decrements the position variable.
       pos = pos - 1;
   
       //Writes the values to the servos.
       servoRight.write(pos);
-      servoLeft.write(pos-170);
+      servoLeft.write(pos);
       delay(10);
     }
   }

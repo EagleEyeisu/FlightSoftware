@@ -55,7 +55,7 @@ class DATA
 
     //Time of flight. Used for data capture in SD card.
     char Time[10];
-
+    
 		//Holds the crafts previous altitude.
 		float altPrevious = 0.0;
 	  
@@ -64,7 +64,7 @@ class DATA
 	  
 		//Holds the crafts previous longitude.
 		float lonPrevious = 0.0;
-
+    
     //Holds the crafts previous target distance.
     float TDPrevious = 0.0;
 

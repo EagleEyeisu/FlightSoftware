@@ -62,7 +62,7 @@ void receiveEvent(int howmany)
     char character = Wire.read();
     Comm.NDP += character;
     
-    //Serial.print(character);
+    Serial.print(character);
   }
   
   if(!Comm.First8){
@@ -76,7 +76,7 @@ void receiveEvent(int howmany)
   else if(!Comm.Third8){
     
     Comm.Third8 = true;
-    //Serial.println(Comm.NDP);
+    Serial.println(Comm.NDP);
   }
   
 }

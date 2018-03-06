@@ -138,11 +138,11 @@ void IMU::angleToTarget()
     angle += 360;
   }
 
-  if(angle > angleTolerance){
+  if(angle < -angleTolerance){
     turnRight = false;
     turnLeft = true;
   }
-  else if(angle < -angleTolerance){
+  else if(angle > angleTolerance){
     turnLeft = false;
     turnRight = true;
   }
