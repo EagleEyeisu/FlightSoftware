@@ -77,7 +77,7 @@ float DATA::Parse(char message[], int objective){
 			if(message[i] != ','){
         
 				//Copies the message's character to the temporary array.
-				tempArr[t] = message[i];
+				tempArr[tempIter] = message[i];
         
 				//Iterator used to tell how long the temporary array is.
 				tempIter++;
