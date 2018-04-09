@@ -3,13 +3,11 @@
 #include <Adafruit_BMP085_U.h>
 #include <Adafruit_LSM9DS0.h>
 #include <Adafruit_Sensor.h>
-#include <SD.h>
 
 #include "DATA.h"
 #include "I2C.h"
 #include "IMU.h"
 #include "MOTOR.h"
-#include "SAVE.h"
 #include "THERMO.h"
 #include "Globals.h"
 
@@ -18,7 +16,6 @@
 DATA Data;
 I2C Comm;
 IMU Imu;
-SAVE Save;
 THERMO Thermo;
 MOTOR Movement;
 
@@ -41,12 +38,9 @@ void setup(){
   //Creates a serial communication line between the arduino and the serial port 
   //   found under 'Tools' -> 'Serial Monitor'
   Serial.begin(115200);
-
+  
   //Initializes the Pressure Sensor.
   Data.initialize();
-
-  //Initializes the SD Card.
-  Save.initialize();
 
   //Initializes the Inter-Intergrated Circuit (I^2C) protocol.
   Comm.initialize();
@@ -56,7 +50,7 @@ void setup(){
 
   //Initializes all ESC's, TurboFans, & Servos.
   Movement.initialize();
-  
+
 }
 
 
@@ -66,7 +60,7 @@ void setup(){
 void loop(){
 
   //Reads in all needed values from periphals.
-  Data.manager();
+  Data.updateData();
   
   //Watches for LoRa to ask for permission to drop.
   Imu.manager();
@@ -74,8 +68,12 @@ void loop(){
   //Dynamically updates the orientation & position of the craft. 
   Movement.manager();
 
-  //Stores the current cycle's data to the SD Card.
-  Save.saveData();
+  //Print data of the current cycle to the screen. Only prints when new
+  //   information is collected. 
+  Data.toScreen();
+  
+  //Resets the newData state to no new data.
+  Data.newData = Data.NO;
 
   delay(10000);
 }

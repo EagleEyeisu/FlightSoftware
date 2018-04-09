@@ -33,9 +33,10 @@ void MOTOR::manager()
   //   |  Movement   |   -->  |  Correction |   -->  | & Backward  |  -->  |  Correction |
   //   ---------------        ---------------        ---------------       ---------------
 
-  Imu.moveForward = true;
-  Imu.turnLeft = true;
-  Imu.turnRight = false;
+  
+  // The turn (right, left) variables are what the craft needs to do to correct its course. 
+  // The state variable (left, right, etc..) is the action that the craft it currently preforming. 
+
   
   //Checks for the need for Yaw Correction.
   if(Imu.turnRight || Imu.turnLeft){
@@ -93,7 +94,7 @@ void MOTOR::manager()
 
         //Rotates all servos back to their original position so that all turbofans
         //   are providing forward thrust.
-        rotateLevel();
+        rotateLevel(180);
       }
       
       //Updates crafts current state to reflect the change.
@@ -108,43 +109,23 @@ void MOTOR::manager()
     //   This is to prevent any extra force on the servo to Turbofan housing.
     applyBreak();
 
-    //Rotates all servos back to their original position so that all turbofans
-    //  are pointing up.
-    rotateLevel();
-    
     //checks to see the crafts current movement
     if(state != UP){
       
-      //
+      //Checks for if craft is already moving up. 
       if(Imu.moveUp){
 
-        //
+        //Rotates all servos back to their original position so that all turbofans
+        //  are pointing up.
+        rotateLevel(90);
+    
         //spinUp();
 
         //updates crafts current state to reflect the change
         state = UP;
       }  
     }
-
-    //
-    if(state != DOWN){
-
-      //
-      if(Imu.moveDown){
-
-        //
-        //spinDown();
-
-        //updates crafts current state to reflect the change
-        state = DOWN;
-      }
-    }
-
   }
-  
-  
-  
-  
   
   //The below code will be used for manual testing. 
   /*
@@ -184,8 +165,12 @@ void MOTOR::initialize()
   motor.writeMicroseconds(900); 
   
   //Digitally connects the servos to their respective pins.
-  servoRight.attach(SERVO_PIN1); // Adds servo to a certain pin
-  servoLeft.attach(SERVO_PIN2); // Adds servo to a certain pin
+  servoLeft.attach(SERVO_PINLeft); // Adds servo to a certain pin
+  servoRight.attach(SERVO_PINRight); // Adds servo to a certain pin
+
+  servoLeft.write(90);
+  servoRight.write(90);
+  pos = 90;
 
 }
 
@@ -197,16 +182,17 @@ void MOTOR::rotateRight()
 {
   //Updates the state machine to reflect the current movement.
   state = RIGHT;
-  Serial.println("Turning Right: ");
-  Serial.println(state);
+  //Serial.println("Turning Right: ");
+  //Serial.println(state);
   
   //Applies those values to the servo. Rotates each side counter to each other.
-  for (pos = pos; pos >= 0; pos -= 1){
-    servoRight.write(pos);
+  for (pos = pos; pos > 0; pos -= 1){
+    Serial.println(pos);
     servoLeft.write(pos);
+    servoRight.write(pos);
     delay(50);
   }
-
+  
   //Spins motors back to constant turning speed of 5%. (set for 1% for testing purposes)
   //motor.writeMicroseconds(1000);
 }
@@ -219,18 +205,16 @@ void MOTOR::rotateLeft()
 {
   //Updates the state machine to reflect the current movement.
   state = LEFT;
-  Serial.println("Turning Left: ");
-  Serial.println(state); 
+  //Serial.println("Turning Left: ");
+  //Serial.println(state); 
   
   //Applies values to the servo. Rotates each side counter to each other.
   for (pos = pos; pos <= 170; pos += 1){
+    Serial.println(pos);
     servoLeft.write(pos);
     servoRight.write(pos);
     delay(50);
   }
-
-  //Gives short delay to ensure servos reach destination.
-  delay(250);
 
   //Spins motors back to constant turning speed of 5%. (set for 1% for testing purposes)
   //motor.writeMicroseconds(1000);
@@ -239,36 +223,38 @@ void MOTOR::rotateLeft()
 
 /**
  * Rotates the servos so all the turbofans are oriented forward.
+ *    Input is the degree angle (whole number) between 0 and 180. 
  */
-void MOTOR::rotateLevel()
+void MOTOR::rotateLevel(int degree)
 {
-  //Checks if current position is below 75 degrees.
-  if (pos<90){
-
-    //Iterates up to the 75 degree mark.
-    while (pos<90){
-
+  //Checks if current position is below the given degree.
+  if (pos<degree){
+    
+    //Iterates up to the degree mark.
+    while (pos<degree){
       //Increments the position varaible.
       pos = pos + 1;
-
+      
       //Writes the values to the servos.
+      Serial.println(pos);
+      servoLeft.write(180-pos);
       servoRight.write(pos);
-      servoLeft.write(pos);
-      delay(10);
+      delay(50);
     }
   }
-  //Checks if motor position is above 90 degrees.
-  else if (pos>90){
-
-    //Iterates down to the 90th degree mark.
-    while(pos>90){
+  //Checks if motor position is above the given degree.
+  else if (pos>degree){
+    
+    //Iterates down to the degree mark.
+    while(pos>degree){
       //Decrements the position variable.
       pos = pos - 1;
-  
+      
       //Writes the values to the servos.
+      Serial.println(pos);
+      servoLeft.write(180-pos);
       servoRight.write(pos);
-      servoLeft.write(pos);
-      delay(10);
+      delay(50);
     }
   }
 }
@@ -332,4 +318,34 @@ void MOTOR::spinDown()
   
   motor.writeMicroseconds(throttle);
   currentThrottle = throttle;
+}
+
+
+/**
+ * Depending on craft operational state, returns the string associated
+ *    with that state instead of the numbers. This is purely for debugging
+ *    purposes. 
+ */
+String MOTOR::getSTATE(){
+  
+  int temp = Movement.state;
+
+  if(temp == 0){
+    return "NONE";
+  }
+  else if(temp == 1){
+    return "RIGHT";
+  }
+  else if(temp == 2){
+    return "LEFT";
+  }
+  else if(temp == 3){
+    return "FORWARD";
+  }
+  else if(temp == 4){
+    return "UP";
+  }
+  else if(temp == 5){
+    return "DOWN";
+  }
 }

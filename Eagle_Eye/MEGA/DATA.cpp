@@ -7,6 +7,7 @@
 #include "IMU.h"
 #include "THERMO.h"
 #include "I2C.h"
+#include "MOTOR.h"
 #include "Globals.h"
 #include <Arduino.h>
 #include <Adafruit_BMP085_U.h>
@@ -72,6 +73,10 @@ float DATA::getGPSSpeed(){
 
 //Reads in the time of the LoRa from the CAN Network.
 void DATA::getGPSTime(){
+
+  //This is a junk variable because the Time is not of float format, therefore instead
+  //   of chaning the entire structure of the method or making a duplicate, the varaible 
+  //   is just set inside of the method. See the bottom end of Parse for more info. 
   float junk = Data.Parse(Comm.NDP,9);
 }
 
@@ -79,7 +84,7 @@ void DATA::getGPSTime(){
 /**
  * Updates the main struct for the craft. 
  */
-void DATA::manager()
+void DATA::updateData()
 {
   
   //Object used to store the store the data pulled from the BMP085.
@@ -88,7 +93,7 @@ void DATA::manager()
 	//Creates new 'event' with the most current pressure sensor data.
 	bmp.getEvent(&event);
 
-  //ORIGINAL CRAFT INFORMATION.
+  //MEGA DATA
 	Local.Altitude = Data.getAltitude(event.pressure);
   Local.Latitude = Data.getGPSLatitude();
   Local.Longitude = Data.getGPSLongitude();
@@ -98,7 +103,7 @@ void DATA::manager()
 	Local.Pitch = Imu.getPitch();
   Local.Yaw = Imu.getYaw();
 
-  //LORA CRAFT INFORMATION
+  //LORA DATA
   Local.GPSAltitude = Data.getGPSAltitude();
   Local.GPSTargetAlt = Data.getGPSTargetAlt();
   Local.GPSTargetLat = Data.getGPSTargetLat();
@@ -107,39 +112,52 @@ void DATA::manager()
   Local.GPSSpeed = Data.getGPSSpeed();
   Data.getGPSTime();
 
-  
-	//Local.LE and Local.ME update on their own throughout 
-	//   the program & are reset to 0 after being saved.
+}
 
-	//Prints out data struct to the screen for debugging/following alone purposes.
-  Serial.println("     MEGA INFORMATION     ");
-	Serial.print("Altitude:    "); 		Serial.print(Local.Altitude,2);     Serial.println(" m");
-	Serial.print("Temperature: "); 		Serial.print(Local.TempExt);        Serial.println(" C");
-	Serial.print("Pressure:    "); 		Serial.print(Local.Pressure);       Serial.println(" hPa");
-	Serial.print("Roll:        "); 	  Serial.println(Local.Roll);
-	Serial.print("Pitch:       "); 		Serial.println(Local.Pitch);
-	Serial.print("Yaw:         ");    Serial.println(Local.Yaw);
-  Serial.print("LoRa Event:  ");    Serial.println(Local.LE);
-  Serial.print("Mega Event:  ");    Serial.println(Local.ME);
-
-  Serial.println("     LORA INFORMATION     ");
-  Serial.print("Time:        ");    Serial.println(Local.GPSTime);
-  Serial.print("Altitude:    ");    Serial.print(Local.GPSAltitude,2);     Serial.println(" m");
-  Serial.print("Latitude:    ");    Serial.println(Local.Latitude,6);
-  Serial.print("Longitude:   ");    Serial.println(Local.Longitude,6);
-  Serial.print("TargetLat:   ");    Serial.println(Local.GPSTargetLat,6);
-  Serial.print("TargetLon:   ");    Serial.println(Local.GPSTargetLon,6);
-  Serial.print("Speed:       ");    Serial.print(Local.GPSSpeed);          Serial.println(" mps");
-  Serial.print("Distance:    ");    Serial.print(Local.GPSTargetDistance); Serial.println(" m");
-
-  Serial.println("     MOTOR INFORMATION    ");
-  Serial.print("Move Forward: ");   Serial.println(Imu.moveForward);
-  Serial.print("Turn Right:   ");   Serial.println(Imu.turnRight);
-  Serial.print("Turn Left:    ");   Serial.println(Imu.turnLeft);
-  Serial.print("Move Up:      ");   Serial.println(Imu.moveUp);
-  Serial.print("Move Down:    ");   Serial.println(Imu.moveDown);
-  Serial.print("Target Angle: ");   Serial.println(Imu.ATT);
-  Serial.println("-------------------------------------------");
+void DATA::toScreen()
+{
+  if(newData == YES){
+    //Prints out data struct to the screen for debugging/following along purposes.
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("|                                MEGA DATA                                  |");
+    Serial.println("|                                                                           |");
+    Serial.print(  "|  Altitude:     "); Serial.print(Local.Altitude,2); Serial.print(" m");  Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Temperature:  "); Serial.print(Local.TempExt);    Serial.print(" C");  Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Pressure:     "); Serial.print(Local.Pressure);   Serial.print(" hPa");Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Roll:         "); Serial.print(Local.Roll);                            Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Pitch:        "); Serial.print(Local.Pitch);                           Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Yaw:          "); Serial.print(Local.Yaw);                             Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  LoRa Event:   "); Serial.print(Local.LE);                              Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Mega Event:   "); Serial.print(Local.ME);                              Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.println("|                                                                           |");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("|                                LORA DATA                                  |");
+    Serial.println("|                                                                           |");
+    Serial.print(  "|  Time:         "); Serial.print(Local.GPSTime);                                Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  GPS Altitude: "); Serial.print(Local.GPSAltitude,2);     Serial.print(" m");  Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Latitude:     "); Serial.print(Local.Latitude,6);                             Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Longitude:    "); Serial.print(Local.Longitude,6);                            Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  TargetLat:    "); Serial.print(Local.GPSTargetLat,6);                         Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  TargetLon:    "); Serial.print(Local.GPSTargetLon,6);                         Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Speed:        "); Serial.print(Local.GPSSpeed);          Serial.print(" mps");Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Distance:     "); Serial.print(Local.GPSTargetDistance); Serial.print(" m");  Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.println("|                                                                           |");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("|                                                                           |");
+    Serial.println("|                               MOTOR DATA                                  |");
+    Serial.print(  "|  State:        "); Serial.print(Movement.getSTATE());Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Servo Pos   : "); Serial.print(Movement.pos);       Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Move Forward: "); Serial.print(Imu.moveForward);    Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Turn Right:   "); Serial.print(Imu.turnRight);      Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Turn Left:    "); Serial.print(Imu.turnLeft);       Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Move Up:      "); Serial.print(Imu.moveUp);         Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Move Down:    "); Serial.print(Imu.moveDown);       Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Target Angle: "); Serial.print(Imu.ATT);            Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.println("|                                                                           |");
+    Serial.println("-----------------------------------------------------------------------------");
+  }
 }
 
 
@@ -147,10 +165,8 @@ void DATA::manager()
  * Returns a parsed section of the read in parameter. The parameter 'objective' represents 
  *    the comma's position from the beginning of the character array.
  */
-float DATA::Parse(String message, int objective){
-
-  Serial.println(message);
-
+float DATA::Parse(String message, int objective)
+{
   //Example GPS Transmission. (GGA)
   //
   //  $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47
@@ -327,9 +343,10 @@ float DATA::getAltitude(float _Pressure)
 void DATA::initialize()
 {
 	//If invalid connection, the program will stall and print an error message.
+  Serial.println("In Data");
 	if(!bmp.begin()){
 		Serial.println("PROBLEM WITH PRESSURE SENSOR.");
-		while(1);
+		
 	}
 	//Valid connection, program proceeds as planned.
 	else{

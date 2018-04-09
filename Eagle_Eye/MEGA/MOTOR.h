@@ -23,8 +23,8 @@ class MOTOR
   //   PDM pulse width to send to the motor.
   void manager();
 
-  //Rotates the servos back the original positon of all facing forward.
-  void rotateLevel();
+  //Rotates all servos to a specific inputted degree angle.
+  void rotateLevel(int degree);
   
   //Moves the servos in coordination to rotate the craft right.
   void rotateRight();
@@ -43,6 +43,11 @@ class MOTOR
   //Writes a PDM Waveform that is below the cutoff. This takes the throttle to
   //   an instant 0%.
   void applyBreak();
+
+ //Depending on craft operational state, returns the string associated
+ //   with that state instead of the numbers. This is purely for debugging
+ //   purposes. 
+  String getSTATE();
   
   //Connection pins from Arduino MEGA to their respective ESC's.
   //   The craft has four motors, but we can get away with only 
@@ -55,8 +60,8 @@ class MOTOR
   //   physical serovs on the craft, but only need to 
   //   simulate two due to their being two pairs acting
   //   together.
-  #define SERVO_PIN1 42    
-  #define SERVO_PIN2 44
+  #define SERVO_PINLeft 42
+  #define SERVO_PINRight 51
 
   //Specific amount alter the PWM waveform between each pulse. 
   //   This ensures that each increment or decrement is suttle
@@ -70,8 +75,8 @@ class MOTOR
   Servo motor;
   
   //Creates a Servo object
-  Servo servoRight; 
-  Servo servoLeft;  
+  Servo servoLeft;
+  Servo servoRight;
 
   //Throttle value current being sent to the craft.
   int currentThrottle = 900;
@@ -90,10 +95,7 @@ class MOTOR
   int input = 0;
   
   //The initalization setting for the servos.
-  int pos = 90; 
-  
-  //Used in rotating the servos. (designed to be exact opposite of pos)
-  int opp = 90; 
+  int pos = 0; 
 
   enum Orientation {NONE,RIGHT,LEFT,FORWARD,UP,DOWN};
   enum Orientation state = NONE;

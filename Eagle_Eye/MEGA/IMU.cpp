@@ -34,12 +34,12 @@ void IMU::initialize()
 {
   //If invalid connection, the program will stall and print an error message.
   if(!lsm.begin()){
-	Serial.print("PROBLEM WITH 9DOF");
-	while(1);
+	  Serial.print("PROBLEM WITH 9DOF");
+	  //while(1);
   }
   //Valid connection, program proceeds as planned.
   else{
-	Serial.println("9Dof Online.");
+	  Serial.println("9Dof Online.");
   }
 
   //Sets specific calibration values. DO NOT CHANGE.
@@ -78,7 +78,7 @@ float IMU::getRoll()
   
   //Checks for connection to IMU.
   if(ahrs.getOrientation(&orientation)){
-	return (orientation.roll);
+	  return (orientation.roll);
   }
 }
 
@@ -95,7 +95,7 @@ float IMU::getPitch()
   
   //Checks for connection to IMU.
   if(ahrs.getOrientation(&orientation)){
-	return (orientation.pitch);
+	  return (orientation.pitch);
   }
 }
 
@@ -112,7 +112,7 @@ float IMU::getYaw()
   
   //Checks for connection to IMU.
   if(ahrs.getOrientation(&orientation)){
-	return (orientation.heading);
+	  return (orientation.heading);
   }
 }
 
@@ -130,7 +130,7 @@ void IMU::angleToTarget()
   float y = sin(lon2-lon1) * cos(lat2); 
   float bearing = atan2(y, x);
 
-  float angle = bearing - Imu.getYaw();
+  float angle = Imu.getYaw()- bearing;
   if(angle > 180){
     angle -= 360;
   }

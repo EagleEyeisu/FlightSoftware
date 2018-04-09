@@ -37,7 +37,7 @@ void I2C::initialize()
   //Registers recieveEvent as a interrupt.
   Wire.onReceive(receiveEvent);
   
-	//Serial.println("Comms Address Set.");
+	Serial.println("Comms Address Set.");
 }
 
 
@@ -46,7 +46,10 @@ void I2C::initialize()
  */
 void receiveEvent(int howmany)
 {
-  Serial.println("Interrupt Triggered");
+  //New info is being read in. 
+  Data.newData = Data.YES;
+  
+  //Serial.println("Interrupt Triggered");
 
   if(Comm.First8 && Comm.Second8 && Comm.Third8){
     Comm.NDP = "";
@@ -62,7 +65,7 @@ void receiveEvent(int howmany)
     char character = Wire.read();
     Comm.NDP += character;
     
-    Serial.print(character);
+    //Serial.print(character);
   }
   
   if(!Comm.First8){
@@ -76,7 +79,7 @@ void receiveEvent(int howmany)
   else if(!Comm.Third8){
     
     Comm.Third8 = true;
-    Serial.println(Comm.NDP);
+    //Serial.println(Comm.NDP);
   }
   
 }
