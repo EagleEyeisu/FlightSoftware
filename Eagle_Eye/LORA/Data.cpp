@@ -37,8 +37,10 @@ float DATA::Parse(char message[], int objective){
   //Example I2C Transmission
   //
   //                                   CONTROLLER ACCESS NETWORK PROTOCOL PACKET
-  //  $,GPSAltitude, Latitude, Longitude, TargetLat, TargetLon, Roll, Pitch, Yaw, Speed , TargetDistance, Time,$
-  //         1           2         3          4           5       6     7     8     9          10          11
+  //  $,GPSAltitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$
+  //         1           2         3          4          5          6            7           8      9
+	//
+	//
 	//The number of commas that the program needs to pass before it started parsing the data.
 	int goalNumber = objective;
   

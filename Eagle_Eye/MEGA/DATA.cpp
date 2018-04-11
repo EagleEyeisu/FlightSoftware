@@ -95,8 +95,8 @@ void DATA::updateData()
 
   //MEGA DATA
 	Local.Altitude = Data.getAltitude(event.pressure);
-  Local.Latitude = Data.getGPSLatitude();
-  Local.Longitude = Data.getGPSLongitude();
+  Local.Latitude = Data.getGPSLatitude() / 10000.0;
+  Local.Longitude = Data.getGPSLongitude() / 10000.0;
 	Local.TempExt = Thermo.getTempExt();
 	Local.Pressure = event.pressure;
 	Local.Roll = Imu.getRoll();
@@ -106,8 +106,8 @@ void DATA::updateData()
   //LORA DATA
   Local.GPSAltitude = Data.getGPSAltitude();
   Local.GPSTargetAlt = Data.getGPSTargetAlt();
-  Local.GPSTargetLat = Data.getGPSTargetLat();
-  Local.GPSTargetLon = Data.getGPSTargetLon();
+  Local.GPSTargetLat = Data.getGPSTargetLat() / 10000.0;
+  Local.GPSTargetLon = Data.getGPSTargetLon() / 10000.0;
   Local.GPSTargetDistance = Data.getGPSTargetDistance();
   Local.GPSSpeed = Data.getGPSSpeed();
   Data.getGPSTime();
@@ -179,8 +179,8 @@ float DATA::Parse(String message, int objective)
   //Example I2C Transmission
   //
   //                                   CONTROLLER ACCESS NETWORK PROTOCOL PACKET
-  //  $,GPSAltitude, Latitude, Longitude, TargetLat, TargetLon, TargetDistance, Roll, Pitch, Yaw, Speed, Time,$
-  //         1           2         3          4           5           6           7     8     9     10    11
+  //  $,GPSAltitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$
+  //         1           2         3          4          5          6            7           8      9 
   //
   //
   //The number of commas that the program needs to pass before it started parsing the data.

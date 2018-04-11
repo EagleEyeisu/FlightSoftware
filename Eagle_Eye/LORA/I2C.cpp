@@ -67,17 +67,17 @@ void I2C::preLoadCAN(){
   //Each line below appends a certain divider or value to the string.
   temp += '$'; 
   temp += ',';
-  temp += Data.Local.Altitude,6;
+  temp += Data.Local.Altitude;
   temp += ',';
-  temp += Data.Local.Latitude,6;
+  temp += Data.Local.Latitude * 10000.0;
   temp += ',';
-  temp += Data.Local.Longitude;
+  temp += Data.Local.Longitude * 10000.0;
   temp += ',';
   temp += Data.Local.TargetAlt;
   temp += ',';
-  temp += Data.Local.TargetLat;
+  temp += Data.Local.TargetLat * 10000.0;
   temp += ',';
-  temp += Data.Local.TargetLon;
+  temp += Data.Local.TargetLon * 10000.0;
   temp += ',';
   temp += Data.Local.TargetDistance;
   temp += ',';
