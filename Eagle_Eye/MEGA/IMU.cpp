@@ -117,7 +117,7 @@ float IMU::getYaw()
 }
 
 /**
- * Sets certain booleans true depending on the crafts orientation.
+ * Sets turning booleans depending on the craft's orientation.
  */
 void IMU::angleToTarget()
 {
@@ -129,8 +129,10 @@ void IMU::angleToTarget()
   float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
   float y = sin(lon2-lon1) * cos(lat2); 
   float bearing = atan2(y, x);
+  //Normalize to 0-360
+  bearing = (bearing + 360) % 360;
 
-  float angle = Imu.getYaw()- bearing;
+  float angle = bearing - Imu.getYaw();
   if(angle > 180){
     angle -= 360;
   }
