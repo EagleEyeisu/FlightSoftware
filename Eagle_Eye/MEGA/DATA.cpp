@@ -137,10 +137,10 @@ void DATA::toScreen()
     Serial.println("|                                                                           |");
     Serial.print(  "|  Time:         "); Serial.print(Local.GPSTime);                                Serial.println("\t\t\t\t\t\t\t    |");
     Serial.print(  "|  GPS Altitude: "); Serial.print(Local.GPSAltitude,2);     Serial.print(" m");  Serial.println("\t\t\t\t\t\t\t    |");
-    Serial.print(  "|  Latitude:     "); Serial.print(Local.Latitude,6);                             Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Longitude:    "); Serial.print(Local.Longitude,6);                            Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  TargetLat:    "); Serial.print(Local.GPSTargetLat,6);                         Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  TargetLon:    "); Serial.print(Local.GPSTargetLon,6);                         Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Latitude:     "); Serial.print(Local.Latitude,5);                             Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Longitude:    "); Serial.print(Local.Longitude,5);                            Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  TargetLat:    "); Serial.print(Local.GPSTargetLat,5);                         Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  TargetLon:    "); Serial.print(Local.GPSTargetLon,5);                         Serial.println("\t\t\t\t\t\t    |");
     Serial.print(  "|  Speed:        "); Serial.print(Local.GPSSpeed);          Serial.print(" mps");Serial.println("\t\t\t\t\t\t    |");
     Serial.print(  "|  Distance:     "); Serial.print(Local.GPSTargetDistance); Serial.print(" m");  Serial.println("\t\t\t\t\t\t\t    |");
     Serial.println("|                                                                           |");
@@ -155,6 +155,7 @@ void DATA::toScreen()
     Serial.print(  "|  Move Up:      "); Serial.print(Imu.moveUp);         Serial.println("\t\t\t\t\t\t\t    |");
     Serial.print(  "|  Move Down:    "); Serial.print(Imu.moveDown);       Serial.println("\t\t\t\t\t\t\t    |");
     Serial.print(  "|  Target Angle: "); Serial.print(Imu.ATT);            Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.print(  "|  Bearing:      "); Serial.print(Imu.bearing);        Serial.println("\t\t\t\t\t\t\t    |");
     Serial.println("|                                                                           |");
     Serial.println("-----------------------------------------------------------------------------");
   }

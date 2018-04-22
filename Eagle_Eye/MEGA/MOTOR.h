@@ -62,6 +62,7 @@ class MOTOR
   //   together.
   #define SERVO_PINLeft 42
   #define SERVO_PINRight 51
+  #define SERVO_DELAY 5
 
   //Specific amount alter the PWM waveform between each pulse. 
   //   This ensures that each increment or decrement is suttle

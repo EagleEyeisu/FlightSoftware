@@ -128,9 +128,9 @@ void IMU::angleToTarget()
 
   float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
   float y = sin(lon2-lon1) * cos(lat2); 
-  float bearing = atan2(y, x);
+  bearing = atan2(y, x);
   //Normalize to 0-360
-  bearing = (bearing + 360) % 360;
+  bearing = fmod((bearing + 360.0),360.0);
 
   float angle = bearing - Imu.getYaw();
   if(angle > 180){

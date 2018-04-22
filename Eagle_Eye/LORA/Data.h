@@ -69,10 +69,10 @@ class DATA
     float TDPrevious = 0.0;
 
     //Target Latitude for craft.
-    float TargetLat = 42.0267;
+    float TargetLat = 42.02751;
   
     //Target Longitude for craft.
-    float TargetLon = -93.6539;
+    float TargetLon = -93.65374;
 
     //Target Altitude for the craft.
     float TargetAlt = 10000.0;

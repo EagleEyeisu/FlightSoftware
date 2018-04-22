@@ -31,6 +31,11 @@ void setup(){
   //   found under 'Tools' -> 'Serial Monitor'
   Serial.begin(115200);
 
+  for(int i=0;i<100;i++){
+    Serial.println("RESET");
+  }
+  
+
   //Initializes the Inter-Intergrated Circuit (I^2C) protocol.
   Comm.initialize();
 
@@ -60,5 +65,5 @@ void loop(){
   //Displays current information of craft. 
   Data.displayInfo();
 
-  delay(10000);
+  delay(5000);
 }

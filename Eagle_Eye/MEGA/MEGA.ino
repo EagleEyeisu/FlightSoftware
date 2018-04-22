@@ -75,5 +75,5 @@ void loop(){
   //Resets the newData state to no new data.
   Data.newData = Data.NO;
 
-  delay(10000);
+  delay(5000);
 }

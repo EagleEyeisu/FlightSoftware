@@ -42,6 +42,9 @@ class IMU
 
   //Current angle to the target.
   float ATT = 0.0;
+
+  //Current bearing for craft
+  float bearing = 0.0;
   
   //Tolerance for heading angle
   float angleTolerance = 10.0;

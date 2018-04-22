@@ -33,7 +33,7 @@ void MOTOR::manager()
   //   |  Movement   |   -->  |  Correction |   -->  | & Backward  |  -->  |  Correction |
   //   ---------------        ---------------        ---------------       ---------------
 
-  
+  //rotateLevel(180);
   // The turn (right, left) variables are what the craft needs to do to correct its course. 
   // The state variable (left, right, etc..) is the action that the craft it currently preforming. 
 
@@ -94,7 +94,7 @@ void MOTOR::manager()
 
         //Rotates all servos back to their original position so that all turbofans
         //   are providing forward thrust.
-        rotateLevel(180);
+        rotateLevel(0);
       }
       
       //Updates crafts current state to reflect the change.
@@ -190,7 +190,7 @@ void MOTOR::rotateRight()
     Serial.println(pos);
     servoLeft.write(pos);
     servoRight.write(pos);
-    delay(50);
+    delay(SERVO_DELAY);
   }
   
   //Spins motors back to constant turning speed of 5%. (set for 1% for testing purposes)
@@ -209,11 +209,11 @@ void MOTOR::rotateLeft()
   //Serial.println(state); 
   
   //Applies values to the servo. Rotates each side counter to each other.
-  for (pos = pos; pos <= 170; pos += 1){
+  for (pos = pos; pos < 170; pos += 1){
     Serial.println(pos);
     servoLeft.write(pos);
     servoRight.write(pos);
-    delay(50);
+    delay(SERVO_DELAY);
   }
 
   //Spins motors back to constant turning speed of 5%. (set for 1% for testing purposes)
@@ -239,7 +239,7 @@ void MOTOR::rotateLevel(int degree)
       Serial.println(pos);
       servoLeft.write(180-pos);
       servoRight.write(pos);
-      delay(50);
+      delay(SERVO_DELAY);
     }
   }
   //Checks if motor position is above the given degree.
@@ -254,7 +254,7 @@ void MOTOR::rotateLevel(int degree)
       Serial.println(pos);
       servoLeft.write(180-pos);
       servoRight.write(pos);
-      delay(50);
+      delay(SERVO_DELAY);
     }
   }
 }
