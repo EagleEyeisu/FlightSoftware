@@ -12,11 +12,11 @@ class THERMO
 {
   public:
   
-  //Constructor
+  // Constructor
   THERMO();
   
-  //Returns the external temp from the thermocouple.
-	float getTempExt();
+  // Returns the external temp from the thermocouple.
+  float getTempExt();
 
 };
 

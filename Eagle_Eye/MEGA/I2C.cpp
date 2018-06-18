@@ -26,15 +26,15 @@ I2C::I2C()
  */
 void I2C::initialize()
 {
-  //Predeclaration of method that will be set as a interrupt.
+  // Predeclaration of method that will be set as a interrupt.
   void receiveEvent(int howMany);
   
-	//Sets the address for the current micro controller.
-	//   Mega - 0
-	//   LoRa - 1
+	// Sets the address for the current micro controller.
+	// Mega - 0
+	// LoRa - 1
 	Wire.begin(8);
   
-  //Registers recieveEvent as a interrupt.
+  // Registers recieveEvent as a interrupt.
   Wire.onReceive(receiveEvent);
   
 	Serial.println("Comms Address Set.");
@@ -42,44 +42,40 @@ void I2C::initialize()
 
 
 /**
- * Recieves byte over I2C Connection.
+ * Recieves bytes over I2C Connection.
  */
 void receiveEvent(int howmany)
 {
-  //New info is being read in. 
+  // New info is being read in. 
   Data.newData = Data.YES;
-  
-  //Serial.println("Interrupt Triggered");
 
-  if(Comm.First8 && Comm.Second8 && Comm.Third8){
+  if(Comm.First8 && Comm.Second8 && Comm.Third8)
+  {
     Comm.NDP = "";
     Comm.First8 = false;
     Comm.Second8 = false;
     Comm.Third8 = false;
   }
   
-  //Checks for data on the wire.
-  while(Wire.available()) {
-      
-    //Reads in single character from serial port.
+  // Checks for data on the wire.
+  while(Wire.available())
+  {
+    // Reads in single character from serial port.
     char character = Wire.read();
     Comm.NDP += character;
-    
-    //Serial.print(character);
   }
   
-  if(!Comm.First8){
-    
+  if(!Comm.First8)
+  {
     Comm.First8 = true;
   }
-  else if(!Comm.Second8){
-    
+  else if(!Comm.Second8)
+  {
     Comm.Second8 = true;
   }
-  else if(!Comm.Third8){
-    
+  else if(!Comm.Third8)
+  {
     Comm.Third8 = true;
-    //Serial.println(Comm.NDP);
   }
   
 }

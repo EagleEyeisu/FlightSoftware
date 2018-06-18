@@ -27,11 +27,11 @@ I2C::I2C()
  */
 void I2C::initialize()
 {
-	//Sets the address for the current micro controller.
-	//   Mega - 0
-	//   LoRa - 1
+	// Sets the address for the current micro controller.
+	// Mega - 0
+	// LoRa - 1
 	Wire.begin();
-	//Serial.println("I2C Bus Address Set.");
+	// Serial.println("I2C Bus Address Set.");
 }
 
 
@@ -40,10 +40,10 @@ void I2C::initialize()
  */
 void I2C::manager()
 {
-  //Clears and fills the network packet to be sent to the Mega.
+  // Clears and fills the network packet to be sent to the Mega.
   preLoadCAN();
   
-  //Uploads message to CAN to be delivered to Mega.
+  // Uploads message to CAN to be delivered to Mega.
   upLoadCAN();
 }
 
@@ -61,10 +61,10 @@ void I2C::preLoadCAN(){
    *             
    */
     
-  //Creates a temporary string to hold all need information.
+  // Creates a temporary string to hold all need information.
   String temp = "";
 
-  //Each line below appends a certain divider or value to the string.
+  // Each line below appends a certain divider or value to the string.
   temp += '$'; 
   temp += ',';
   temp += Data.Local.Altitude;
@@ -87,7 +87,7 @@ void I2C::preLoadCAN(){
   temp += ',';
   temp += '$';
 
-  //Copies over values Offical string.
+  // Copies over values Offical string.
   NDP = temp;
   
 }
@@ -98,55 +98,55 @@ void I2C::preLoadCAN(){
  */
 void I2C::upLoadCAN()
 {
-  //Iterator
+  // Iterator
   int i = 0;
 
-  //Sends the first installment of 32 characters to the Mega. (0-32)
+  // Sends the first installment of 32 characters to the Mega. (0-32)
   
-	//Assigns address of the receiving board.
+	// Assigns address of the receiving board.
 	Wire.beginTransmission(8);
   
-	//Sends the message.
+	// Sends the message.
 	while(i<32){
     Wire.write(NDP[i]);
-    //Serial.print(NDP[i]);
+    // Serial.print(NDP[i]);
     i++;
 	}
 	
-	//Closes the transmission.
+	// Closes the transmission.
 	Wire.endTransmission();
   
   delay(100);
   
-  //Sends the second installment of 32 characters to the Mega. (32-64)
+  // Sends the second installment of 32 characters to the Mega. (32-64)
   
   Wire.beginTransmission(8);
   
-  //Sends the message.
+  // Sends the message.
   while(i<64){
     Wire.write(NDP[i]);
-    //Serial.print(NDP[i]);
+    // Serial.print(NDP[i]);
     i++;
   }
   
-  //Closes the transmission.
+  // Closes the transmission.
   Wire.endTransmission();
 
   delay(100);
 
-  //Sends the third installment of 32 characters to the Mega. (64-96)
+  // Sends the third installment of 32 characters to the Mega. (64-96)
   
   Wire.beginTransmission(8);
   
-  //Sends the message.
+  // Sends the message.
   while(i<96){
     Wire.write(NDP[i]);
-    //Serial.print(NDP[i]);
+    // Serial.print(NDP[i]);
     i++;
   }
   
-  //Closes the transmission.
+  // Closes the transmission.
   Wire.endTransmission();
   
-  //Serial.println();
+  // Serial.println();
 }

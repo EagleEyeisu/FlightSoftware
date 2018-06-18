@@ -11,74 +11,72 @@ class DATA
 {
   public:
   
-	//Constructor
+	// Constructor
 	DATA();
   
-	//Parses passed in message by using commas as the identifiers.
+	// Parses passed in message by using commas as the identifiers.
 	float Parse(char message[], int objective);
   
-	//Responsible for pulling current sensor data from peripherals.
+	// Responsible for pulling current sensor data from peripherals.
 	void displayInfo();
 	
-	
-	
-	//Stores all of Eagle Eye's current flight data.
-	//   The difference between this struct and the one initalized in Radio.h is that this information
-	//   is saves gathered/used/saved locally. The Radio.h struct holds all the network information
-	//   being passed between crafts (nodes).
+	// Stores all of Eagle Eye's current flight data.
+	// The difference between this struct and the one initalized in Radio.h is that this information
+	// is saves gathered/used/saved locally. The Radio.h struct holds all the network information
+	// being passed between crafts (nodes).
 	struct Flight_Data {
 	
-		//Altitude of the craft gathered from GPS.
+		// Altitude of the craft gathered from GPS.
 		float Altitude = 0.0;
 
-    //Current distance to target in meters.
-    float TargetDistance = 0.0;
+    	// Current distance to target in meters.
+    	float TargetDistance = 0.0;
 	
-		//Latitude of the craft gathered from GPS.
+		// Latitude of the craft gathered from GPS.
 		float Latitude = 0.0;
 		
-		//Longitude of the craft gathered from GPS.
+		// Longitude of the craft gathered from GPS.
 		float Longitude = 0.0;
 		
-		//Satellite Count of the craft gathered from the GPS.
+		// Satellite Count of the craft gathered from the GPS.
 		float SatCount = 0.0;
 
-    //Speed in meters per second.
-    float Speed = 0.0;
+    	// Speed in meters per second.
+        float Speed = 0.0;
 		
-		//LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
+		// LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
 		float LE = 0.0;
 		
-		//Mega Event. This is assigned as needed throughout the program. Signals the Mega had a 
-		//   specific event.
+		// Mega Event. This is assigned as needed throughout the program. Signals the Mega had a 
+		// specific event.
 		float ME = 0.0;
 
-    //Time of flight. Used for data capture in SD card.
-    char Time[10];
+    	// Time of flight. Used for data capture in SD card.
+    	char Time[10];
     
-		//Holds the crafts previous altitude.
+		// Holds the crafts previous altitude.
 		float altPrevious = 0.0;
 	  
-		//Holds the crafts previous latitude.
+		// Holds the crafts previous latitude.
 		float latPrevious = 0.0;
 	  
-		//Holds the crafts previous longitude.
+		// Holds the crafts previous longitude.
 		float lonPrevious = 0.0;
     
-    //Holds the crafts previous target distance.
-    float TDPrevious = 0.0;
+	    //Holds the crafts previous target distance.
+	    float TDPrevious = 0.0;
 
-    //Target Latitude for craft.
-    float TargetLat = 42.02751;
-  
-    //Target Longitude for craft.
-    float TargetLon = -93.65374;
+	    //Target Latitude for craft.
+	    float TargetLat = 42.02751;
+	  
+	    //Target Longitude for craft.
+	    float TargetLon = -93.65374;
 
-    //Target Altitude for the craft.
-    float TargetAlt = 10000.0;
+	    //Target Altitude for the craft.
+	    float TargetAlt = 10000.0;
 
-	};
+		};
 	struct Flight_Data Local;
-  
+
 };
 #endif
