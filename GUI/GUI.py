@@ -18,11 +18,16 @@ def main():
 	if LOGIN_ENABLE:
 		login()
 
+	
+
 def login():
 	"""  Login Screen Config and Generation """
 
-	login = Terminal()
-	login.set_credentials("mavric","sucks")
+	# Creation of class.
+	login = Login_Terminal()
+	# Sets the password.
+	login.set_credentials("test")
+	# Configures and displays the login window.
 	login.configure_login_window()
 
 # Forces script to start at the method main().
