@@ -95,4 +95,8 @@ class Login_Terminal():
 							  command=self.callback_verify_credentials)
 		button_login.pack()
 
+		# Forces Microsoft Windows to adjust top level
+		# focus to this application widget.
+		self.entry_credentials.focus()
+
 		self.login_window.mainloop()

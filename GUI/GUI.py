@@ -8,6 +8,7 @@
 #############################################################
 from tkinter import *
 from login_functions import *
+from gui_functions import *
 
 LOGIN_ENABLE = True
 
@@ -22,6 +23,7 @@ def main():
 	# Launches the main GUI terminal.
 	GUI()
 
+
 def login():
 	"""  Login Screen Config and Generation """
 
@@ -32,8 +34,16 @@ def login():
 	# Configures and displays the login window.
 	login.configure_login_window()
 
-def GUI():
 
+def GUI():
+	""" 
+	Main terminal application for interfacing
+	with the Ealge Eye craft.
+	"""
+	# Creation of class.
+	gui = GUI_Terminal()
+	# Configures and displays the application window.
+	gui.configure_gui_terminal()
 
 
 # Forces script to start at the method main().
