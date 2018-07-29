@@ -1,6 +1,6 @@
 #############################################################
 #
-#	Property of Eagle Eye. 
+#	Property of Eagle Eye.
 #
 #   Authors:
 #           Jared Danner
@@ -41,12 +41,13 @@ class Login_Terminal():
 
 		# Grabs the text of entry and compares against password.
 		if self.entry_credentials.get() == self.password:
+			# If match, prints to cmd and destroys TK window.
 			print("PASSWORD MATCH")
-			return True  # If so, return True.
-
-		print("WRONG PASSWORD")
-		# Default return False.
-		return False
+			# Upon deletion, this class will return to its GUI.py method.
+			self.login_window.destroy()
+		else:
+			# If different. Prints to user and aways for next try.
+			print("WRONG PASSWORD")
 
 	def configure_login_window(self):
 		""" 

@@ -7,7 +7,7 @@
 #
 #############################################################
 from tkinter import *
-from terminal_functions import *
+from login_functions import *
 
 LOGIN_ENABLE = True
 
@@ -15,10 +15,12 @@ LOGIN_ENABLE = True
 def main():
 	"""  Main method of GUI """
 	
+	# Checks for login method.
 	if LOGIN_ENABLE:
 		login()
 
-	
+	# Launches the main GUI terminal.
+	GUI()
 
 def login():
 	"""  Login Screen Config and Generation """
@@ -29,6 +31,10 @@ def login():
 	login.set_credentials("test")
 	# Configures and displays the login window.
 	login.configure_login_window()
+
+def GUI():
+
+
 
 # Forces script to start at the method main().
 if __name__ == "__main__":
