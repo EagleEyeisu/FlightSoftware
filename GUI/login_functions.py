@@ -31,12 +31,13 @@ class Login_Terminal():
 		"""
 		self.password = password
 
-	def callback_verify_credentials(self):
+	def callback_verify_credentials(self, event=None):
 		""" 
 		Checks user's password versus actual password.
 		returns True if match, False otherwise.
 
-		@param self - Instance of the class.
+		@param self  - Instance of the class.
+		@param event - Triggered by press of the enter button.  
 		"""
 
 		# Grabs the text of entry and compares against password.
@@ -98,5 +99,8 @@ class Login_Terminal():
 		# Forces Microsoft Windows to adjust top level
 		# focus to this application widget.
 		self.entry_credentials.focus()
+
+		# Creates a hotkey for the enter button to automate the button press "button_login".
+		self.login_window.bind('<Return>',self.callback_verify_credentials)
 
 		self.login_window.mainloop()
