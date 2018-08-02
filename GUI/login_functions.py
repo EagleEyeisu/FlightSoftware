@@ -78,7 +78,7 @@ class Login_Terminal():
 		self.login_window.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coord, y_coord))
 
 		# Picture.
-		eagle_eye_picture = PhotoImage(file="Eagle Eye Logo.PNG")
+		eagle_eye_picture = PhotoImage(file="Eagle Eye Banner.PNG")
 		title_picture = Label(self.login_window, image=eagle_eye_picture)
 		title_picture.pack()
 

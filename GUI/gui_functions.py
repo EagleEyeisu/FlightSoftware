@@ -8,6 +8,8 @@
 #############################################################
 
 from tkinter import *
+from tkinter.ttk import *
+
 
 class GUI_Terminal():
 
@@ -47,9 +49,30 @@ class GUI_Terminal():
 		# Configures the point the window will display at.
 		self.gui_window.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coord, y_coord))
 
-		# Picture.
-		eagle_eye_picture = PhotoImage(file="Eagle Eye Logo.PNG")
-		title_picture = Label(self.gui_window, image=eagle_eye_picture)
-		title_picture.pack()
+		# Creates and defines the notebook object.
+		self.configure_notebook()
 
+		# Displays window.
 		self.gui_window.mainloop()
+
+	def configure_notebook(self):
+		"""
+		Creates and binds the notebook object inside of the GUI terminal.
+
+		@param self - Instance of the class.
+		"""
+
+		style = Style(self.gui_window)
+		style.configure('lefttab.TNotebook', tabposition='wn') #DOESNT WORK YET
+
+		book = Notebook(self.gui_window, style='lefttab.TNotebook')
+
+		tab_one = Frame(book)
+		tab_two = Frame(book)
+
+		eagle_eye_picture = PhotoImage(file="Eagle Eye Logo.PNG")
+		mission_control_picture = PhotoImage(file="Mission Control Logo.PNG")
+
+		book.add(tab_one, text="Mission Control", image=eagle_eye_picture)
+		book.add(tab_two, text="Eagle Eye", image=mission_control_picture)
+		book.pack(side=LEFT)
