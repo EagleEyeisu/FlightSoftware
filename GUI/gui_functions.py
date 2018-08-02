@@ -62,10 +62,11 @@ class GUI_Terminal():
 		@param self - Instance of the class.
 		"""
 
-		style = Style(self.gui_window)
-		style.configure('lefttab.TNotebook', tabposition='wn') #DOESNT WORK YET
+		theme = Style()
+		theme.configure('TNotebook', tabposition='wn')
+		theme.configure('TNotebook.Tab', width=15)
 
-		book = Notebook(self.gui_window, style='lefttab.TNotebook')
+		book = Notebook(self.gui_window)
 
 		tab_one = Frame(book)
 		tab_two = Frame(book)
@@ -73,6 +74,6 @@ class GUI_Terminal():
 		eagle_eye_picture = PhotoImage(file="Eagle Eye Logo.PNG")
 		mission_control_picture = PhotoImage(file="Mission Control Logo.PNG")
 
-		book.add(tab_one, text="Mission Control", image=eagle_eye_picture)
-		book.add(tab_two, text="Eagle Eye", image=mission_control_picture)
-		book.pack(side=LEFT)
+		book.add(tab_one, text="Mission Control", image=eagle_eye_picture, compound=CENTER)
+		book.add(tab_two, text="Eagle Eye", image=mission_control_picture, compound=CENTER)
+		book.pack(side=LEFT, fill=BOTH)
