@@ -64,16 +64,16 @@ class GUI_Terminal():
 
 		theme = Style()
 		theme.configure('TNotebook', tabposition='wn')
-		theme.configure('TNotebook.Tab', width=15)
+		theme.configure('TNotebook.Tab', padding=10)
+		theme.configure('TNotebook', background='gray60')
 
 		book = Notebook(self.gui_window)
+		book.pack(side=LEFT, fill=BOTH, expand=True)
 
 		tab_one = Frame(book)
 		tab_two = Frame(book)
 
-		eagle_eye_picture = PhotoImage(file="Eagle Eye Logo.PNG")
-		mission_control_picture = PhotoImage(file="Mission Control Logo.PNG")
+		book.add(tab_one, text="Mission Control")
+		book.add(tab_two, text="     Eagle Eye       ")
+		
 
-		book.add(tab_one, text="Mission Control", image=eagle_eye_picture, compound=CENTER)
-		book.add(tab_two, text="Eagle Eye", image=mission_control_picture, compound=CENTER)
-		book.pack(side=LEFT, fill=BOTH)
