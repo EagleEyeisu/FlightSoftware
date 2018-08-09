@@ -69,26 +69,31 @@ class GUI_Terminal():
 		self.gui_window = Tk()
 		self.gui_window.title("Eagle Eye Serial GUI")
 		self.gui_window.configure(background='gray')
+		self.gui_window.attributes('-fullscreen', True)
+		self.gui_window.bind("<Escape>", lambda e: self.gui_window.quit())
 
 		# Dimensions of future TK window.
-		window_width = 1400
-		window_height = 800
-
+		# window_width = 1400
+		# window_height = 800
 		# Dimensions of current computer monitor.
-		screen_width = self.gui_window.winfo_screenwidth()
-		screen_height = self.gui_window.winfo_screenheight()
-
+		# screen_width = self.gui_window.winfo_screenwidth()
+		# screen_height = self.gui_window.winfo_screenheight()
 		# Math to move the generation point to have the TK window be centered.
-		x_coord = (screen_width/2) - (window_width/2)
-		y_coord = (screen_height/2) - (window_height/2)
-
+		# x_coord = (screen_width/2) - (window_width/2)
+		# y_coord = (screen_height/2) - (window_height/2)
 		# Configures the point the window will display at.
-		self.gui_window.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coord, y_coord))
+		# self.gui_window.geometry("%dx%d+%d+%d" % (window_width, window_height, x_coord, y_coord))
 
+		#self.connection_status = label
+		
 		# Creates and defines the notebook object.
 		self.configure_notebook()
 
 		self.create_mission_control_widgets()
+
+		# Sets focus on connection banner to allow bring the PC attention to the program.
+		self.connection_status.focus()
+
 		# Displays window.
 		self.gui_window.mainloop()
 
@@ -110,7 +115,7 @@ class GUI_Terminal():
 		self.mc_frame = Frame(book)
 		self.craft_frame = Frame(book)
 
-		self.mc_frame.columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12), weight=0)
+		self.mc_frame.columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), weight=1)
 		self.mc_frame.rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17), weight=0)
 
 		book.add(self.mc_frame, text="Mission Control")
@@ -148,21 +153,30 @@ class GUI_Terminal():
 		button_node_mission_control = Button(self.mc_frame, state=DISABLED, text=self.node_mission_control)
 		button_node_eagle_eye = Button(self.mc_frame, state=DISABLED, text=self.node_eagle_eye)
 		button_node_relay = Button(self.mc_frame, state=DISABLED, text=self.node_relay)
+		button_start_roll_call = Button(self.mc_frame, text="RC Start")
+		button_start_roll_call = Button(self.mc_frame, text="RC Stop")
+		button_start_roll_call = Button(self.mc_frame, text="Network Start")
 
-		self.create_label(0, 0, self.mc_frame, "Network Status: ", None)
-		entry_operational_mode.grid(row=0, column=1)
+		self.create_label(0, 0, self.mc_frame, "Network Status:")
+		entry_operational_mode.grid(row=0, column=1, sticky='w')
 
-		self.create_label(1, 0, self.mc_frame, "Roll Call Status: ", None)
-		entry_roll_call_status.grid(row=1, column=1)
+		self.create_label(1, 0, self.mc_frame, "Roll Call Status:")
+		entry_roll_call_status.grid(row=1, column=1, sticky='w')
 
-		self.create_label(0, 2, self.mc_frame, "Node Status: ", 5)
-		button_node_mission_control.grid(row=0, column=3)
-		button_node_eagle_eye.grid(row=1, column=3)
-		button_node_relay.grid(row=0, column=4)
+		self.create_label(0, 2, self.mc_frame, "Node Status:")
+		button_node_mission_control.grid(row=0, column=3, sticky='we')
+		button_node_eagle_eye.grid(row=1, column=3, sticky='we')
+		button_node_relay.grid(row=0, column=4, sticky='we')
+
+		self.create_label(0, 5, self.mc_frame, "Received:")
+		entry_radio_received.grid(row=0, column=6, columnspan=14, sticky='ew')
+
+		self.create_label(1, 5, self.mc_frame, "Sent:")
+		entry_radio_sent.grid(row=1, column=6, columnspan=14, stick='ew')
 
 		# Configures button to appear as a text box.
 
-	def create_label(self, r, c, frame, title, buf):
+	def create_label(self, r, c, frame, title):
 		"""
 		Creates a label to be placed inside of the passed in frame at the given grid locations.
 
@@ -171,9 +185,8 @@ class GUI_Terminal():
 		@param c     - Column of frame.
 		@param frame - Frame to be bound to.
 		@param title - String title to be assigned to the label.
-		@param buf   - Spacing to be put around the label. 
 		"""
 
 		# Label object.
-		label = Label(frame, text=title, font='Helvetica 10 bold')
-		label.grid(row=r, column=c, padx=buf)
+		label = Label(frame, text=title, font='Helvetica 12 bold')
+		label.grid(row=r, column=c, sticky='e')
