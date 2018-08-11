@@ -55,7 +55,7 @@ class GUI_Terminal():
 
 		# Network Admin variables.
 		self.craft_anchor = 0  # Used for emergency stop (0 normal, 1 = STOP ALL MOVEMENT)
-		self.manual_control = False
+		self.authority_mode = "MANUAL"
 
 
 	def configure_gui_terminal(self):
@@ -145,6 +145,7 @@ class GUI_Terminal():
 		self.target_altitude = StringVar(self.mc_frame) # Hook this up
 		self.target_latitude = StringVar(self.mc_frame)
 		self.target_longitude = StringVar(self.mc_frame)
+		self.authority_mode = StringVar(self.mc_frame)
 
 		# Initialization of varaibles on GUI startup.
 		self.operational_mode.set("NOT STARTED")
@@ -163,6 +164,7 @@ class GUI_Terminal():
 		self.target_altitude.set("-------") # Hook this up
 		self.target_latitude.set("-------")
 		self.target_longitude.set("-------")
+		self.authority_mode.set("MANUAL")
 
 		# Creates entry widgets for each variable. (Text windows to be placed in the GUI)
 		entry_operational_mode = Entry(self.mc_frame, state="readonly", textvariable=self.operational_mode, justify='center')
@@ -175,7 +177,6 @@ class GUI_Terminal():
 		entry_craft_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_longitude, justify='right')
 		entry_craft_event = Entry(self.mc_frame, state="readonly", textvariable=self.craft_event, justify='right')
 		entry_craft_anchor = Entry(self.mc_frame, state="readonly", textvariable=self.craft_anchor, justify='right')
-		entry_craft_anchor_set = Entry(self.mc_frame, justify='right')
 		entry_craft_received_id = Entry(self.mc_frame, state="readonly", textvariable=self.craft_received_id, justify='center')
 		entry_home_time = Entry(self.mc_frame, state="readonly", textvariable=self.home_time, justify='right')
 		entry_target_throttle = Entry(self.mc_frame, state="readonly", textvariable=self.target_throttle, justify='right')
@@ -186,6 +187,8 @@ class GUI_Terminal():
 		entry_target_latitude_set = Entry(self.mc_frame, justify='right')
 		entry_target_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.target_longitude, justify='right')
 		entry_target_longitude_set = Entry(self.mc_frame, justify='right')
+		entry_modified_transmission = Entry(self.mc_frame, justify='right',
+														   textvariable=self.craft_anchor)
 
 		# Creates button widgets. (Triggers specified callback method.)
 		button_node_mission_control = Button(self.mc_frame, state=DISABLED, text=self.node_mission_control)
@@ -194,7 +197,18 @@ class GUI_Terminal():
 		button_start_roll_call = Button(self.mc_frame, text="RC Start")
 		button_stop_roll_call = Button(self.mc_frame, text="RC Stop")
 		button_start_network = Button(self.mc_frame, text="Network Start")
-		button_emergency_stop = Button(self.mc_frame, text="Emergency Stop")
+		button_emergency_stop = Button(self.mc_frame, text="Emergency Stop", bg="blue")
+		button_emergency_stop_reset = Button(self.mc_frame, text="Undo Stop")
+		button_anchor_set = Button(self.mc_frame, text="Drop Anchor!")
+		button_target_throttle_set = Button(self.mc_frame, text="Set")
+		button_target_altitude_set = Button(self.mc_frame, text="Set")
+		button_target_latitude_set = Button(self.mc_frame, text="Set")
+		button_target_longitude_set = Button(self.mc_frame, text="Set")
+		button_queue_transmission = Button(self.mc_frame, text="Send")
+
+		# Creates checkbox objects.
+		checkbox_automatic = Checkbutton(self.mc_frame, text="Automatic", variable=self.authority_mode, onvalue="AUTO", offvalue="OFF")
+		checkbox_manual = Checkbutton(self.mc_frame, text="Manual      ", variable=self.authority_mode, onvalue="MANUAL", offvalue="OFF")
 		
 		# Above divider one.
 		self.create_label_east(0, 0, self.mc_frame, "Network Status:")
@@ -209,10 +223,12 @@ class GUI_Terminal():
 		entry_radio_received.grid(row=0, column=6, columnspan=14, sticky='we')
 		self.create_label_east(1, 5, self.mc_frame, "Sent:")
 		entry_radio_sent.grid(row=1, column=6, columnspan=14, stick='we')
-		button_start_roll_call.grid(row=3, column=0, rowspan=2, sticky='ns')
-		button_stop_roll_call.grid(row=3, column=1, rowspan=2, sticky='nws')
-		button_start_network.grid(row=3, column=2, rowspan=2, sticky='ns')
-		button_emergency_stop.grid(row=3, column=3, rowspan=2, sticky='nws')
+		button_start_roll_call.grid(row=3, column=0, rowspan=2, sticky='nes')
+		button_stop_roll_call.grid(row=3, column=1, rowspan=2, sticky='ns')
+		button_start_network.grid(row=3, column=2, rowspan=2, sticky='nws')
+		button_emergency_stop.grid(row=3, column=4, rowspan=2, sticky='nws')
+		button_emergency_stop_reset.grid(row=3, column=5, rowspan=2, sticky='ns')
+		button_anchor_set.grid(row=3, column=11, rowspan=2, sticky='ns')
 
 		# Terminal divider one.
 		terminal_divider_one = Label(self.mc_frame, background="#F1BE48")
@@ -230,9 +246,8 @@ class GUI_Terminal():
 		entry_craft_longitude.grid(row=10, column=1, sticky='we')
 		self.create_label_center(11, 0, self.mc_frame, "Craft Event            ")
 		entry_craft_event.grid(row=11, column=1, sticky='we')
-		self.create_label_center(12, 0, self.mc_frame, "Anchor Status         ")
+		self.create_label_center(12, 0, self.mc_frame, "Anchor Status      ")
 		entry_craft_anchor.grid(row=12, column=1, sticky='we')
-		entry_craft_anchor_set.grid(row=12, column=2, sticky='e')
 		# self.create_label_center(?, ?, self.mc_frame, "Craft ID")
 		# entry_craft_longitude.grid(row=?, column=?, sticky='we')
 
@@ -247,16 +262,24 @@ class GUI_Terminal():
 		self.create_label_center(16, 0, self.mc_frame, "Target Throttle (%) ")
 		entry_target_throttle.grid(row=16, column=1, sticky='we')
 		entry_target_throttle_set.grid(row=16, column=2, sticky='e')
+		button_target_throttle_set.grid(row=16, column=3)
 		self.create_label_center(17, 0, self.mc_frame, "Target Altitude (m)  ")
 		entry_target_altitude.grid(row=17, column=1, sticky='we')
 		entry_target_altitude_set.grid(row=17, column=2, sticky='e')
+		button_target_altitude_set.grid(row=17, column=3)
 		self.create_label_center(18, 0, self.mc_frame, "Target Latitude        ")
 		entry_target_latitude.grid(row=18, column=1, sticky='we')
 		entry_target_latitude_set.grid(row=18, column=2, sticky='e')
+		button_target_latitude_set.grid(row=18, column=3)
 		self.create_label_center(19, 0, self.mc_frame, "Target Longitude    ")
 		entry_target_longitude.grid(row=19, column=1, sticky='we')
 		entry_target_longitude_set.grid(row=19, column=2, sticky='e')
-
+		button_target_longitude_set.grid(row=19, column=3)
+		checkbox_automatic.grid(row=20, column=0)
+		checkbox_manual.grid(row=21, column=0)
+		self.create_label_east(22, 1, self.mc_frame, "Modified Transmission:")
+		entry_modified_transmission.grid(row=22, column=2, columnspan=10, sticky='we')
+		button_queue_transmission.grid(row=22, column=13)
 
 	def create_label_east(self, r, c, frame, title):
 		"""
