@@ -197,7 +197,7 @@ class GUI_Terminal():
 		button_start_roll_call = Button(self.mc_frame, text="RC Start")
 		button_stop_roll_call = Button(self.mc_frame, text="RC Stop")
 		button_start_network = Button(self.mc_frame, text="Network Start")
-		button_emergency_stop = Button(self.mc_frame, text="Emergency Stop", bg="blue")
+		button_emergency_stop = Button(self.mc_frame, text="Emergency Stop")
 		button_emergency_stop_reset = Button(self.mc_frame, text="Undo Stop")
 		button_anchor_set = Button(self.mc_frame, text="Drop Anchor!")
 		button_target_throttle_set = Button(self.mc_frame, text="Set")
