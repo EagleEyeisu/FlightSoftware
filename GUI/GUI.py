@@ -6,22 +6,25 @@
 #           Jared Danner
 #
 #############################################################
-from tkinter import *
 from login_functions import *
 from gui_functions import *
+from communication import *
 
-LOGIN_ENABLE = True
+LOGIN_ENABLE = False
 
 
 def main():
-	"""  Main method of GUI """
-	
+	"""  Main method of GUI. """
+
 	# Checks for login method.
 	if LOGIN_ENABLE:
+		# Launches the login terminal.
 		login()
-
-	# Launches the main GUI terminal.
-	GUI()
+		# Launches the main GUI terminal.
+		GUI()
+	else:
+		# Launches the main GUI terminal.
+		GUI()
 
 
 def login():
@@ -44,7 +47,6 @@ def GUI():
 	gui = GUI_Terminal()
 	# Configures and displays the application window.
 	gui.configure_gui_terminal()
-
 
 # Forces script to start at the method main().
 if __name__ == "__main__":
