@@ -9,6 +9,7 @@
 
 from tkinter import *
 from tkinter.ttk import *
+import threading
 
 # Node ID's.
 NODE_MISSION_CONTROL_ID = 0
@@ -54,6 +55,9 @@ class MC_Tab():
 		self.target_latitude = 0
 		self.target_longitude = 0
 
+		# Other
+		self.modified_commands = None
+
 		# Network Admin variables.
 		self.craft_anchor = 0  # Used for emergency stop (0 normal, 1 = STOP ALL MOVEMENT)
 		self.authority_mode = "MANUAL"
@@ -87,6 +91,17 @@ class MC_Tab():
 		self.target_latitude = StringVar(self.mc_frame)
 		self.target_longitude = StringVar(self.mc_frame)
 		self.authority_mode = StringVar(self.mc_frame)
+		self.modified_commands = StringVar(self.mc_frame)
+
+		# Configures tracing for all variables.
+		self.operational_mode.trace("w", self.callback_update_transmission)
+		self.roll_call_status.trace("w", self.callback_update_transmission)
+		self.craft_anchor.trace('w', self.callback_update_transmission)
+		self.target_throttle.trace("w", self.callback_update_transmission)
+		self.target_altitude.trace("w", self.callback_update_transmission) # Hook this up
+		self.target_latitude.trace("w", self.callback_update_transmission)
+		self.target_longitude.trace("w", self.callback_update_transmission)
+		self.authority_mode.trace("w", self.callback_update_transmission)
 
 		# Initialization of varaibles on GUI startup.
 		self.operational_mode.set("NOT STARTED")
@@ -106,6 +121,7 @@ class MC_Tab():
 		self.target_latitude.set("-------")
 		self.target_longitude.set("-------")
 		self.authority_mode.set("MANUAL")
+		self.modified_commands.set("-------")
 
 	def create_entry_objects(self):
 		""" 
@@ -135,7 +151,7 @@ class MC_Tab():
 		self.entry_target_latitude_set = Entry(self.mc_frame, justify='right')
 		self.entry_target_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.target_longitude, justify='right')
 		self.entry_target_longitude_set = Entry(self.mc_frame, justify='right')
-		self.entry_modified_commands = Entry(self.mc_frame, justify='right', textvariable=self.craft_anchor)
+		self.entry_modified_commands = Entry(self.mc_frame, state="readonly", justify='right', textvariable=self.modified_commands)
 
 	def create_button_objects(self):
 		""" 
@@ -148,7 +164,7 @@ class MC_Tab():
 		self.button_node_mission_control = Button(self.mc_frame, state=DISABLED, text=self.node_mission_control)
 		self.button_node_eagle_eye = Button(self.mc_frame, state=DISABLED, text=self.node_eagle_eye)
 		self.button_node_relay = Button(self.mc_frame, state=DISABLED, text=self.node_relay)
-		self.button_start_roll_call = Button(self.mc_frame, text="RC Start")
+		self.button_start_roll_call = Button(self.mc_frame, text="RC Start", command=self.callback_roll_call_start)
 		self.button_stop_roll_call = Button(self.mc_frame, text="RC Stop")
 		self.button_start_network = Button(self.mc_frame, text="Network Start")
 		self.button_emergency_stop = Button(self.mc_frame, text="Emergency Stop")
@@ -195,9 +211,7 @@ class MC_Tab():
 		self.button_start_roll_call.grid(row=3, column=0, rowspan=2, sticky='nes')
 		self.button_stop_roll_call.grid(row=3, column=1, rowspan=2, sticky='ns')
 		self.button_start_network.grid(row=3, column=2, rowspan=2, sticky='nws')
-		self.button_emergency_stop.grid(row=3, column=4, rowspan=2, sticky='nws')
-		self.button_emergency_stop_reset.grid(row=3, column=5, rowspan=2, sticky='ns')
-		self.button_anchor_set.grid(row=3, column=11, rowspan=2, sticky='ns')
+		self.button_anchor_set.grid(row=3, column=4, rowspan=2, sticky='nws')
 
 		# Terminal divider. KEEP THIS AT THE BOTTOM OF THIS METHOD.
 		terminal_divider_one = Label(self.mc_frame, background="#F1BE48")
@@ -263,8 +277,8 @@ class MC_Tab():
 		self.checkbox_automatic.grid(row=20, column=0)
 		self.checkbox_manual.grid(row=21, column=0)
 		self.create_label_east(22, 1, self.mc_frame, "Modified Commands:")
-		self.entry_modified_commands.grid(row=22, column=2, columnspan=10, sticky='we')
-		self.button_queue_commands.grid(row=22, column=13)
+		self.entry_modified_commands.grid(row=22, column=2, columnspan=6, sticky='we')
+		self.button_queue_commands.grid(row=22, column=9)
 
 	def populate_mc_tab(self):
 		"""
@@ -284,15 +298,43 @@ class MC_Tab():
 		self.layout_craft()
 		self.layout_mission_control()
 
-	def callback_update_transmission(self):
+	def callback_update_transmission(self, *args):
 		"""
 		Updates the StringVar used to show user changes in the GUI. This is also the variable
 		that is sent back to the mission_control microcontroller when "Send" is pressed.
 
-		@param self - Instance of the class.
+		@param self  - Instance of the class.
+		@param *args - Any other random system varaible that gets passed in.
 		"""
 
 		temp_packet = ""
+
+		temp_packet += str(self.operational_mode.get())
+		temp_packet += ","
+		temp_packet += str(self.roll_call_status.get())
+		temp_packet += ","
+		temp_packet += str(self.craft_anchor.get())
+		temp_packet += ","
+		temp_packet += str(self.target_throttle.get())
+		temp_packet += ","
+		temp_packet += str(self.target_altitude.get())
+		temp_packet += ","
+		temp_packet += str(self.target_latitude.get())
+		temp_packet += ","
+		temp_packet += str(self.target_longitude.get())
+		temp_packet += ","
+		temp_packet += str(self.authority_mode.get())
+
+		self.modified_commands.set(temp_packet)
+
+	def callback_roll_call_start(self):
+		"""
+		Triggered by the press of "button_start_roll_call".
+
+		@param self - Instance of the class.
+		"""
+
+		self.roll_call_status.set("RUNNING")
 
 	def create_label_east(self, r, c, frame, title):
 		"""

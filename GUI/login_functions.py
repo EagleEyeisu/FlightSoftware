@@ -18,7 +18,7 @@ class Login_Terminal():
 		@param self - Instance of the class.
 		"""
 
-		self.password = "Mavric Sucks"
+		self.password = ""
 		self.login_window = None
 		self.entry_credentials = None
 
