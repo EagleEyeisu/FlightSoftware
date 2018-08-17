@@ -9,7 +9,7 @@
 
 from tkinter import *
 from tkinter.ttk import *
-import threading
+from communication import *
 
 # Node ID's.
 NODE_MISSION_CONTROL_ID = 0
@@ -165,11 +165,9 @@ class MC_Tab():
 		self.button_node_eagle_eye = Button(self.mc_frame, state=DISABLED, text=self.node_eagle_eye)
 		self.button_node_relay = Button(self.mc_frame, state=DISABLED, text=self.node_relay)
 		self.button_start_roll_call = Button(self.mc_frame, text="RC Start", command=self.callback_roll_call_start)
-		self.button_stop_roll_call = Button(self.mc_frame, text="RC Stop")
-		self.button_start_network = Button(self.mc_frame, text="Network Start")
-		self.button_emergency_stop = Button(self.mc_frame, text="Emergency Stop")
-		self.button_emergency_stop_reset = Button(self.mc_frame, text="Undo Stop")
-		self.button_anchor_set = Button(self.mc_frame, text="Drop Anchor!")
+		self.button_stop_roll_call = Button(self.mc_frame, text="RC Stop", command=self.callback_roll_call_stop)
+		self.button_start_network = Button(self.mc_frame, text="Network Start", command=self.callback_network_start)
+		self.button_anchor_set = Button(self.mc_frame, text="Drop Anchor!", command=self.callback_craft_anchor)
 		self.button_target_throttle_set = Button(self.mc_frame, text="Set")
 		self.button_target_altitude_set = Button(self.mc_frame, text="Set")
 		self.button_target_latitude_set = Button(self.mc_frame, text="Set")
@@ -280,12 +278,15 @@ class MC_Tab():
 		self.entry_modified_commands.grid(row=22, column=2, columnspan=6, sticky='we')
 		self.button_queue_commands.grid(row=22, column=9)
 
-	def populate_mc_tab(self):
+	def main_mc_tab(self):
 		"""
 		Fills the frame with widgets needed for the mission control interface.
 
 		@param self - Instance of the class.
 		"""
+
+		# Configures serial environment.
+		setup_comms("MC")
 
 		# Initializes class variables.
 		self.variable_setup()
@@ -297,6 +298,8 @@ class MC_Tab():
 		self.layout_network()
 		self.layout_craft()
 		self.layout_mission_control()
+
+
 
 	def callback_update_transmission(self, *args):
 		"""
@@ -335,6 +338,41 @@ class MC_Tab():
 		"""
 
 		self.roll_call_status.set("RUNNING")
+		self.operational_mode.set("ROLL CALL")
+
+	def callback_roll_call_stop(self):
+		"""
+		Triggered by the press of "button_start_roll_call".
+
+		@param self - Instance of the class.
+		"""
+
+		self.roll_call_status.set("FINISHED")
+		self.operational_mode.set("STANDBY")
+
+	def callback_network_start(self):
+		"""
+		Triggered by the press of "button_start_roll_call".
+
+		@param self - Instance of the class.
+		"""
+
+		self.operational_mode.set("RUNNING")
+
+	def callback_craft_anchor(self):
+		"""
+		Triggered by the press of "button_start_roll_call".
+
+		@param self - Instance of the class.
+		"""
+
+		# Checks for craft's anchor status (THIS IS AN E-BRAKE).
+		if self.craft_anchor.get() == "DROPPED":
+			# Pulls the anchor back in.
+			self.craft_anchor.set("HOISTED")
+		else:
+			# Drops the anchor!
+			self.craft_anchor.set("DROPPED")
 
 	def create_label_east(self, r, c, frame, title):
 		"""

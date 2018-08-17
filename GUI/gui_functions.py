@@ -11,6 +11,16 @@ from tkinter import *
 from tkinter.ttk import *
 from mission_control import *
 
+
+# Serial Ports & attributes.
+ACTIVE_PORTS = []
+INVALID_PORTS = []
+PORT_1 = None
+PORT_2 = None
+PORT_3 = None
+CONFIGURATION = None
+
+
 class GUI_Terminal():
 
 	def __init__(self):
@@ -45,7 +55,7 @@ class GUI_Terminal():
 		mc_tab = MC_Tab(self.mc_frame)
 
 		# Class call to populate the mission control frame with its widgets.
-		mc_tab.populate_mc_tab()
+		mc_tab.main_mc_tab()
 
 		# Displays window.
 		self.gui_window.mainloop()
@@ -68,9 +78,11 @@ class GUI_Terminal():
 
 		self.mc_frame = Frame(book)
 		self.craft_frame = Frame(book)
+		self.comms_frame = Frame(book)
 
 		self.mc_frame.columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), weight=1)
 		self.mc_frame.rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22), weight=1)
 
 		book.add(self.mc_frame, text="Mission Control")
 		book.add(self.craft_frame, text="     Eagle Eye       ")
+		book.add(self.comms_frame, text="    Port Config    ")

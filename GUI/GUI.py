@@ -11,6 +11,7 @@ from gui_functions import *
 from communication import *
 
 LOGIN_ENABLE = False
+SERIAL_SELECTED = None
 
 
 def main():
@@ -47,6 +48,7 @@ def GUI():
 	gui = GUI_Terminal()
 	# Configures and displays the application window.
 	gui.configure_gui_terminal()
+
 
 # Forces script to start at the method main().
 if __name__ == "__main__":
