@@ -164,15 +164,15 @@ class MC_Tab():
 		self.button_node_mission_control = Button(self.mc_frame, state=DISABLED, text=self.node_mission_control)
 		self.button_node_eagle_eye = Button(self.mc_frame, state=DISABLED, text=self.node_eagle_eye)
 		self.button_node_relay = Button(self.mc_frame, state=DISABLED, text=self.node_relay)
-		self.button_start_roll_call = Button(self.mc_frame, text="RC Start", command=self.callback_roll_call_start)
-		self.button_stop_roll_call = Button(self.mc_frame, text="RC Stop", command=self.callback_roll_call_stop)
+		self.button_roll_call_start = Button(self.mc_frame, text="RC Start", command=self.callback_roll_call_start)
+		self.button_roll_call_stop = Button(self.mc_frame, text="RC Stop", command=self.callback_roll_call_stop)
 		self.button_start_network = Button(self.mc_frame, text="Network Start", command=self.callback_network_start)
 		self.button_anchor_set = Button(self.mc_frame, text="Drop Anchor!", command=self.callback_craft_anchor)
-		self.button_target_throttle_set = Button(self.mc_frame, text="Set")
-		self.button_target_altitude_set = Button(self.mc_frame, text="Set")
-		self.button_target_latitude_set = Button(self.mc_frame, text="Set")
-		self.button_target_longitude_set = Button(self.mc_frame, text="Set")
-		self.button_queue_commands = Button(self.mc_frame, text="Send")
+		self.button_target_throttle_set = Button(self.mc_frame, text="Set", command=self.callback_target_throttle)
+		self.button_target_altitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_altitude)
+		self.button_target_latitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_latitude)
+		self.button_target_longitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_longitude)
+		self.button_queue_commands = Button(self.mc_frame, text="Send", command=self.callback_queue_commands)
 
 	def create_checkbox_objects(self):
 		""" 
@@ -206,8 +206,8 @@ class MC_Tab():
 		self.entry_radio_received.grid(row=0, column=6, columnspan=14, sticky='we')
 		self.create_label_east(1, 5, self.mc_frame, "Sent:")
 		self.entry_radio_sent.grid(row=1, column=6, columnspan=14, stick='we')
-		self.button_start_roll_call.grid(row=3, column=0, rowspan=2, sticky='nes')
-		self.button_stop_roll_call.grid(row=3, column=1, rowspan=2, sticky='ns')
+		self.button_roll_call_start.grid(row=3, column=0, rowspan=2, sticky='nes')
+		self.button_roll_call_stop.grid(row=3, column=1, rowspan=2, sticky='ns')
 		self.button_start_network.grid(row=3, column=2, rowspan=2, sticky='nws')
 		self.button_anchor_set.grid(row=3, column=4, rowspan=2, sticky='nws')
 
@@ -286,7 +286,7 @@ class MC_Tab():
 		"""
 
 		# Configures serial environment.
-		setup_comms("MC")
+		setup_comms()
 
 		# Initializes class variables.
 		self.variable_setup()
@@ -298,8 +298,6 @@ class MC_Tab():
 		self.layout_network()
 		self.layout_craft()
 		self.layout_mission_control()
-
-
 
 	def callback_update_transmission(self, *args):
 		"""
@@ -332,7 +330,7 @@ class MC_Tab():
 
 	def callback_roll_call_start(self):
 		"""
-		Triggered by the press of "button_start_roll_call".
+		Triggered by the press of "button_roll_call_start".
 
 		@param self - Instance of the class.
 		"""
@@ -342,7 +340,7 @@ class MC_Tab():
 
 	def callback_roll_call_stop(self):
 		"""
-		Triggered by the press of "button_start_roll_call".
+		Triggered by the press of "button_roll_call_stop".
 
 		@param self - Instance of the class.
 		"""
@@ -352,7 +350,7 @@ class MC_Tab():
 
 	def callback_network_start(self):
 		"""
-		Triggered by the press of "button_start_roll_call".
+		Triggered by the press of "button_network_start".
 
 		@param self - Instance of the class.
 		"""
@@ -361,7 +359,7 @@ class MC_Tab():
 
 	def callback_craft_anchor(self):
 		"""
-		Triggered by the press of "button_start_roll_call".
+		Triggered by the press of "button_craft_anchor".
 
 		@param self - Instance of the class.
 		"""
@@ -373,6 +371,75 @@ class MC_Tab():
 		else:
 			# Drops the anchor!
 			self.craft_anchor.set("DROPPED")
+
+	def callback_target_throttle(self, percentage):
+		"""
+		Triggered by the press of Add button next to target throttle.
+
+		@param self       - Instance of the class.
+		@param percentage - Percentage value of desired throttle. Whole #'s only.
+		"""
+
+		self.target_throttle.set(percentage)
+
+	def callback_target_altitude(self, altitude):
+		"""
+		Triggered by the press of Add button next to target altitude.
+
+		@param self       - Instance of the class.
+		@param percentage - User desired altitude. IN DEGREE FORMAT.
+		"""
+
+		self.target_altitude.set(altitude)
+
+	def callback_target_latitude(self, latitude):
+		"""
+		Triggered by the press of Add button next to target latitude.
+
+		@param self     - Instance of the class.
+		@param latitude - User desired latitude. IN DEGREE FORMAT.
+		"""
+
+		self.target_latitude.set(latitude)
+
+	def callback_target_longitude(self, longitude):
+		"""
+		Triggered by the press of Add button next to target longitude.
+
+		@param self     - Instance of the class.
+		@param latitude - User desired longitude. IN DEGREE FORMAT.
+		"""
+
+		self.target_longitude.set(longitude)
+
+	def callback_queue_commands(self):
+		"""
+		Triggered by the press of SEND button next to the modified commands entry.
+
+		@param self         - Instance of the class.
+		"""
+
+		# Checks for non-null connection to mission control's lora microcontroller.
+		if PORT_MC_LORA is not None:
+			converted_transmission = self.convert_commands()
+			# If non-null, send transmission via serial port.
+			send(PORT_MC_LORA.get_port(), converted_transmission)
+		# Null connection.
+		else:
+			print("Invalid connection to mission control's lora.")
+
+	def convert_commands(self):
+		"""
+		Responsible for taking the queued transmission varaible and converting 
+		its interior string objects to the correct integer value.
+
+		@param self - Instance of the class.
+		"""
+
+		# Splits large string into its smaller parts. Parses by delimitor ','
+		temp_op_mode, temp_roll_call, temp_anchor, temp_throttle, temp_alt, temp_lat, temp_lon, temp_author = str(self.modified_commands.get()).split(",")
+
+		
 
 	def create_label_east(self, r, c, frame, title):
 		"""

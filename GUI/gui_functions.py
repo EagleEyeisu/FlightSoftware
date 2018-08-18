@@ -12,14 +12,6 @@ from tkinter.ttk import *
 from mission_control import *
 
 
-# Serial Ports & attributes.
-INVALID_PORTS = []
-PORT_MC_LORA = None
-PORT_CRAFT_LORA = None
-PORT_CRAFT_MEGA = None
-CONFIGURATION = None
-
-
 class GUI_Terminal():
 
 	def __init__(self):

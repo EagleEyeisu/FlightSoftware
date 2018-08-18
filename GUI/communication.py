@@ -8,6 +8,15 @@
 #############################################################
 import serial, serial.tools.list_ports
 
+
+# Serial Ports & attributes.
+INVALID_PORTS = []
+PORT_MC_LORA = None
+PORT_CRAFT_LORA = None
+PORT_CRAFT_MEGA = None
+CONFIGURATION = None
+
+
 def get_serial_ports():
 	""" Detects and returns all active serial ports. """
 
@@ -78,6 +87,8 @@ def validate_ports(ports):
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
 				elif response in "MC_LORA":
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
+		except:
+			print("Unknown microcontroller. Response: " + str(response))
 
 
 def receive(ser):
@@ -88,10 +99,10 @@ def receive(ser):
 	"""
 
 	# Checks for a incoming data.
-    if(ser.in_waiting != 0):
-    	# Reads in and decodes incoming serial data.
-        message = ser.readline().decode()
-        # Return data.
+	if(ser.in_waiting != 0):
+		# Reads in and decodes incoming serial data.
+		message = ser.readline().decode()
+		# Return data.
 		return str(message)
 	# Returns empty.
 	return ""
@@ -135,4 +146,11 @@ class serial_object():
 
 		return self.port_name
 
+	def get_port(self):
+		"""
+		Returns port object.
 
+		@param self - Instance of the class.
+		"""
+
+		return self.ser
