@@ -13,11 +13,10 @@ from mission_control import *
 
 
 # Serial Ports & attributes.
-ACTIVE_PORTS = []
 INVALID_PORTS = []
-PORT_1 = None
-PORT_2 = None
-PORT_3 = None
+PORT_MC_LORA = None
+PORT_CRAFT_LORA = None
+PORT_CRAFT_MEGA = None
 CONFIGURATION = None
 
 
