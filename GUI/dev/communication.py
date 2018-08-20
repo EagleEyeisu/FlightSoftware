@@ -7,10 +7,12 @@
 #
 #############################################################
 import serial, serial.tools.list_ports
-
+import threading
+import time
 
 # Serial Ports & attributes.
 INVALID_PORTS = []
+VALID_PORTS = []
 PORT_MC_LORA = None
 PORT_CRAFT_LORA = None
 PORT_CRAFT_MEGA = None
@@ -33,6 +35,25 @@ def setup_comms():
 
 	validate_ports(ports)
 
+	start_threading()
+
+
+def start_threading():
+	""" Binds recieve methods to different threads to allow for simultaneous reads. """
+
+	try:
+		# Checks for active port.
+		if PORT_MC_LORA is not None:
+			thread_mc_lora = threading.Thread(target=receive_mc_lora, args=(PORT_MC_LORA.get_port()))
+			thread_mc_lora.start()
+		if PORT_CRAFT_LORA is not None:
+			thread_craft_lora = threading.Thread(target=receive_craft_lora, args=(PORT_CRAFT_LORA.get_port()))
+			thread_craft_lora.start()
+		if PORT_CRAFT_MEGA is not None:
+			thread_mega_lora = threading.Thread(target=receive_craft_mega, args=(PORT_CRAFT_MEGA.get_port()))
+			thread_mega_lora.start()
+	except:
+		print("Unable to bind method to thread.")
 	
 def validate_ports(ports):
 	"""
@@ -79,7 +100,10 @@ def validate_ports(ports):
 		try:
 			if passed:
 				send(ser, "PING")
-				response = receive(ser)
+				response = generic_receive(ser)
+
+				# System blocking pause for 1 second.
+				time.sleep(1)
 
 				if response in "CRAFT_LORA":
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
@@ -91,21 +115,83 @@ def validate_ports(ports):
 			print("Unknown microcontroller. Response: " + str(response))
 
 
-def receive(ser):
+def generic_receive(ser):
 	"""
 	Responsible for reading in data on the given serial port.
+	NON BLOCKING CALL. USE THIS RECE
+	@param ser - Serial port instance.
+	"""
+
+	try:
+		# Checks for a incoming data.
+		if(ser.in_waiting != 0):
+			# Reads in and decodes incoming serial data.
+			message = ser.readline().decode()
+			# Return data.
+			return str(message)
+	except:
+		return "No response."
+
+
+def receive_mc_lora(ser):
+	"""
+	Responsible for reading in data on the given serial port.
+	THREAD LOCKED METHOD. DO NOT CALL.
 
 	@param ser - Serial port instance.
 	"""
 
-	# Checks for a incoming data.
-	if(ser.in_waiting != 0):
-		# Reads in and decodes incoming serial data.
-		message = ser.readline().decode()
-		# Return data.
-		return str(message)
-	# Returns empty.
-	return ""
+	while(1):
+		try:
+			# Checks for a incoming data.
+			if(ser.in_waiting != 0):
+				# Reads in and decodes incoming serial data.
+				message = ser.readline().decode()
+				# Return data.
+				return str(message)
+		except:
+			pass
+
+
+def receive_craft_lora(ser):
+	"""
+	Responsible for reading in data on the given serial port.
+	THREAD LOCKED METHOD. DO NOT CALL.
+
+	@param ser - Serial port instance.
+	"""
+
+	while(1):
+		try:
+			# Checks for a incoming data.
+			if(ser.in_waiting != 0):
+				# Reads in and decodes incoming serial data.
+				message = ser.readline().decode()
+				# Return data.
+				return str(message)
+		except:
+			pass
+
+
+
+def receive_craft_mega(ser):
+	"""
+	Responsible for reading in data on the given serial port.
+	THREAD LOCKED METHOD. DO NOT CALL.
+
+	@param ser - Serial port instance.
+	"""
+
+	while(1):
+		try:
+			# Checks for a incoming data.
+			if(ser.in_waiting != 0):
+				# Reads in and decodes incoming serial data.
+				message = ser.readline().decode()
+				# Return data.
+				return str(message)
+		except:
+			pass
 
 
 def send(ser, message):
@@ -121,12 +207,14 @@ def send(ser, message):
 	# Encode message to bits & send via serial.
 	ser.write(message.encode())
 
+
 class serial_object():
 
 	def __init__(self, ser, name, description):
 		self.ser = ser
 		self.port_name = name
 		self.context = description
+		self.input = ""
 
 	def get_context(self):
 		"""
