@@ -26,15 +26,15 @@ RH_RF95 rf95(8,7);
  */
 void setup(){
 
-  //Creates a serial communication line between the arduino and the serial port 
-  //   found under 'Tools' -> 'Serial Monitor'
-  Serial.begin(115200);
+    //Creates a serial communication line between the arduino and the serial port 
+    //   found under 'Tools' -> 'Serial Monitor'
+    Serial.begin(115200);
 
-  //Initializes the SD Card.
-  Save.initialize();
+    //Initializes the SD Card.
+    Save.initialize();
 
-  //Initializes the Radio.
-  Radio.initialize();
+    //Initializes the Radio.
+    Radio.initialize();
 }
 
 
@@ -43,16 +43,16 @@ void setup(){
  */
 void loop(){
 
-  //Responsible for grabbing all of the craft's current information, 
-  //   turning that data into an array that can be sent out via radio.
-  //   Also reads in incoming messages.
-  Radio.manager();
+    //Responsible for grabbing all of the craft's current information, 
+    //   turning that data into an array that can be sent out via radio.
+    //   Also reads in incoming messages.
+    Radio.manager();
 
-  //Displays current information of craft. 
-  Data.displayInfo();
-  
-  //Saves all local data to the SD card.
-  //Save.saveData();
+    //Displays current information of craft. 
+    Data.displayInfo();
 
-  delay(100);
+    //Saves all local data to the SD card.
+    //Save.saveData();
+
+    delay(100);
 }

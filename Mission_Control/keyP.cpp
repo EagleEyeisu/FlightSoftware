@@ -24,26 +24,26 @@ KEYPAD::KEYPAD()
  */
 void KEYPAD::check(char key)
 {
-  // Resets the inputted key. 
-  pressedKey = 0;
-  
-  // True if press. False is null. 
-  if(key != '\0')
-  {
-    // Blinks LED onboard of LoRa to signal keypad interaction. 
-    Radio.blinkLED();
-    // Converts inputted char into its ascii equivalent integer. 
-    int asciiValue = key;
-    // Checks if integer is within keypad tolerance. (If its a valid button signal)
-    if(asciiValue >= 49 && asciiValue <= 57)
+    // Resets the inputted key. 
+    pressedKey = 0;
+
+    // True if press. False is null. 
+    if(key != '\0')
     {
-      // New info is being read in. 
-      Data.newData = Data.YES;
-      // Converts current key character value to the respective integer value. Key of '1'-> int of 1.
-      pressedKey = convertCharToInt(key);
-      // Serial.println(key);
+        // Blinks LED onboard of LoRa to signal keypad interaction. 
+        Radio.blinkLED();
+        // Converts inputted char into its ascii equivalent integer. 
+        int asciiValue = key;
+        // Checks if integer is within keypad tolerance. (If its a valid button signal)
+        if(asciiValue >= 49 && asciiValue <= 57)
+        {
+            // New info is being read in. 
+            Data.newData = Data.YES;
+            // Converts current key character value to the respective integer value. Key of '1'-> int of 1.
+            pressedKey = convertCharToInt(key);
+            // Serial.println(key);
+        }
     }
-  }
 }
 
 
@@ -53,45 +53,45 @@ void KEYPAD::check(char key)
  */
 int KEYPAD::convertCharToInt(char key){
 
-  // Conversion to Ascii.
-  int ascii = key;
+    // Conversion to Ascii.
+    int ascii = key;
 
-  // Ascii to matching keypad integer.
-  // Keypad button 1. 
-  if(ascii == 49)
-  {
-    return 1;
-  }
-  else if(ascii == 50)
-  {
-    return 2;
-  }
-  else if(ascii == 51)
-  {
-    return 3;
-  }
-  else if(ascii == 52)
-  {
-    return 4;
-  }
-  else if(ascii == 53)
-  {
-    return 5;
-  }
-  else if(ascii == 54)
-  {
-    return 6;
-  }
-  else if(ascii == 55)
-  {
-    return 7;
-  }
-  else if(ascii == 56)
-  {
-    return 8;
-  }
-  else if(ascii == 57)
-  {
-    return 9;
-  }
+    // Ascii to matching keypad integer.
+    // Keypad button 1. 
+    if(ascii == 49)
+    {
+        return 1;
+    }
+    else if(ascii == 50)
+    {
+        return 2;
+    }
+    else if(ascii == 51)
+    {
+        return 3;
+    }
+    else if(ascii == 52)
+    {
+        return 4;
+    }
+    else if(ascii == 53)
+    {
+        return 5;
+    }
+    else if(ascii == 54)
+    {
+        return 6;
+    }
+    else if(ascii == 55)
+    {
+        return 7;
+    }
+    else if(ascii == 56)
+    {
+        return 8;
+    }
+    else if(ascii == 57)
+    {
+        return 9;
+    }
 }
