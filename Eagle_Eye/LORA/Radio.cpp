@@ -3,14 +3,11 @@
  * development micro controller.
  */
 
-
 #include <Arduino.h>
 #include "Radio.h"
 #include "Data.h"
 #include <RH_RF95.h>
 #include "Globals.h"
-#include <Wire.h>
-
 
 /**
  * Constructor used to reference all other variables & functions.
@@ -24,85 +21,95 @@ RADIO::RADIO()
 /**
  * Parses and returns the radio transmission's altitude.
  */
-float RADIO::getRadioAltitude(uint8_t buf)
+float RADIO::getRadioAltitude(char buf[])
 {
 	return (Data.Parse(buf,1));
 }
 
 
 /**
- * Parses and returns the radio transmission's Command Received.
- */
-float RADIO::getCommandReceived(uint8_t buf)
-{
-	return (Data.Parse(buf,9));
-}
-
-
-/**
- * Parses and returns the radio transmission's Command Sent.
- */
-float RADIO::getCommandSent(uint8_t buf)
-{
-	return (Data.Parse(buf,8));
-}
-
-
-/**
- * Parses and returns the radio transmission's Craft ID.
- */
-float RADIO::getCraftID(uint8_t buf)
-{
-	return (Data.Parse(buf,10));
-}
-
-
-/**
  * Parses and returns the radio transmission's latitude.
  */
-float RADIO::getRadioLatitude(uint8_t buf)
+float RADIO::getRadioLatitude(char buf[])
 {
-	return (Data.Parse(buf,2));
+  return (Data.Parse(buf,2)) / 10000.0;
 }
 
 
 /**
  * Parses and returns the radio transmission's longitude.
  */
-float RADIO::getRadioLongitude(uint8_t buf)
+float RADIO::getRadioLongitude(char buf[])
 {
-	return (Data.Parse(buf,3));
+  return (Data.Parse(buf,3)) / 10000.0;
 }
 
 
 /**
  * Parses and returns the radio transmission's LoRa Event.
  */
-float RADIO::getLoRaEvent(uint8_t buf)
+float RADIO::getLoRaEvent(char buf[])
 {
-	return (Data.Parse(buf,4));
+  return (Data.Parse(buf,4));
+}
+
+
+
+/**
+ * Parses and returns the radio transmission's Time Stamp (ms).
+ * LoRa  -> 0
+ * MC    -> 5
+ */
+float RADIO::getTimeStamp(char buf[], int selector)
+{
+  return (Data.Parse(buf, selector));
 }
 
 
 /**
- * Parses and returns the radio transmission's Release Status.
+ * Parses and returns the radio transmission's Start or Stop variable.
+ * 0.0 -> pause
+ * 1.0 -> running
  */
-float RADIO::getReleaseStatus(uint8_t buf)
+float RADIO::getStartStop(char buf[])
 {
 	return (Data.Parse(buf,6));
 }
 
 
 /**
- * Parses and returns the radio transmission's Time Stamp (ms).
- *
- * LoRa  -> 0
- * HABET -> 5
- * MC    -> 7
+ * Parses and returns the radio transmission's targetThrottle
  */
-float RADIO::getTimeStamp(uint8_t buf, int selector)
+float RADIO::getTargetThrottle(char buf[])
 {
-	return (Data.Parse(buf, selector));
+	return (Data.Parse(buf,7));
+}
+
+
+/**
+ * Parses and returns the radio Target Latitude.
+ */
+float RADIO::getRadioTargetLat(char buf[])
+{
+  return (Data.Parse(buf,8)) / 10000.0;
+}
+
+
+/**
+ * Parses and returns the radio Target Longitude.
+ */
+float RADIO::getRadioTargetLon(char buf[])
+{
+  return (Data.Parse(buf,9)) / 10000.0;
+}
+
+
+/**
+ * Parses and returns the radio transmission's Craft ID.
+ */
+float RADIO::getCraftID(char buf[])
+{
+	return (Data.Parse(buf,10));
 }
 
 
@@ -111,6 +118,7 @@ float RADIO::getTimeStamp(uint8_t buf, int selector)
  */
 void RADIO::initialize()
 {
+	
 	// Assigns pin 4 to have an output singal connection to the LoRa's radio port.
 	pinMode(RFM95_RST, OUTPUT);
 	
@@ -129,33 +137,24 @@ void RADIO::initialize()
 	// Checks for the creation of the radio object and its physical connection attribute.
 	// If invalid connection, the program will stall and print an error message.
 	if(!rf95.init()){
-		
 		// Serial.println("LoRa radio init failed");
 		while (1);
-		
 	}
 	// Valid connection, program proceeds as planned.
 	else{
-		
 		// Serial.println("LoRa radio init OK!");
-		
 	}
 	
 	// Checks the radio objects set frequency. 
 	// If invalid connection, the program will stall and print an error message.
 	if(!rf95.setFrequency(RF95_FREQ)){
-		
 		// Serial.println("setFrequency failed");
 		while (1);
-		
 	}
 	// Valid connection, program proceeds as planned.
 	else{
-		
 		// Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
-		
 	}
-	
 	// Sets the max power to be used to in the amplification of the signal being sent out.
 	rf95.setTxPower(23, false);
 	// Serial.println();
@@ -166,41 +165,41 @@ void RADIO::initialize()
  * Manages all radio comms either incoming or outgoing.
  */
 void RADIO::manager()
-{
-  
+{ 
 	// Reads in radio transmission if available.
 	Radio.radioReceive();
-	
+ 
 	// Checks for a specific Craft ID. '999.9' signals the start of operation.
-	if(Network.Craft_ID == 999.9 && !Radio.checkedIn){
-		
+	if(receivedID == 999.0 && !Radio.checkedIn){
+    // Updates crafts states.
+    RCstate = RUNNING;
+    OperationMode = ROLLCALL;
+    
 		// Responds to Mission Control with the correct ID to signal this node is here and listening.
+    delay(100);
 		Radio.rollCall();
-		
 	}
  
 	// After Roll Call is complete, Mission Control will broadcast the start signal. Appropriate delays are
-	// distributed below to initally sync the network to a 5 second split. This makes for a 15 second revolution.
+	// distributed below to initally sync the network to a 5 second split. This makes for a 10 second revolution.
 	//   
 	// MS - starts instantly
-	// HABET - delays .. seconds  <- NOT CURRENTLY INCLUDED.
 	// EE - delays 5 seconds
-	else if(Network.Craft_ID == 555.5){
-		
-		// Delays 5 seconds.
-		delay(5000);
-    
-    // Starts the broadcasting timer.
-    start = millis();
-		
+	else if((OperationMode == STANDBY) && (RCstate == COMPLETE)){
+
+    if(receivedID == 555.0){
+      // Delays 5 seconds.
+      delay(5000);
+
+      OperationMode = NORMAL;
+    }
 	}
-	// Each of the 3 crafts have 5 seconds to broadcast. That means each craft will broadcast every 15 seconds.
-	// 15000 milliseconds = 15 seconds.
-	else if(millis() - start >= 15000){
-		
+	// Each of the crafts have 5 seconds to broadcast.
+	else if((millis() - start > 10000) && (OperationMode == NORMAL) && (RCstate == COMPLETE)){
+
 		// Resets the counter. This disables broadcasting again until 15 seconds has passed.
 		start = millis();
-		
+    
 		// Sends the transmission via radio.
 		Radio.broadcast();
 	}
@@ -212,48 +211,52 @@ void RADIO::manager()
  */
 void RADIO::radioReceive()
 {
+  // Checks if radio message has been received.
+  if (rf95.available()){
+  	// Creates a temporary varaible to read in the incoming transmission. 
+  	uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+  	
+  	// Gets the length of the above temporary varaible.
+  	uint8_t len = sizeof(buf);
+      
+    // Reads in the avaiable radio transmission, then checks if it is corrupt or complete.
+    if(rf95.recv(buf, &len)) {
+      // New info is being read in. 
+      Data.newData = Data.YES;
   
-	// Creates a temporary varaible to read in the incoming transmission. 
-	uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-	
-	// Gets the length of the above temporary varaible.
-	uint8_t len = sizeof(buf);
-	
-	// Reads in the avaiable radio transmission, then checks if it is corrupt or complete.
-	if(rf95.recv(buf, &len)) {
-		
-		// This whole section is comparing the currently held varaibles from the last radio update
-		// to that of the newly received signal. Updates the craft's owned variables and copies
-		// down the other nodes varaibles. If the timestamp indicates that this craft currently 
-		// holds the most updated values for another node (ie: LoRa's time stamp is higher than the 
-		// new signal's), it replaces those variables.
-		
-		// Reads in the time stamp for HABET's last broadcast.
-		float tempHABET = Radio.getTimeStamp(buf, 5);
-		
-		// Compares the currently brought in time stamp to the one stored onboad.
-		if(tempHABET > Radio.Network.H_TS){
-			
-			// If the incoming signal has more up-to-date versions, we overwrite our saved version with
-			// the new ones.
-			Network.H_TS = tempHABET;
-			Network.Release_Status = Radio.getReleaseStatus(buf);
-			
-		}
-		
-		// Reads in the time stamp for Mission Control's last broadcast.
-		float tempMC = Radio.getTimeStamp(buf, 7);
-		
-		// Compares the currently brought in time stamp to the one stored onboad.
-		if(tempMC > Network.MC_TS){
-			
-			// If the incoming signal has more up-to-date versions, we overwrite our saved version with
-			// the new ones.
-			Network.MC_TS = tempMC;
-			Network.Command_Sent = Radio.getCommandSent(buf);
-			Network.Command_Received = Radio.getCommandReceived(buf);
-		}
-		
+      // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
+      // unsigned char array for parsing. 
+      String str = (char*)buf;
+      char toParse[str.length()];
+      str.toCharArray(toParse,str.length());
+
+      // Used to display the received data in the GUI.
+      radioInput = buf;
+      
+      // This whole section is comparing the currently held varaibles from the last radio update
+      // to that of the newly received signal. Updates the craft's owned variables and copies
+      // down the other nodes varaibles. If the timestamp indicates that this craft currently 
+      // holds the most updated values for another node (ie: LoRa's time stamp is higher than the 
+      // new signal's), it replaces those variables.
+      
+      // Reads in the time stamp for Mission Control's last broadcast.
+      float tempMC = Radio.getTimeStamp(toParse, 5);
+      
+      // Compares the currently brought in time stamp to the one stored onboad.
+      if(tempMC > Network.MC_TS){
+        
+        // If the incoming signal has more up-to-date versions, we overwrite our saved version with
+        // the new ones.
+        Network.MC_TS = tempMC;
+        Network.StartStop = Radio.getStartStop(toParse);
+        Network.TargetLat = Radio.getRadioTargetLat(toParse);
+        Network.TargetLon = Radio.getRadioTargetLon(toParse);
+        Network.TargetThrottle = Radio.getTargetThrottle(toParse);
+      }
+
+      // Reads in Craft ID to see where signal came from. 
+      receivedID = Radio.getCraftID(toParse);
+    }
 	}
 }
 
@@ -268,9 +271,13 @@ void RADIO::rollCall()
 	
 	// Sends the transmission via radio.
 	Radio.broadcast();
-	
+  
 	// Updates Checked_In Status.
 	checkedIn = true;
+
+  // Updates craft states. 
+  RCstate = COMPLETE;
+  OperationMode = STANDBY;
 }
 
 
@@ -279,9 +286,8 @@ void RADIO::rollCall()
  */
 void RADIO::broadcast()
 {
-  
   // Updates the time object to hold the most current operation time.
-  Network.L_TS = millis();
+  Network.L_TS = millis()/1000.0;
   
   // Updates the Networks struct to reflect the crafts most up-to-date postioning before
   // it broadcasts the signal on the network.
@@ -294,35 +300,101 @@ void RADIO::broadcast()
   
   // Casting all float values to a character array with commas saved in between values
   // so the character array can be parsed when received by another craft.
-  char transmission[] = {char(Network.L_TS),
-                         ',',
-                         char(Network.Altitude),
-                         ',',
-                         char(Network.Latitude),
-                         ',',
-                         char(Network.Longitude),
-                         ',',
-                         char(Network.LE),
-                         ',',
-                         char(Network.H_TS),
-                         ',',
-                         char(Network.Release_Status),
-                         ',',
-                         char(Network.MC_TS),
-                         ',',
-                         char(Network.Command_Sent),
-                         ',',
-                         char(Network.Command_Received),
-                         ',',
-                         char(Network.Craft_ID)
-                         };
-	
-	// Serial.print("Radio Sending: ");Serial.println(transmission);
+  String temp = "";
   
-	// Sends message passed in as paramter via antenna.
-	rf95.send(transmission, sizeof(transmission));
-		
-	// Pauses all operations until the micro controll has guaranteed the transmission of the
-	// signal. 
-	rf95.waitPacketSent();
+  temp += Network.L_TS;
+  temp += ",";
+  temp += Network.Altitude;
+  temp += ",";
+  temp += Network.Latitude * 10000; // In order to pass more then 2 decimals, we multiply by 10000
+                                    // on this end to preserve the wanted 6 bits (4 before, 2 after)
+  temp += ",";
+  temp += Network.Longitude * 10000; // In order to pass more then 2 decimals, we multiply by 10000
+                                     // on this end to preserve the wanted 6 bits (4 before, 2 after)
+  temp += ",";
+  temp += Network.LE;
+  temp += ",";
+  temp += Network.MC_TS;
+  temp += ",";
+  temp += Network.StartStop;
+  temp += ",";
+  temp += Network.TargetLat * 10000;
+  temp += ",";
+  temp += Network.TargetLon * 10000;
+  temp += ",";
+  temp += Network.TargetThrottle;
+  temp += ",";
+  temp += Network.Craft_ID;
+
+  // Copy contents. 
+  radioOutput = temp;
+
+  // New info is being read in. 
+  Data.newData = Data.YES;
+  
+  // Converts from String to char array. 
+  char transmission[temp.length()];
+  temp.toCharArray(transmission, temp.length());
+  
+  // Sends message passed in as paramter via antenna.
+  rf95.send(transmission, sizeof(transmission));
+    
+  // Pauses all operations until the micro controll has guaranteed the transmission of the
+  // signal. 
+  rf95.waitPacketSent();
 }
+
+
+/**
+ * Returns the movement state of the craft in string format for UI and debugging. 
+ */
+String RADIO::getFunctionalSTATE(){
+  float temp = Radio.Network.StartStop;
+
+  if(temp == 0.0){
+    return "Paused";
+  }
+  else if(temp == 1.0){
+    return "Running";
+  }
+}
+
+
+/**
+ * Returns the operational state of the craft in string format for UI and debugging. 
+ */
+String RADIO::getOpSTATE(){
+  float temp = Radio.OperationMode;
+
+  if(temp == 0.0){
+    return "NONE";
+  }
+  else if(temp == 1.0){
+    return "ROLLCALL";
+  }
+  else if(temp == 2.0){
+    return "STANDBY";
+  }
+  else if(temp == 3.0){
+    return "NORMAL";
+  }
+}
+
+
+/**
+ * Returns the rollcall state of the craft in string format for UI and debugging. 
+ */
+String RADIO::getRCSTATE(){
+  float temp = Radio.RCstate;
+
+  if(temp == 0.0){
+    return "NOTSTARTED";
+  }
+  else if(temp == 1.0){
+    return "RUNNING";
+  }
+  else if(temp == 2.0){
+    return "COMPLETE";
+  }
+}
+

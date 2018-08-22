@@ -2,12 +2,12 @@
  * Data.cpp contains the struct that holds all the Crafts situational information.
  */
 
-
 #include <Arduino.h>
 #include "Data.h"
+#include "Radio.h"
+#include "keyP.h"
 #include <stdlib.h>
 #include "Globals.h"
-
 
 /**
  * Constructor used to reference all other variables & functions.
@@ -22,7 +22,8 @@ DATA::DATA()
  * Returns a parsed section of the read in parameter. The parameter 'objective' represents 
  * the comma's position from the beginning of the character array.
  */
-float DATA::Parse(char message[], int objective){
+float DATA::Parse(char message[], int objective)
+{
 
   // Example GPS Transmission. (GGA)
   //
@@ -30,21 +31,19 @@ float DATA::Parse(char message[], int objective){
   //
   // Example Radio Transmission. 
   //
-  //                 LORA                              HABET                         MISSION CONTROL                   CRAFT ID
-  // Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),Release Status, | Time(ms),Command Sent,Command Received, | Signal Origin
+  //                    LORA                                        MISSION CONTROL                       CRAFT ID
+  // Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),Start_Stop,new_throttle,TargetLat,TargetLon, | Signal Origin
   //
   // Example I2C Transmission
   //
   //                                  CONTROLER ACCESS NETWORK PROTOCOL PACKET
-  // $,GPSAltitude, Latitude, Longitude, TargetLat, TargetLon, Roll, Pitch, Yaw, Speed , TargetDistance, Time,$
-  //        1           2         3          4           5       6     7     8     9          10          11
+  // $,GPSAltitude, Latitude, Longitude, TargetLat, TargetLon, Roll, Pitch, Yaw, Speed, TargetDistance, Time,$
+  //        1           2         3          4           5       6     7     8     9         10          11
+  //
   // The number of commas that the program needs to pass before it started parsing the data.
-  int goalNumber = objective;
   
-  // Used to iterate through the character arrays.
+  // Used to iterate through the passed in character array.
   int i = 0;
-  int t = 0;
-  
   
   // This iterator is used to pull the wanted part of the 'message' from the entire array.
   // Used to gather information such as how long the new parsed section is.
@@ -61,22 +60,22 @@ float DATA::Parse(char message[], int objective){
   char tempArr[20];
   
   // Iterators over the entire array.
-  for(i=0;i<120;i++){
-    
+  for(i=0;i<120;i++)
+  {
     // Checks to see if the current iterator's position is a comma. 
-    if(message[i] == ','){
-      
+    if(message[i] == ',')
+    {
       // If so, it iterators the comma counter by 1.
       commaCounter++;
     }
     // Checks to see if the desired amount of commas has been passed. 
-    else if(commaCounter == goalNumber){
-      
+    else if(commaCounter == objective)
+    {
       // Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
-      if(message[i] != ','){
-        
+      if(message[i] != ',')
+      {
         // Copies the message's character to the temporary array.
-        tempArr[t] = message[i];
+        tempArr[tempIter] = message[i];
         
         // Iterator used to tell how long the temporary array is.
         tempIter++;
@@ -88,8 +87,8 @@ float DATA::Parse(char message[], int objective){
   char arr[tempIter];
   
   // Iterates through the temporary array copying over the info to the variable which will be returned.
-  for(i=0;i<tempIter;i++){
-    
+  for(i=0;i<tempIter;i++)
+  {
     // Copying of the information between arrays.
     arr[i]=tempArr[i];
   }
@@ -107,18 +106,121 @@ float DATA::Parse(char message[], int objective){
  */
 void DATA::displayInfo()
 {
-  // Local.LE and Local.ME update on their own throughout the program & are reset to 0 after being saved.
-
-  // Prints out data struct to the screen for debugging/following along purposes.
-  Serial.println("----------------------------------------------");
-  Serial.println("                  Craft Data                  ");
-
+  if(newData == YES)
+  {
+    // Prints out data struct to the screen for debugging/following along purposes.
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("|                                Craft Data                                 |");
+    Serial.println("|                                                                           |");
+    Serial.print(  "|  Network Nodes: "); Data.printNodes();           Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.println("|                                                                           |");
+    Serial.print(  "|  Received: ");  Serial.print(Radio.radioInput);  Serial.println("");
+    Serial.print(  "|  Sent:     ");  Serial.print(Radio.radioOutput); Serial.println("");
+    Serial.println("|                                                                           |");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("|                                                                           |");
+    Serial.print(  "|  Operation Mode: ");   Serial.print(Radio.getOpSTATE()); Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Roll Call Status: "); Serial.print(Radio.getRCSTATE()); Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Keypad Press: ");     Serial.print(Key.pressedKey);     Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.println("|                                                                           |");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("|                                                                           |");
+    Serial.print(  "|  Lora Time Stamp:  "); Serial.print(Radio.Network.L_TS);  Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Altitude:   "); Serial.print(Radio.Network.Altitude);    Serial.print(" m"); Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Latitude:   "); Serial.print(Radio.Network.Latitude,5);  Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Longitude:  "); Serial.print(Radio.Network.Longitude,5); Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  LoRa Event: "); Serial.print(Radio.Network.LE);          Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.println("|                                                                           |");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.println("|                                                                           |");
+    Serial.print(  "|  Mission Control Time Stamp: "); Serial.print(Radio.Network.MC_TS);          Serial.println("\t\t\t\t\t    |");
+    Serial.print(  "|  Operational Status: ");         Serial.print(Radio.getFunctionalSTATE());   Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Target Throttle: ");            Serial.print(Radio.Network.TargetThrottle); Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Target Lat: ");                 Serial.print(Radio.Network.TargetLon,5);    Serial.println("\t\t\t\t\t\t    |");
+    Serial.print(  "|  Target Lon: ");                 Serial.print(Radio.Network.TargetLat,5);    Serial.println("\t\t\t\t\t\t    |");
+    Serial.println("|                                                                           |");
+    Serial.println("-----------------------------------------------------------------------------");
+    Serial.print(  "|  Received ID:  ");  Serial.print(Radio.receivedID); Serial.println("\t\t\t\t\t\t\t    |");
+    Serial.println("-----------------------------------------------------------------------------");
   
+    // Resets the newData state to no new data.
+    Data.newData = Data.NO;
+  }
 }
 
 
+/**
+ * Prints out the current array of connected nodes. 
+ */
+void DATA::printNodes()
+{
+  int i = 0;
+  while(i<10)
+  {
+    // Only prints nodes. Not empty elements.
+    if(Radio.nodeList[i] != 0.0)
+    {
+      Serial.print(Radio.nodeList[i],0);
+      Serial.print(", ");
+    }
+    i++;
+  }
+}
 
 
+/**
+ * Reads in user input to set a new GPS (lat or lon) and motor throttle values.
+ */
+void DATA::newCommand()
+{
+  // Checks for user inputted data. 
+  if(Serial.available())
+  {
+    String temp = "";
+    while(Serial.available())
+    {
+      char t = Serial.read();
+      temp += t;
+    }
+    
+    char toParse[temp.length()];
+    temp.toCharArray(toParse,temp.length());
 
+    // EXAMPLE FORMAT FOR INPUTS
+    //
+    // Start/Stop -> $,SS,1,$
+    //
+    // New Lat/Lon -> $,GPS,#(lat),#(lon),$
+    //
+    // New Throttle -> $,T,#,$
 
-
+    // New info is being read in. 
+    Data.newData = Data.YES;
+    
+    // Checks for valid input format. 
+    if(temp[0] == '$' && temp[1] == ',')
+    {
+      // New start / stop command. 
+      if(temp[2] == 'S')
+      {
+        Radio.Network.StartStop = Data.Parse(toParse,2);
+        Serial.println(Radio.Network.StartStop);
+      }
+      // New gps location command. 
+      else if(temp[2] == 'G')
+      {
+        Radio.Network.TargetLat = Data.Parse(toParse,2);
+        Radio.Network.TargetLon = Data.Parse(toParse,3);
+      }
+      // New throttle command. 
+      else if(temp[2] == 'T')
+      {
+        Radio.Network.TargetThrottle = Data.Parse(toParse,2);
+        // TEST THIS OUTPUT. DOUBLE PRINTING & THROWING OFF PACKET ORDER. 
+        // try temp middle variable for debug. 
+      }
+    }
+  }
+}

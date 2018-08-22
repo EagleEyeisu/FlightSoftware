@@ -9,37 +9,34 @@
 
 class RADIO
 {
- 	public:
+  public:
   
 	// Constructor
 	RADIO();
   	
 	// Returns the transmission's Altitude.
-	float getRadioAltitude(uint8_t buf);
+	float getRadioAltitude(char buf[]);
   	
 	// Returns the transmission's CR variable.
-	float getCommandReceived(uint8_t buf);
+	float getStartStop(char buf[]);
 	
 	// Returns the transmission's CS variable.
-	float getCommandSent(uint8_t buf);
+	float getTargetThrottle(char buf[]);
   	
 	// Returns the transmission's craft ID.
-	float getCraftID(uint8_t buf);
+	float getCraftID(char buf[]);
   	
 	// Returns the transmission's Latitude.
-	float getRadioLatitude(uint8_t buf);
+	float getRadioLatitude(char buf[]);
   	
 	// Returns the transmission's Longitude.
-	float getRadioLongitude(uint8_t buf);
+	float getRadioLongitude(char buf[]);
   	
 	// Returns the transmission's Latitude.
-	float getLoRaEvent(uint8_t buf);
-	
-	// Returns the transmission's Release Status.
-	float getReleaseStatus(uint8_t buf);
+	float getLoRaEvent(char buf[]);
 	
 	// Returns the transmission's time stamp.
-	float getTimeStamp(uint8_t buf, int selector);
+	float getTimeStamp(char buf[], int selector);
 	
 	// Runs initialzation script for the Radio.
 	void initialize();
@@ -51,11 +48,31 @@ class RADIO
 	void radioReceive();
 	
 	// Responds to the RollCall signal sent from Mission Control.
-  	void rollCall();
+	void rollCall();
 	
 	// Sends the desired signal out over the radio antenna.
 	void broadcast();
 
+	// Blinks the LED on the LoRa uC to show a signal has been received.
+	void blinkLED();
+
+	// Returns craft movement state in string format for UI. 
+	String getFunctionalSTATE();
+
+	// Returns craft operational state in string format for UI. 
+	String getOpSTATE();
+
+	// Returns craft Rollcall state in string format for UI. 
+	String getRCSTATE();
+	  
+	// Parses and returns the radio Target Latitude.
+	float getRadioTargetLat(char buf[]);
+
+	// Parses and returns the radio Target Latitude.
+	float getRadioTargetLon(char buf[]);
+	
+
+  
 	
 	// Chip select pin for the radio.
 	const byte RFM95_CS = 8;
@@ -65,13 +82,36 @@ class RADIO
 	
 	// Reset pin onboard the radio.
 	const byte RFM95_RST = 4;
+
+	// Craft ID (Used to set start times)
+	const byte NODE_ID = 2;
 	
 	// Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
 	#define RF95_FREQ 433.0
  	
 	// Status of the craft replying to Mission Control with its node #.
 	bool checkedIn = false;
-	
+
+	// Holds the ID of the craft that just broadcasted.  
+	float receivedID = 0.0;
+
+	// Holds the current received radio signal. 
+	String radioInput = "";
+
+	// Holds the current sent radio signal.
+	String radioOutput = "";
+
+	// State of Radio program. 
+    // ROLLCALL - Currently in RollCall process. 
+    // STANDBY  - RollCall completed, waiting for user to send out start signal. 
+    // NORMAL   - Radio is running in its normal operation state. 
+    enum RadioStatus {NONE, ROLLCALL, STANDBY, NORMAL};
+    enum RadioStatus OperationMode = NONE;
+
+    // State of RollCall.
+    enum rollCallStatus {NOTSTARTED, RUNNING, COMPLETE};
+    enum rollCallStatus RCstate = NOTSTARTED;
+  
 	// Stores all information related to the network of the Eagle Eye program.
 	// This struct reads specific indexes and than rebroadcasts the updated transmission to
 	// the other nodes in the network. 
@@ -89,30 +129,29 @@ class RADIO
 		float LE = 0.0;
 		
 		/**
-		 * The below varaible is overseen by HABET_Detach.
-		 */
-		
-		// HABET's ms Time stamp.
-		float H_TS = 0.0;
-		
-		// Release status '0' -> not released, '1' -> released.
-		float Release_Status = 0.0;
-		
-		/**
 		 * The last 3 variables are overseen by Mission Control.
 		 */
 		
 		// Mission Control's ms Time stamp.
 		float MC_TS = 0.0;
 		
-		// Command_Sent will be what triggers a command on another craft (Eagle Eye). 
-		float Command_Sent = 0.0;
-		
-		// Command_Received will be turned 1 when the Command_Sent receahes its destination. 
-		// Used as a handhshake, but primary purpose is to be able to verify that an action 
-		// reached its destination via Mission Control.
-		float Command_Received = 0.0;
-		
+		// This variable is the on / off switch for the craft as far as operational movement goes.
+        // Having this be on the off state (0.0) does not stop data collection, only servo and 
+        // motor movement. 
+		float StartStop = 0.0;
+
+	    // User inputted target latitude for the craft. 
+	    float TargetLat = 0.0;
+
+	    // User inputted target longitude for the craft. 
+	    float TargetLon = 0.0;
+
+	    // Holds the craft's target throttle position. This is not what the craft is currently at, 
+	    // but what we want the craft's to have its upper limit be. For example, it will not be 
+	    // at a constant 40% if we set it to '40.0', but it will be able to iterate up and down from
+	    // that percentage of thrust. 
+	    float TargetThrottle = 0.0;
+    
 		/**
 		 * This varaible is updated by each craft right before the array is broadcasted.
 		 */
@@ -122,12 +161,12 @@ class RADIO
 		// or if we have a direct line of communication with each node.
 		float Craft_ID = 0.0;
 	};
-  
   struct Network_Data Network;
 
   // Used in the computation of the radio system. 
-  unsigned int start = 0;
+  unsigned long start = 0;
   
 };
 
 #endif
+
