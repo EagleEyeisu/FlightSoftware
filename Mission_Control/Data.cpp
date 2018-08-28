@@ -118,39 +118,9 @@ void DATA::gui_input()
 		char toParse[temp.length()];
 		temp.toCharArray(toParse,temp.length());
 
-		// EXAMPLE FORMAT FOR INPUTS
-		//
-		// Start/Stop -> $,SS,1,$
-		//
-		// New Lat/Lon -> $,GPS,#(lat),#(lon),$
-		//
-		// New Throttle -> $,T,#,$
-
 		// New info is being read in. 
 		Data.newData = Data.YES;
 
-		// Checks for valid input format. 
-		if(temp[0] == '$' && temp[1] == ',')
-		{
-			// New start / stop command. 
-		    if(temp[2] == 'S')
-		    {
-		    	Radio.Network.StartStop = Data.Parse(toParse,2);
-		    	Serial.println(Radio.Network.StartStop);
-		 	}
-		  	// New gps location command. 
-		  	else if(temp[2] == 'G')
-		  	{
-		    	Radio.Network.TargetLat = Data.Parse(toParse,2);
-		    	Radio.Network.TargetLon = Data.Parse(toParse,3);
-		  	}
-		  	// New throttle command. 
-		  	else if(temp[2] == 'T')
-		  	{
-		    	Radio.Network.TargetThrottle = Data.Parse(toParse,2);
-		    	// TEST THIS OUTPUT. DOUBLE PRINTING & THROWING OFF PACKET ORDER. 
-		    	// try temp middle variable for debug. 
-		  	}
-		}
+		
 	}
 }

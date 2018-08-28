@@ -69,11 +69,9 @@ class GUI_Terminal():
 
 		self.mc_frame = Frame(book)
 		self.craft_frame = Frame(book)
-		self.comms_frame = Frame(book)
 
 		self.mc_frame.columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), weight=1)
 		self.mc_frame.rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22), weight=1)
 
 		book.add(self.mc_frame, text="Mission Control")
 		book.add(self.craft_frame, text="     Eagle Eye       ")
-		book.add(self.comms_frame, text="    Port Config    ")

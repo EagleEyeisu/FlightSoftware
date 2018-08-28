@@ -30,9 +30,6 @@ void setup(){
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
 
-    // Initializes the SD Card.
-    Save.initialize();
-
     // Initializes the Radio.
     Radio.initialize();
 }
@@ -42,7 +39,10 @@ void setup(){
  * MAIN PROGRAM CODE.
  */
 void loop(){
-
+	
+	// Checks for serial input from the GUI. Parses accordingly.
+	Data.gui_input()
+	
     // Responsible for grabbing all of the craft's current information, 
     // turning that data into an array that can be sent out via radio.
     // Also reads in incoming messages.

@@ -142,26 +142,26 @@ void RADIO::initialize()
 	// If invalid connection, the program will stall and print an error message.
 	if(!rf95.init())
     {
-		Serial.println("LoRa radio init failed");
+		// Serial.println("LoRa radio init failed");
 		while (1);
 	}
 	// Valid connection, program proceeds as planned.
 	else
     {
-		Serial.println("LoRa radio init OK!");
+		// Serial.println("LoRa radio init OK!");
 	}
 	
 	// Checks the radio objects set frequency. 
 	// If invalid connection, the program will stall and print an error message.
 	if(!rf95.setFrequency(RF95_FREQ))
     {
-		Serial.println("setFrequency failed");
+		// Serial.println("setFrequency failed");
 		while (1);
 	}
 	// Valid connection, program proceeds as planned.
 	else
     {
-		Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+		// Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
 	}
 	// Sets the max power to be used to in the amplification of the signal being sent out.
 	rf95.setTxPower(23, false);
@@ -177,58 +177,32 @@ void RADIO::manager()
 	// Reads in radio transmission if available.
 	Radio.radioReceive();
 
-    // Checks to see if its time for Roll Call. This gets updated in 
-    if(Key.pressedKey == 9 || RCstate == RUNNING)
+    // Checks to see if its time for Roll Call. Set via GUI. 
+    if(rc_state == RUNNING)
     {
-        if(Key.pressedKey == 9)
-        {
-            // Updates RollCallStatus to running. 
-            RCstate = RUNNING;
-            // Updates overall radio state.
-            OperationMode = ROLLCALL;
-            // Calls function.
-            Radio.rollCall();
-        }
-        // Checks for the stop signal to RollCall. 
-        else if(Key.pressedKey == 8)
-        {
-            // Updates RollCallStatus to complete.
-            RCstate = COMPLETE;
-            // Updates overall radio state to standby. Not waiting for user to send start signal. 
-            OperationMode = STANDBY;
-        }
-        // This else statement appears to have duplicate code from the above if statement. 
-        // This is needed because it allows the program to run in RollCall mode without
-        // being directly triggered, while checking for RollCall responses. 
-        else
-        {
-            //Calls function. 
-            Radio.rollCall();
-        }
+        // Broadcasts startup packet.
+        Radio.rollCall();
     }
- 
-	// After Roll Call is complete, Mission Control will broadcast the start signal. Appropriate delays are
-	// distributed below to initally sync the network to a 5 second split. This makes for a 10 second revolution.
-	// MC - starts instantly
-	// EE - delays 5 seconds                                     //Key press 7 sends network start signal to nodes. 
-	else if((RCstate == COMPLETE) && (Key.pressedKey == 7 && OperationMode == STANDBY))
+	// After Roll Call is complete, Mission Control will broadcast the start signal.
+	else if((rc_state == COMPLETE) && (operation_mode == STANDBY))
     {
-        // Updates Craft_ID to the network start signal. 
-        Radio.Network.Craft_ID = 555.0;
+        // Updates craft_id to the network start signal. 
+        Radio.Network.craft_id = 555.0;
         // Updates radio state.
-        OperationMode = NORMAL;	
+        operation_mode = NORMAL;	
 	}
+
 	// Each of the 2 crafts have 5 seconds to broadcast. That means each craft will broadcast every 10 seconds.
-	else if((millis() - start >= 10000) && (RCstate == COMPLETE) && (OperationMode == NORMAL))
+	else if((millis() - start >= 10000) && (rc_state == COMPLETE) && (operation_mode == NORMAL))
     {
-		// Resets the counter. This disabled broadcasting agian until 10 seconds has passed.
+		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
 		start = millis();
 		// Sends the transmission via radio.
 		Radio.broadcast();
         // Switch start signal to craft ID. Normal operations have begun. 
-        if(Network.Craft_ID == 555.0)
+        if(Network.craft_id == 555.0)
         {
-            Network.Craft_ID = 1.0;
+            Network.craft_id = 1.0;
     	}
     }
 }
@@ -240,12 +214,13 @@ void RADIO::manager()
 void RADIO::nodeCheckIn()
 {
     // Checks for response from node after rollcall broadcast.
-    if(receivedID != 0.0)
+    if(received_id != 0.0)
     {
         // Cycles through nodes that have already checked in.
-        for(int i=0;i<10;i++)
+        for(int i=0;i<2;i++)
         {
-            if(nodeList[i] == receivedID)
+            // Checks to see if node has already checked in. Prevents duplicates.
+            if(nodeList[i] == received_id)
             {
                 break;
             }
@@ -254,7 +229,7 @@ void RADIO::nodeCheckIn()
                 // New info is being read in. 
                 Data.newData = Data.YES;
                 // If not found and an empty spot is found, it adds the node to the network. 
-                nodeList[i] = receivedID;
+                nodeList[i] = received_id;
                 break;
             }
         }
@@ -280,8 +255,7 @@ void RADIO::radioReceive()
             // New info is being read in. 
             Data.newData = Data.YES;
             //Used to display the received data in the GUI.
-            radioInput = buf;
-            Serial.println(radioInput);
+            radio_input = buf;
             // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
             // unsigned char array for parsing. 
             String str = (char*)buf;
@@ -297,19 +271,19 @@ void RADIO::radioReceive()
             float temp_LoRa = Radio.getTimeStamp(toParse, 0);
           
             // Compares the currently brought in time stamp to the one stored onboad.
-            if(temp_LoRa > Radio.Network.L_TS)
+            if(temp_LoRa > Radio.Network.craft_ts)
             {
                 // If the incoming signal has more up-to-date versions, we overwrite our saved version with
                 // the new ones.
-                Network.L_TS = temp_LoRa;
-                Network.Altitude = Radio.getRadioAltitude(toParse);
-                Network.Latitude = Radio.getRadioLatitude(toParse);
-                Network.Longitude = Radio.getRadioLongitude(toParse);
-                Network.LE = Radio.getLoRaEvent(toParse);
+                Network.craft_ts = temp_LoRa;
+                Network.craft_altitude = Radio.getRadioAltitude(toParse);
+                Network.craft_latitude = Radio.getRadioLatitude(toParse);
+                Network.craft_longitude = Radio.getRadioLongitude(toParse);
+                Network.craft_event = Radio.getLoRaEvent(toParse);
             }
 
             // Reads in Craft ID to see where signal came from. 
-            receivedID = Radio.getCraftID(toParse);
+            received_id = Radio.getCraftID(toParse);
 
             // Compares the transmission's craftID to see if its a brand new craft. If so, it logs it. 
             Radio.nodeCheckIn();
@@ -325,7 +299,7 @@ void RADIO::rollCall()
 {
 	// Updates the Craft_ID to the network call in signal "999.0".
 	Network.Craft_ID = 999.0;
-    // Timer of 5 seconds. 
+    // Timer of 5 seconds.
     if(millis() - RCBroadcast >= 5000)
     {
         // Resets the counter. This disabled rollcall broadcasting again until 5 seconds has passed.
@@ -347,37 +321,37 @@ void RADIO::broadcast()
     // so the character array can be parsed when received by another craft.
     String temp = "";
 
-    temp += Network.L_TS;
+    temp += Network.craft_ts;
     temp += ",";
-    temp += Network.Altitude;
+    temp += Network.craft_altitude;
     temp += ",";
-    temp += Network.Latitude * 10000;
+    temp += Network.craft_latitude * 10000;
     temp += ",";
-    temp += Network.Longitude * 10000;
+    temp += Network.craft_longitude * 10000;
     temp += ",";
-    temp += Network.LE;
+    temp += Network.craft_event;
     temp += ",";
-    temp += Network.MC_TS;
+    temp += Network.home_ts;
     temp += ",";
-    temp += Network.StartStop;
+    temp += Network.craft_anchor;
     temp += ",";
-    temp += Network.TargetLat * 10000;
+    temp += Network.target_latitude * 10000;
     temp += ",";
-    temp += Network.TargetLon * 10000;
+    temp += Network.target_longitude * 10000;
     temp += ",";
-    temp += Network.TargetThrottle;
+    temp += Network.target_throttle;
     temp += ",";
-    temp += Network.Craft_ID;
+    temp += Network.craft_id;
 
     // Copy contents. 
-    radioOutput = temp;
+    radio_output = temp;
     // New info is being read in. 
     Data.newData = Data.YES;
     // Converts from String to char array. 
     char transmission[temp.length()];
     temp.toCharArray(transmission, temp.length());
-    // Blinks LED onboard of LoRa to signal keypad interaction. 
-    blinkLED();
+    // Blinks LED onboard of LoRa to signal broadcast
+    blink_led();
     // Sends message passed in as paramter via antenna.
     rf95.send(transmission, sizeof(transmission));
     // Pauses all operations until the micro controll has guaranteed the transmission of the
@@ -389,75 +363,11 @@ void RADIO::broadcast()
 /*
  * Blinks LED.
  */
-void RADIO::blinkLED()
+void RADIO::blink_led()
 {
     // ON
     digitalWrite(LED, HIGH);
     delay(10);
     // OFF
     digitalWrite(LED, LOW);
-}
-
-
-/**
- * Returns the movement state of the craft in string format for UI and debugging. 
- */
-String RADIO::getFunctionalSTATE()
-{
-    float temp = Radio.Network.StartStop;
-    if(temp == 0.0)
-    {
-    return "Paused";
-    }
-    else if(temp == 1.0)
-    {
-    return "Running";
-    }
-}
-
-
-/**
- * Returns the operational state of the craft in string format for UI and debugging. 
- */
-String RADIO::getOpSTATE(){
-    float temp = Radio.OperationMode;
-
-    if(temp == 0.0)
-    {
-        return "NONE";
-    }
-    else if(temp == 1.0)
-    {
-        return "ROLLCALL";
-    }
-    else if(temp == 2.0)
-    {
-        return "STANDBY";
-    }
-    else if(temp == 3.0)
-    {
-        return "NORMAL";
-    }
-}
-
-
-/**
- * Returns the rollcall state of the craft in string format for UI and debugging. 
- */
-String RADIO::getRCSTATE()
-{
-    float temp = Radio.RCstate;
-
-    if(temp == 0.0)
-    {
-        return "NOTSTARTED";
-    }
-    else if(temp == 1.0)
-    {
-        return "RUNNING";
-    }
-    else if(temp == 2.0)
-    {
-        return "COMPLETE";
-    }
 }

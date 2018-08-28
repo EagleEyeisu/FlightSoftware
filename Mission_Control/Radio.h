@@ -74,6 +74,8 @@ class RADIO
     // Returns craft Rollcall state in string format for UI. 
     String getRCSTATE();
 
+    /*-----------------------------------------------------------------------------*/
+
     // Chip select pin for the radio.
     const byte RFM95_CS = 8;
 
@@ -87,7 +89,7 @@ class RADIO
     const byte NODE_ID = 1;
 
     // Interrupt pin to trigger RollCall.
-    const byte interruptPinRollCall = 3;
+    const byte INTERRUPT_ROLLCALL_PIN = 3;
 
     // Pins used to blink an LED to signal receival packet.
     const byte LED = 13;
@@ -96,29 +98,29 @@ class RADIO
     #define RF95_FREQ 433.0
 
     // Holds the ID of the craft that just broadcasted. THIS IS ANOTHER NODE, NOT MISSION CONTROL. 
-    float receivedID = 0.0;
+    float received_id = 0.0;
 
     // State of RollCall.
     enum rollCallStatus {NOTSTARTED, RUNNING, COMPLETE};
-    enum rollCallStatus RCstate = NOTSTARTED;
+    enum rollCallStatus rc_state = NOTSTARTED;
 
     // List of nodes currently logged into network. 
     // MC - 1
     // EE - 2
-    float nodeList[10] = {1.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+    float nodeList[2] = {1.0, 0.0};
 
     // State of Radio program. 
     // ROLLCALL - Currently in RollCall process. 
     // STANDBY  - RollCall completed, waiting for user to send out start signal. 
     // NORMAL   - Radio is running in its normal operation state. 
     enum RadioStatus {NONE, ROLLCALL, STANDBY, NORMAL};
-    enum RadioStatus OperationMode = NONE;
+    enum RadioStatus operation_mode = NONE;
 
     // Holds the current received radio signal. 
-    String radioInput = "";
+    String radio_input = "";
 
     // Holds the current sent radio signal.
-    String radioOutput = "";
+    String radio_output = "";
 
     // Stores all information related to the network of the Eagle Eye program.
     // This struct reads specific indexes and than rebroadcasts the updated transmission to
@@ -130,35 +132,35 @@ class RADIO
     	 */
     	
     	// Each of these is defined in the Data.h struct. Refer to its documentation as needed.
-    	float L_TS = 0.0;
-    	float Altitude = 0.0;
-    	float Latitude = 0.0;
-    	float Longitude = 0.0;
-    	float LE = 0.0;
+    	float craft_ts = 0.0;
+    	float craft_altitude = 0.0;
+    	float craft_latitude = 0.0;
+    	float craft_longitude = 0.0;
+    	float craft_event = 0.0;
     	
     	/**
     	 * The last 3 variables are overseen by Mission Control.
     	 */
     	
         // Mission Control's ms Time stamp.
-        float MC_TS = 0.0;
+        float home_ts = 0.0;
   
         // This variable is the on / off switch for the craft as far as operational movement goes.
         // Having this be on the off state (0.0) does not stop data collection, only servo and 
         // motor movement. 
-        float StartStop = 0.0;
+        float craft_anchor = 0.0;
 
         // User inputted target latitude for the craft. 
-        float TargetLat = 0.0;
+        float target_latitude = 0.0;
 
         // User inputted target longitude for the craft. 
-        float TargetLon = 0.0;
+        float target_longitude = 0.0;
 
         // Holds the craft's target throttle position. This is not what the craft is currently at, 
         // but what we want the craft's to have its upper limit be. For example, it will not be 
         // at a constant 40% if we set it to '40.0', but it will be able to iterate up and down from
         // that percentage of thrust. 
-        float TargetThrottle = 0.0;
+        float target_throttle = 0.0;
     	
     	/**
     	 * This varaible is updated by each craft right before the array is broadcasted.
@@ -167,7 +169,7 @@ class RADIO
     	// Craft_ID is used to tell which craft is currently broadcasting the signal. This allows
     	// for Mission Control to have a sense of if information is being relayed through nodes,
     	// or if we have a direct line of communication with each node.
-    	float Craft_ID = 0.0;
+    	float craft_id = 0.0;
     };
     struct Network_Data Network;
 

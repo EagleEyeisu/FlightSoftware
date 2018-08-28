@@ -23,8 +23,8 @@ class DATA
     // Reads in user input to set a new GPS (lat or lon) and motor throttle values.
     void newCommand();
 
-  
-  
+    /*-----------------------------------------------------------------------------*/
+
     // Parses passed in message by using commas as the identifiers.
     float Parse(char message[], int objective);
 
@@ -37,6 +37,12 @@ class DATA
     // would be to use an external terminal such as Putty)
     enum dataState {NO, YES};
     enum dataState newData = YES;  // Starts in Yes to the intialize UI. 
+
+    // Automatic or Manual control of craft. 
+    // 0 - Manual
+    // 1 - Authority
+    int authority_mode = 0
+
 };
 
 #endif
