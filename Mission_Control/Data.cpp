@@ -5,7 +5,6 @@
 #include <Arduino.h>
 #include "Data.h"
 #include "Radio.h"
-#include "keyP.h"
 #include <stdlib.h>
 #include "Globals.h"
 
@@ -102,78 +101,9 @@ float DATA::Parse(char message[], int objective)
 
 
 /**
- * Prints information to screen. 
- */
-void DATA::displayInfo()
-{
-  	if(newData == YES)
-  	{
-	    // Prints out data struct to the screen for debugging/following along purposes.
-	    Serial.println("-----------------------------------------------------------------------------");
-	    Serial.println("-----------------------------------------------------------------------------");
-	    Serial.println("-----------------------------------------------------------------------------");
-	    Serial.println("|                                Craft Data                                 |");
-	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Network Nodes: "); Data.printNodes();           Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Received: ");  Serial.print(Radio.radioInput);  Serial.println("");
-	    Serial.print(  "|  Sent:     ");  Serial.print(Radio.radioOutput); Serial.println("");
-	    Serial.println("|                                                                           |");
-	    Serial.println("-----------------------------------------------------------------------------");
-	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Operation Mode: ");   Serial.print(Radio.getOpSTATE()); Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Roll Call Status: "); Serial.print(Radio.getRCSTATE()); Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Keypad Press: ");     Serial.print(Key.pressedKey);     Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.println("|                                                                           |");
-	    Serial.println("-----------------------------------------------------------------------------");
-	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Lora Time Stamp:  "); Serial.print(Radio.Network.L_TS);  Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Altitude:   "); Serial.print(Radio.Network.Altitude);    Serial.print(" m"); Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Latitude:   "); Serial.print(Radio.Network.Latitude,5);  Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Longitude:  "); Serial.print(Radio.Network.Longitude,5); Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  LoRa Event: "); Serial.print(Radio.Network.LE);          Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.println("|                                                                           |");
-	    Serial.println("-----------------------------------------------------------------------------");
-	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Mission Control Time Stamp: "); Serial.print(Radio.Network.MC_TS);          Serial.println("\t\t\t\t\t    |");
-	    Serial.print(  "|  Operational Status: ");         Serial.print(Radio.getFunctionalSTATE());   Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Target Throttle: ");            Serial.print(Radio.Network.TargetThrottle); Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Target Lat: ");                 Serial.print(Radio.Network.TargetLon,5);    Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Target Lon: ");                 Serial.print(Radio.Network.TargetLat,5);    Serial.println("\t\t\t\t\t\t    |");
-	    Serial.println("|                                                                           |");
-	    Serial.println("-----------------------------------------------------------------------------");
-	    Serial.print(  "|  Received ID:  ");  Serial.print(Radio.receivedID); Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.println("-----------------------------------------------------------------------------");
-	  
-	    // Resets the newData state to no new data.
-	    Data.newData = Data.NO;
-	}
-}
-
-
-/**
- * Prints out the current array of connected nodes. 
- */
-void DATA::printNodes()
-{
-	int i = 0;
-	while(i<10)
-	{
-	    // Only prints nodes. Not empty elements.
-	    if(Radio.nodeList[i] != 0.0)
-	    {
-	        Serial.print(Radio.nodeList[i],0);
-	        Serial.print(", ");
-	    }
-	    i++;
-	}
-}
-
-
-/**
  * Reads in user input to set a new GPS (lat or lon) and motor throttle values.
  */
-void DATA::newCommand()
+void DATA::gui_input()
 {
 	// Checks for user inputted data. 
 	if(Serial.available())

@@ -33,7 +33,6 @@ class MC_Tab():
 		# Network variables.
 		self.operational_mode = None
 		self.roll_call_status = None
-		self.network_nodes = []  # May not use
 		self.node_mission_control = None
 		self.node_eagle_eye = None
 		self.node_relay = None
@@ -51,9 +50,13 @@ class MC_Tab():
 		# Mission Control variables.
 		self.home_time = 0
 		self.target_throttle = 0
-		self.target_altitude = 0 # Hook this up
+		self.target_throttle_set = 0
+		self.target_altitude = 0
+		self.target_altitude_set = 0
 		self.target_latitude = 0
+		self.target_latitude_set = 0
 		self.target_longitude = 0
+		self.target_longitude_set = 0
 
 		# Other
 		self.modified_commands = None
@@ -87,9 +90,13 @@ class MC_Tab():
 		self.craft_received_id = StringVar(self.mc_frame)
 		self.home_time = StringVar(self.mc_frame)
 		self.target_throttle = StringVar(self.mc_frame)
-		self.target_altitude = StringVar(self.mc_frame) # Hook this up
+		self.target_throttle_set = StringVar(self.mc_frame)
+		self.target_altitude = StringVar(self.mc_frame)
+		self.target_altitude_set = StringVar(self.mc_frame)
 		self.target_latitude = StringVar(self.mc_frame)
+		self.target_latitude_set = StringVar(self.mc_frame)
 		self.target_longitude = StringVar(self.mc_frame)
+		self.target_longitude_set = StringVar(self.mc_frame)
 		self.authority_mode = StringVar(self.mc_frame)
 		self.modified_commands = StringVar(self.mc_frame)
 
@@ -98,7 +105,7 @@ class MC_Tab():
 		self.roll_call_status.trace("w", self.callback_update_transmission)
 		self.craft_anchor.trace('w', self.callback_update_transmission)
 		self.target_throttle.trace("w", self.callback_update_transmission)
-		self.target_altitude.trace("w", self.callback_update_transmission) # Hook this up
+		self.target_altitude.trace("w", self.callback_update_transmission)
 		self.target_latitude.trace("w", self.callback_update_transmission)
 		self.target_longitude.trace("w", self.callback_update_transmission)
 		self.authority_mode.trace("w", self.callback_update_transmission)
@@ -117,6 +124,7 @@ class MC_Tab():
 		self.craft_received_id.set("-------")
 		self.home_time.set("-------")
 		self.target_throttle.set("-------")
+		self.target_throttle_set.set("")
 		self.target_altitude.set("-------") # Hook this up
 		self.target_latitude.set("-------")
 		self.target_longitude.set("-------")
@@ -144,13 +152,13 @@ class MC_Tab():
 		self.entry_craft_received_id = Entry(self.mc_frame, state="readonly", textvariable=self.craft_received_id, justify='center')
 		self.entry_home_time = Entry(self.mc_frame, state="readonly", textvariable=self.home_time, justify='right')
 		self.entry_target_throttle = Entry(self.mc_frame, state="readonly", textvariable=self.target_throttle, justify='right')
-		self.entry_target_throttle_set = Entry(self.mc_frame, justify='right')
+		self.entry_target_throttle_set = Entry(self.mc_frame, textvariable=self.target_throttle_set, justify='right')
 		self.entry_target_altitude = Entry(self.mc_frame, state="readonly", textvariable=self.target_altitude, justify='right')
-		self.entry_target_altitude_set =  Entry(self.mc_frame, justify='right')
+		self.entry_target_altitude_set =  Entry(self.mc_frame, textvariable=self.target_altitude_set, justify='right')
 		self.entry_target_latitude = Entry(self.mc_frame, state="readonly", textvariable=self.target_latitude, justify='right')
-		self.entry_target_latitude_set = Entry(self.mc_frame, justify='right')
+		self.entry_target_latitude_set = Entry(self.mc_frame, textvariable=self.target_latitude_set, justify='right')
 		self.entry_target_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.target_longitude, justify='right')
-		self.entry_target_longitude_set = Entry(self.mc_frame, justify='right')
+		self.entry_target_longitude_set = Entry(self.mc_frame, textvariable=self.target_longitude_set, justify='right')
 		self.entry_modified_commands = Entry(self.mc_frame, state="readonly", justify='right', textvariable=self.modified_commands)
 
 	def create_button_objects(self):
@@ -371,46 +379,48 @@ class MC_Tab():
 		else:
 			# Drops the anchor!
 			self.craft_anchor.set("DROPPED")
+			# Sets motor throttle to 0 %.
+			self.target_throttle.set("0")
 
-	def callback_target_throttle(self, percentage):
+	def callback_target_throttle(self):
 		"""
 		Triggered by the press of Add button next to target throttle.
 
 		@param self       - Instance of the class.
-		@param percentage - Percentage value of desired throttle. Whole #'s only.
 		"""
 
-		self.target_throttle.set(percentage)
+		# Upper restriction.
+		if int(self.target_throttle_set.get()) > 100:
+			self.target_throttle_set.set("100")
 
-	def callback_target_altitude(self, altitude):
+		self.target_throttle.set(self.target_throttle_set.get())
+
+	def callback_target_altitude(self):
 		"""
 		Triggered by the press of Add button next to target altitude.
 
 		@param self       - Instance of the class.
-		@param percentage - User desired altitude. IN DEGREE FORMAT.
 		"""
 
-		self.target_altitude.set(altitude)
+		self.target_altitude.set(self.target_altitude_set.get())
 
-	def callback_target_latitude(self, latitude):
+	def callback_target_latitude(self):
 		"""
 		Triggered by the press of Add button next to target latitude.
 
 		@param self     - Instance of the class.
-		@param latitude - User desired latitude. IN DEGREE FORMAT.
 		"""
 
-		self.target_latitude.set(latitude)
+		self.target_latitude.set(self.target_latitude_set.get())
 
-	def callback_target_longitude(self, longitude):
+	def callback_target_longitude(self):
 		"""
 		Triggered by the press of Add button next to target longitude.
 
 		@param self     - Instance of the class.
-		@param latitude - User desired longitude. IN DEGREE FORMAT.
 		"""
 
-		self.target_longitude.set(longitude)
+		self.target_longitude.set(self.target_longitude_set.get())
 
 	def callback_queue_commands(self):
 		"""
