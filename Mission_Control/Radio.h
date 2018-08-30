@@ -179,7 +179,7 @@ class RADIO
 
     // Timer is used to for the 10 second interval that the craft will broadcast on for RollCall. 
     // This value is in milliseconds.  
-    unsigned long RCBroadcast = 0;
+    unsigned long rc_broadcast = 0;
 };
 
 #endif

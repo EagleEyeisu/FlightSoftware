@@ -307,6 +307,20 @@ class MC_Tab():
 		self.layout_craft()
 		self.layout_mission_control()
 
+		# Setup threads to monitor for manual input.
+		self.control_setup()
+
+	def control_setup(self):
+		"""
+		Responsible for monitoring the threaded processes for manual control.
+		(PICKED UP XBOX CONTROLLER INPUT)
+		
+		@param self - Instance of the class.
+		"""
+
+		thread_manual_input = threading.Thread(target=manual_mode_monitor, args=())
+		thread_manual_input.start()
+
 	def callback_update_transmission(self, *args):
 		"""
 		Updates the StringVar used to show user changes in the GUI. This is also the variable
@@ -318,6 +332,11 @@ class MC_Tab():
 
 		temp_packet = ""
 
+		# Update 
+		temp_packet += "$"
+		temp_packet += ","
+		temp_packet += str(self.authority_mode.get())
+		temp_packet += ","
 		temp_packet += str(self.operational_mode.get())
 		temp_packet += ","
 		temp_packet += str(self.roll_call_status.get())
@@ -332,7 +351,7 @@ class MC_Tab():
 		temp_packet += ","
 		temp_packet += str(self.target_longitude.get())
 		temp_packet += ","
-		temp_packet += str(self.authority_mode.get())
+		temp_packet += "$"
 
 		self.modified_commands.set(temp_packet)
 
@@ -431,25 +450,113 @@ class MC_Tab():
 
 		# Checks for non-null connection to mission control's lora microcontroller.
 		if PORT_MC_LORA is not None:
-			converted_transmission = self.convert_commands()
+
+			# Converts substring into each's corresponding integer value.
+			converted_transmission = self.convert_serial()
 			# If non-null, send transmission via serial port.
 			send(PORT_MC_LORA.get_port(), converted_transmission)
 		# Null connection.
 		else:
 			print("Invalid connection to mission control's lora.")
 
-	def convert_commands(self):
+
+	def convert_serial(self):
 		"""
-		Responsible for taking the queued transmission varaible and converting 
-		its interior string objects to the correct integer value.
+		Responsible for taking the variables to be set via serial and converting 
+		them to their correct integer value.
 
 		@param self - Instance of the class.
 		"""
 
-		# Splits large string into its smaller parts. Parses by delimitor ','
-		temp_op_mode, temp_roll_call, temp_anchor, temp_throttle, temp_alt, temp_lat, temp_lon, temp_author = str(self.modified_commands.get()).split(",")
+		new_packet = ""
 
-		
+		# Checks for normal serial operations.
+		if self.authority_mode is "AUTO":
+			new_packet += "$"
+			new_packet += ","
+			new_packet += convert_authority()
+			new_packet += ","
+			new_packet += convert_op_mode()
+			new_packet += ","
+			new_packet += convert_rc_mode()
+			new_packet += ","
+			new_packet += convert_anchor()
+			new_packet += ","
+			new_packet += self.target_throttle
+			new_packet += ","
+			new_packet += self.target_altitude
+			new_packet += ","
+			new_packet += self.target_latitude
+			new_packet += ","
+			new_packet += self.target_longitude
+			new_packet += ","
+			new_packet += "$"
+
+		# Checks for roll call serial operations.
+		elif self.authority_mode is "MANUAL":
+			new_packet += "$"
+			new_packet += ","
+			new_packet += convert_authority()
+			new_packet += ","
+			new_packet += convert_direction()
+			new_packet += ","
+			new_packet += convert_anchor()
+			new_packet += ","
+			new_packet += "$"
+
+	def convert_authority(self):
+		"""
+		Converts to correct integer value.
+
+		@param self - Instance of the class.
+		"""
+
+		if self.authority_mode is "AUTO":
+			return 1
+		elif self.authority_mode is "MANUAL":
+			return 0
+
+	def convert_op_mode(self):
+		"""
+		Converts to correct integer value.
+
+		@param self - Instance of the class.
+		"""
+
+		if self.operational_mode is "NOT STARTED":
+			return 0
+		elif self.operational_mode is "ROLLCALL":
+			return 1
+		elif self.operational_mode is "STANDBY":
+			return 2
+		elif self.operational_mode is "NORMAL":
+			return 3
+
+	def convert_rc_mode(self):
+		"""
+		Converts to correct integer value.
+
+		@param self - Instance of the class.
+		"""
+
+		if self.operational_mode is "NOT STARTED":
+			return 0
+		elif self.operational_mode is "RUNNING":
+			return 1
+		elif self.operational_mode is "FINISHED":
+			return 2
+
+	def convert_anchor(self):
+		"""
+		Converts to correct integer value.
+
+		@param self - Instance of the class.
+		"""
+
+		if self.operational_mode is "DROPPED":
+			return 0
+		elif self.operational_mode is "HOISTED":
+			return 1
 
 	def create_label_east(self, r, c, frame, title):
 		"""

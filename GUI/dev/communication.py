@@ -18,6 +18,10 @@ PORT_CRAFT_LORA = None
 PORT_CRAFT_MEGA = None
 CONFIGURATION = None
 
+THREAD_MC_LORA = None
+THREAD_CRAFT_LORA = None
+THREAD_MEGA_LORA = None
+
 
 def get_serial_ports():
 	""" Detects and returns all active serial ports. """
@@ -44,14 +48,14 @@ def start_threading():
 	try:
 		# Checks for active port.
 		if PORT_MC_LORA is not None:
-			thread_mc_lora = threading.Thread(target=receive_mc_lora, args=(PORT_MC_LORA.get_port()))
-			thread_mc_lora.start()
+			THREAD_MC_LORA = threading.Thread(target=receive_mc_lora, args=(PORT_MC_LORA.get_port()))
+			THREAD_MC_LORA.start()
 		if PORT_CRAFT_LORA is not None:
-			thread_craft_lora = threading.Thread(target=receive_craft_lora, args=(PORT_CRAFT_LORA.get_port()))
-			thread_craft_lora.start()
+			THREAD_CRAFT_LORA = threading.Thread(target=receive_craft_lora, args=(PORT_CRAFT_LORA.get_port()))
+			THREAD_CRAFT_LORA.start()
 		if PORT_CRAFT_MEGA is not None:
-			thread_mega_lora = threading.Thread(target=receive_craft_mega, args=(PORT_CRAFT_MEGA.get_port()))
-			thread_mega_lora.start()
+			THREAD_MEGA_LORA = threading.Thread(target=receive_craft_mega, args=(PORT_CRAFT_MEGA.get_port()))
+			THREAD_MEGA_LORA.start()
 	except:
 		print("Unable to bind method to thread.")
 	
@@ -173,7 +177,6 @@ def receive_craft_lora(ser):
 			pass
 
 
-
 def receive_craft_mega(ser):
 	"""
 	Responsible for reading in data on the given serial port.
@@ -204,6 +207,10 @@ def send(ser, message):
 
 	# Ensure string datatype.
 	message = str(message)
+
+	if ser.is_open == False:
+		ser.open()
+
 	# Encode message to bits & send via serial.
 	ser.write(message.encode())
 

@@ -226,8 +226,6 @@ void RADIO::nodeCheckIn()
             }
             else if(nodeList[i] == 0.0)
             {
-                // New info is being read in. 
-                Data.newData = Data.YES;
                 // If not found and an empty spot is found, it adds the node to the network. 
                 nodeList[i] = received_id;
                 break;
@@ -252,8 +250,6 @@ void RADIO::radioReceive()
         // Reads in the avaiable radio transmission.
         if(rf95.recv(buf, &len))
         {
-            // New info is being read in. 
-            Data.newData = Data.YES;
             //Used to display the received data in the GUI.
             radio_input = buf;
             // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
@@ -345,8 +341,6 @@ void RADIO::broadcast()
 
     // Copy contents. 
     radio_output = temp;
-    // New info is being read in. 
-    Data.newData = Data.YES;
     // Converts from String to char array. 
     char transmission[temp.length()];
     temp.toCharArray(transmission, temp.length());

@@ -31,13 +31,7 @@ float DATA::Parse(char message[], int objective)
 	// Example Radio Transmission. 
 	//
 	//                    LORA                                        MISSION CONTROL                       CRAFT ID
-	// Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),Start_Stop,new_throttle,TargetLat,TargetLon, | Signal Origin
-	//
-	// Example I2C Transmission
-	//
-	//                                  CONTROLER ACCESS NETWORK PROTOCOL PACKET
-	// $,GPSAltitude, Latitude, Longitude, TargetLat, TargetLon, Roll, Pitch, Yaw, Speed, TargetDistance, Time,$
-	//        1           2         3          4           5       6     7     8     9         10          11
+	// Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),craft_anchor,new_throttle,TargetLat,TargetLon, | Signal Origin
 	//
 	// The number of commas that the program needs to pass before it started parsing the data.
 
@@ -84,7 +78,7 @@ float DATA::Parse(char message[], int objective)
   	
 	// Charater array used with a fitted length of the parsed section.
 	char arr[tempIter];
-	  
+	
 	// Iterates through the temporary array copying over the info to the variable which will be returned.
 	for(i=0;i<tempIter;i++)
 	{
@@ -105,7 +99,7 @@ float DATA::Parse(char message[], int objective)
  */
 void DATA::gui_input()
 {
-	// Checks for user inputted data. 
+	// Checks for a busy serial port.
 	if(Serial.available())
 	{
 		String temp = "";
@@ -118,9 +112,20 @@ void DATA::gui_input()
 		char toParse[temp.length()];
 		temp.toCharArray(toParse,temp.length());
 
-		// New info is being read in. 
-		Data.newData = Data.YES;
-
+		// Checks for correct data format.
+		if(temp[0]=='$')
+		{
+			// 'N' at index 3 signifies normal serial interaction.
+			if(temp[2]=='N')
+			{
+				
+			}
+		}
 		
-	}
 }
+
+
+/**
+ *
+ */
+
