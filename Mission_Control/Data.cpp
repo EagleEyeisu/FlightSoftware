@@ -118,10 +118,10 @@ void DATA::gui_input()
 			// 'N' at index 3 signifies normal serial interaction.
 			if(temp[2]=='N')
 			{
-				
+			
 			}
 		}
-		
+	}
 }
 
 

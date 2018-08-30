@@ -20,10 +20,12 @@ class DATA
     // Parses passed in message by using commas as the identifiers.
     float Parse(char message[], int objective);
 
+    void gui_input();
+
     // Automatic or Manual control of craft. 
     // 0 - Manual
     // 1 - Authority
-    int authority_mode = 0
+    int authority_mode = 0;
 
 };
 

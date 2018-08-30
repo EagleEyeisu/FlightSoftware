@@ -165,7 +165,6 @@ void RADIO::initialize()
 	}
 	// Sets the max power to be used to in the amplification of the signal being sent out.
 	rf95.setTxPower(23, false);
-	Serial.println();
 }
 
 
@@ -294,12 +293,12 @@ void RADIO::radioReceive()
 void RADIO::rollCall()
 {
 	// Updates the Craft_ID to the network call in signal "999.0".
-	Network.Craft_ID = 999.0;
+	Network.craft_id = 999.0;
     // Timer of 5 seconds.
-    if(millis() - RCBroadcast >= 5000)
+    if(millis() - rc_broadcast >= 5000)
     {
         // Resets the counter. This disabled rollcall broadcasting again until 5 seconds has passed.
-        RCBroadcast = millis();
+        rc_broadcast = millis();
         // Sends the transmission via radio.
         Radio.broadcast();
     }
@@ -312,7 +311,7 @@ void RADIO::rollCall()
 void RADIO::broadcast()
 {  
     // Updates the time object to hold the most current operation time.
-    Network.MC_TS = millis()/1000.0;
+    Network.home_ts = millis()/1000.0;
     // Casting all float values to a character array with commas saved in between values
     // so the character array can be parsed when received by another craft.
     String temp = "";

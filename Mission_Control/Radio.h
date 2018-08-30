@@ -60,7 +60,7 @@ class RADIO
     void broadcast();
 
     // Blinks the LED on the LoRa uC to show a signal has been received.
-    void blinkLED();
+    void blink_led();
 
     // Compares current node against others. Prevents duplicates. 
     void nodeCheckIn();

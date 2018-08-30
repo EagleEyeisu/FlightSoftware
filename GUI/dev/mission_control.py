@@ -307,19 +307,34 @@ class MC_Tab():
 		self.layout_craft()
 		self.layout_mission_control()
 
-		# Setup threads to monitor for manual input.
-		self.control_setup()
-
-	def control_setup(self):
+	def callback_config_controller(self):
 		"""
-		Responsible for monitoring the threaded processes for manual control.
-		(PICKED UP XBOX CONTROLLER INPUT)
+		Responsible for connecting to and monitoring the threaded processes for manual control.
+		(STARTS XBOX CONTROLLER / CONNECTS / MONITORS USER'S INPUT)
 		
 		@param self - Instance of the class.
 		"""
 
 		thread_manual_input = threading.Thread(target=manual_mode_monitor, args=())
 		thread_manual_input.start()
+
+	def manual_mode_monitor(self):
+		"""
+		Threaded method (its always running). 
+		This method monitors the changes in the authority mode (manual vs auto).
+		When in manual, this method reads an xbox controller's input every 3 seconds.
+
+		@param self - Instance of the class.
+		"""
+
+		while(1):
+			try:
+				# Checks for a incoming data.
+				if self.authority_mode.get() is "MANUAL":
+					# Reads in xbox input via Bluetooth. 
+					this = 1 + 1
+			except:
+				pass
 
 	def callback_update_transmission(self, *args):
 		"""

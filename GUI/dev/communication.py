@@ -85,7 +85,6 @@ def validate_ports(ports):
 		except:
 			print("Unable to parse: " + str(port))
 			passed = False
-			ser.close()
 
 		# Attempts to recreate serial connection to ensure validity.
 		try: 
@@ -93,12 +92,12 @@ def validate_ports(ports):
 				ser = serial.Serial()
 				ser.port = com_number
 				ser.baudrate = 115200
+				ser.timeout = 1
 				ser.open()
-		except (serial.SerialException):
+		except:
 			print("Invalid connection to: " + str(port))
 			print("Port: " + str(ser))
 			passed = False
-			ser.close()
 
 		# Pings microcontroller for name.
 		try:
