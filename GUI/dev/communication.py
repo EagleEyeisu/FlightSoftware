@@ -117,7 +117,7 @@ def validate_ports(ports):
 			print("Unknown microcontroller. Response: " + str(response))
 
 	# Prints all info related to port (used for debug in case of failure).
-	if passed:
+	if passed or not passed:
 		print("port:" + str(port))
 		print("com_number: " + com_number)
 		print("port_description: " + port_description)
