@@ -2,7 +2,6 @@
 
 //NON EAGLE EYE
 #include <RH_RF95.h>
-#include <SD.h>
 #include <Time.h>
 
 //EAGLE EYE'S

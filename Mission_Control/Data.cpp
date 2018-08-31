@@ -97,7 +97,7 @@ float DATA::Parse(char message[], int objective)
 /**
  * Reads in user input to set a new GPS (lat or lon) and motor throttle values.
  */
-void DATA::gui_input()
+void DATA::serial_comms()
 {
 	// Checks for a busy serial port.
 	if(Serial.available())
@@ -115,17 +115,11 @@ void DATA::gui_input()
 		// Checks for correct data format.
 		if(temp[0]=='$')
 		{
-			// 'N' at index 3 signifies normal serial interaction.
-			if(temp[2]=='N')
+			// '0' at index 3 signifies manual control. 
+			if(temp[2]=='0')
 			{
 			
 			}
 		}
 	}
 }
-
-
-/**
- *
- */
-

@@ -10,6 +10,7 @@
 from tkinter import *
 from tkinter.ttk import *
 from communication import *
+from inputs import get_gamepad
 
 # Node ID's.
 NODE_MISSION_CONTROL_ID = 0
@@ -331,8 +332,7 @@ class MC_Tab():
 			try:
 				# Checks for a incoming data.
 				if self.authority_mode.get() is "MANUAL":
-					# Reads in xbox input via Bluetooth. 
-					this = 1 + 1
+					junk = 1 + 1
 			except:
 				pass
 

@@ -6,8 +6,9 @@
 #           Jared Danner
 #
 #############################################################
-import serial, serial.tools.list_ports
-import threading
+import serial.tools.list_ports
+import serial
+from multiprocessing import Process
 import time
 
 # Serial Ports & attributes.
@@ -45,10 +46,14 @@ def setup_comms():
 def start_threading():
 	""" Binds recieve methods to different threads to allow for simultaneous reads. """
 
+	global PORT_MC_LORA
+	global THREAD_MC_LORA
+
 	try:
 		# Checks for active port.
 		if PORT_MC_LORA is not None:
-			THREAD_MC_LORA = threading.Thread(target=receive_mc_lora, args=(PORT_MC_LORA.get_port()))
+			print("starting receive thread.")
+			THREAD_MC_LORA = Process(target=receive_mc_lora, args=(PORT_MC_LORA.get_port(),))
 			THREAD_MC_LORA.start()
 		if PORT_CRAFT_LORA is not None:
 			THREAD_CRAFT_LORA = threading.Thread(target=receive_craft_lora, args=(PORT_CRAFT_LORA.get_port()))
@@ -56,9 +61,11 @@ def start_threading():
 		if PORT_CRAFT_MEGA is not None:
 			THREAD_MEGA_LORA = threading.Thread(target=receive_craft_mega, args=(PORT_CRAFT_MEGA.get_port()))
 			THREAD_MEGA_LORA.start()
-	except:
+	except Exception as e:
 		print("Unable to bind method to thread.")
+		print("Exception: " + str(e))
 	
+
 def validate_ports(ports):
 	"""
 	Pulls the connected microcontrollers for their name.
@@ -66,15 +73,20 @@ def validate_ports(ports):
 	@param ports - Detected serial port connections.
 	"""
 
+	global PORT_MC_LORA
+	global PORT_CRAFT_MEGA
+	global PORT_CRAFT_LORA
+
 	# COM number.
 	com_number = ""
 	# Micro-controller descriptor.
 	port_description = ""
-	# Temporary serial port variable.
-	ser = None
 
 	# Cycles over all detected ports.
 	for port in ports:
+
+		# Temporary serial port variable.
+		ser = None
 
 		passed = True
 		# Parses out port info.
@@ -104,32 +116,38 @@ def validate_ports(ports):
 		try:
 			if passed:
 				send(ser, "PING")
+
+				time.sleep(.5)
 				response = generic_receive(ser)
 
 				if response in "CRAFT_LORA":
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
 				elif response in "CRAFT_MEGA":
-					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
+					PORT_CRAFT_MEGA = serial_object(ser, response, port_description)
 				elif response in "MC_LORA":
-					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
+					PORT_MC_LORA = serial_object(ser, response, port_description)
+				else:
+					print("Unknown Micro-controller: " + str(response))
 		except Exception as e:
 			print("Exception: " + str(e))
-			print("Unknown microcontroller. Response: " + str(response))
+			print("Unknown Response: " + str(response))
 
-	# Prints all info related to port (used for debug in case of failure).
-	if passed or not passed:
-		print("port:" + str(port))
-		print("com_number: " + com_number)
-		print("port_description: " + port_description)
-		print("ser object: " + str(ser))
-		print("ser.port: " + ser.port)
-		print("ser.baudrate: " + str(ser.baudrate))
-		print("port status: " + str(ser.is_open))
+		# Prints all info related to port (used for debug in case of failure).
+		if not passed:
+			print("\nport:" + str(port))
+			print("com_number: " + com_number)
+			print("port_description: " + port_description)
+			print("ser object: " + str(ser))
+			print("ser.port: " + ser.port)
+			print("ser.baudrate: " + str(ser.baudrate))
+			print("port status: " + str(ser.is_open) + "\n")
+
 
 def generic_receive(ser):
 	"""
 	Responsible for reading in data on the given serial port.
 	NON BLOCKING CALL.
+
 	@param ser - Serial port instance.
 	"""
 
@@ -138,6 +156,8 @@ def generic_receive(ser):
 		if(ser.in_waiting != 0):
 			# Reads in and decodes incoming serial data.
 			message = ser.readline().decode()
+
+			# print("\nReceived: " + message)
 			# Return data.
 			return str(message)
 	except:
@@ -152,6 +172,8 @@ def receive_mc_lora(ser):
 	@param ser - Serial port instance.
 	"""
 
+	print("HERE")
+
 	while(1):
 		try:
 			# Checks for a incoming data.
@@ -161,7 +183,7 @@ def receive_mc_lora(ser):
 				# Return data.
 				return str(message)
 		except:
-			pass
+			time.sleep(1)
 
 
 def receive_craft_lora(ser):
@@ -218,6 +240,7 @@ def send(ser, message):
 	if ser.is_open == False:
 		ser.open()
 
+	# print("\nSending: " + message)
 	# Encode message to bits & send via serial.
 	ser.write(message.encode())
 
