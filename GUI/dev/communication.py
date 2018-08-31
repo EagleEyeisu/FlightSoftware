@@ -82,7 +82,8 @@ def validate_ports(ports):
 			com_number, port_description = str(port).split("-")
 			com_number = com_number.strip()
 			port_description = port_description.strip()
-		except:
+		except Exception as e:
+			print("Exception: " + str(e))
 			print("Unable to parse: " + str(port))
 			passed = False
 
@@ -94,9 +95,9 @@ def validate_ports(ports):
 				ser.baudrate = 115200
 				ser.timeout = 1
 				ser.open()
-		except:
+		except Exception as e:
+			print("Exception: " + str(e))
 			print("Invalid connection to: " + str(port))
-			print("Port: " + str(ser))
 			passed = False
 
 		# Pings microcontroller for name.
@@ -105,23 +106,30 @@ def validate_ports(ports):
 				send(ser, "PING")
 				response = generic_receive(ser)
 
-				# System blocking pause for 1 second.
-				time.sleep(1)
-
 				if response in "CRAFT_LORA":
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
 				elif response in "CRAFT_MEGA":
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
 				elif response in "MC_LORA":
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
-		except:
+		except Exception as e:
+			print("Exception: " + str(e))
 			print("Unknown microcontroller. Response: " + str(response))
 
+	# Prints all info related to port (used for debug in case of failure).
+	if passed:
+		print("port:" + str(port))
+		print("com_number: " + com_number)
+		print("port_description: " + port_description)
+		print("ser object: " + str(ser))
+		print("ser.port: " + ser.port)
+		print("ser.baudrate: " + str(ser.baudrate))
+		print("port status: " + str(ser.is_open))
 
 def generic_receive(ser):
 	"""
 	Responsible for reading in data on the given serial port.
-	NON BLOCKING CALL. USE THIS RECE
+	NON BLOCKING CALL.
 	@param ser - Serial port instance.
 	"""
 
