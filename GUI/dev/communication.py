@@ -8,8 +8,10 @@
 #############################################################
 import serial.tools.list_ports
 import serial
-from multiprocessing import Process
+from multiprocessing import *
 import time
+from tkinter import *
+from tkinter.ttk import *
 
 # Serial Ports & attributes.
 INVALID_PORTS = []
@@ -18,8 +20,9 @@ PORT_MC_LORA = None
 PORT_CRAFT_LORA = None
 PORT_CRAFT_MEGA = None
 CONFIGURATION = None
+MC_SHARED_LIST = None
 
-THREAD_MC_LORA = None
+PROCESS_MC_LORA = None
 THREAD_CRAFT_LORA = None
 THREAD_MEGA_LORA = None
 
@@ -44,7 +47,7 @@ def setup_comms():
 
 
 def start_threading():
-	""" Binds recieve methods to different threads to allow for simultaneous reads. """
+	""" Binds recieve methods to different processes to allow for simultaneous reads. """
 
 	global PORT_MC_LORA
 	global THREAD_MC_LORA
@@ -52,17 +55,23 @@ def start_threading():
 	try:
 		# Checks for active port.
 		if PORT_MC_LORA is not None:
-			print("starting receive thread.")
-			THREAD_MC_LORA = Process(target=receive_mc_lora, args=(PORT_MC_LORA.get_port(),))
-			THREAD_MC_LORA.start()
+			with Manager() as manager:
+				junk, port_num = int(PORT_MC_LORA.get_port().port.split(" "))
+				print("Parsed com #: " + str(port_num))
+				MC_SHARED_LIST = manager.list()
+				MC_SHARED_LIST.append("BLANK")
+				MC_SHARED_LIST.append(port_num)
+				PROCESS_MC_LORA = Process(target=receive_mc_lora, args=(MC_SHARED_LIST, ))
+				PROCESS_MC_LORA.start()
+				time.sleep(0.5)
 		if PORT_CRAFT_LORA is not None:
-			THREAD_CRAFT_LORA = threading.Thread(target=receive_craft_lora, args=(PORT_CRAFT_LORA.get_port()))
+			THREAD_CRAFT_LORA = threading.Timer(5.0, receive_craft_lora)
 			THREAD_CRAFT_LORA.start()
 		if PORT_CRAFT_MEGA is not None:
-			THREAD_MEGA_LORA = threading.Thread(target=receive_craft_mega, args=(PORT_CRAFT_MEGA.get_port()))
+			THREAD_MEGA_LORA = threading.Timer(5.0, receive_craft_mega)
 			THREAD_MEGA_LORA.start()
 	except Exception as e:
-		print("Unable to bind method to thread.")
+		print("Unable to bind method to individual process.")
 		print("Exception: " + str(e))
 	
 
@@ -157,14 +166,14 @@ def generic_receive(ser):
 			# Reads in and decodes incoming serial data.
 			message = ser.readline().decode()
 
-			# print("\nReceived: " + message)
+			print("\nReceived: " + message)
 			# Return data.
-			return str(message)
+			return str(message).strip()
 	except:
 		return "No response."
 
 
-def receive_mc_lora(ser):
+def receive_mc_lora(shared_list, com_number):
 	"""
 	Responsible for reading in data on the given serial port.
 	THREAD LOCKED METHOD. DO NOT CALL.
@@ -172,7 +181,14 @@ def receive_mc_lora(ser):
 	@param ser - Serial port instance.
 	"""
 
-	print("HERE")
+	ser = serial.Serial()
+	ser.port = "COM " + com_number
+	ser.baudrate = 115200
+	ser.timeout = 1
+
+	if ser.is_open:
+		ser.close()
+	ser.open()
 
 	while(1):
 		try:
@@ -180,10 +196,10 @@ def receive_mc_lora(ser):
 			if(ser.in_waiting != 0):
 				# Reads in and decodes incoming serial data.
 				message = ser.readline().decode()
-				# Return data.
-				return str(message)
+				# Sets data.
+				shared_list[0] = str(message)
 		except:
-			time.sleep(1)
+			time.sleep(0.5)
 
 
 def receive_craft_lora(ser):
@@ -251,7 +267,8 @@ class serial_object():
 		self.ser = ser
 		self.port_name = name
 		self.context = description
-		self.input = ""
+		self.input = StringVar()
+		self.input.set("")
 
 	def get_context(self):
 		"""
