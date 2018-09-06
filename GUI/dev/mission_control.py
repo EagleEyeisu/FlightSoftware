@@ -519,6 +519,8 @@ class MC_Tab():
 			new_packet += ","
 			new_packet += "$"
 
+		return new_packet
+
 	def convert_authority(self):
 		"""
 		Converts to correct integer value.

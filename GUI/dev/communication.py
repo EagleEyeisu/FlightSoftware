@@ -50,7 +50,7 @@ def start_threading():
 	""" Binds recieve methods to different processes to allow for simultaneous reads. """
 
 	global PORT_MC_LORA
-	global THREAD_MC_LORA
+	global PROCESS_MC_LORA
 
 	try:
 		# Checks for active port.
@@ -59,7 +59,6 @@ def start_threading():
 				junk, port_num = int(PORT_MC_LORA.get_port().port.split(" "))
 				print("Parsed com #: " + str(port_num))
 				MC_SHARED_LIST = manager.list()
-				MC_SHARED_LIST.append("BLANK")
 				MC_SHARED_LIST.append(port_num)
 				PROCESS_MC_LORA = Process(target=receive_mc_lora, args=(MC_SHARED_LIST, ))
 				PROCESS_MC_LORA.start()
@@ -104,9 +103,9 @@ def validate_ports(ports):
 			com_number = com_number.strip()
 			port_description = port_description.strip()
 		except Exception as e:
+			passed = False
 			print("Exception: " + str(e))
 			print("Unable to parse: " + str(port))
-			passed = False
 
 		# Attempts to recreate serial connection to ensure validity.
 		try: 
@@ -117,16 +116,16 @@ def validate_ports(ports):
 				ser.timeout = 1
 				ser.open()
 		except Exception as e:
+			passed = False
 			print("Exception: " + str(e))
 			print("Invalid connection to: " + str(port))
-			passed = False
 
 		# Pings microcontroller for name.
 		try:
 			if passed:
 				send(ser, "PING")
 
-				time.sleep(.5)
+				time.sleep(1.5)
 				response = generic_receive(ser)
 
 				if response in "CRAFT_LORA":
@@ -138,6 +137,7 @@ def validate_ports(ports):
 				else:
 					print("Unknown Micro-controller: " + str(response))
 		except Exception as e:
+			passed = False
 			print("Exception: " + str(e))
 			print("Unknown Response: " + str(response))
 
@@ -168,12 +168,14 @@ def generic_receive(ser):
 
 			print("\nReceived: " + message)
 			# Return data.
-			return str(message).strip()
+			return str(message)
+		else:
+			"No response."
 	except:
 		return "No response."
 
 
-def receive_mc_lora(shared_list, com_number):
+def receive_mc_lora(shared_list):
 	"""
 	Responsible for reading in data on the given serial port.
 	THREAD LOCKED METHOD. DO NOT CALL.
@@ -182,7 +184,7 @@ def receive_mc_lora(shared_list, com_number):
 	"""
 
 	ser = serial.Serial()
-	ser.port = "COM " + com_number
+	ser.port = "COM " + str(shared_list[0])
 	ser.baudrate = 115200
 	ser.timeout = 1
 
@@ -253,8 +255,11 @@ def send(ser, message):
 	# Ensure string datatype.
 	message = str(message)
 
+	print(message)
+
 	if ser.is_open == False:
 		ser.open()
+		print("Opened port")
 
 	# print("\nSending: " + message)
 	# Encode message to bits & send via serial.
