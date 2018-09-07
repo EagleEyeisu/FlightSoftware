@@ -316,8 +316,8 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		thread_manual_input = threading.Thread(target=manual_mode_monitor, args=())
-		thread_manual_input.start()
+		#thread_manual_input = threading.Thread(target=manual_mode_monitor, args=())
+		#thread_manual_input.start()
 
 	def manual_mode_monitor(self):
 		"""
