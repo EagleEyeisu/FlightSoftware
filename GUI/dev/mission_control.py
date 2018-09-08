@@ -11,7 +11,7 @@ from tkinter import *
 from tkinter.ttk import *
 from communication import *
 from inputs import get_gamepad
-from globals import *
+import globals as g
 
 
 class MC_Tab():
@@ -459,17 +459,20 @@ class MC_Tab():
 		@param self         - Instance of the class.
 		"""
 
-		# Checks for non-null connection to mission control's lora microcontroller.
-		if PORT_MC_LORA is not None:
+		try:
+			# Checks for non-null connection to mission control's lora microcontroller.
+			if g.PORT_MC_LORA is not None:
 
-			# Converts substring into each's corresponding integer value.
-			converted_transmission = self.convert_serial()
-			# If non-null, send transmission via serial port.
-			send(PORT_MC_LORA.get_port(), converted_transmission)
+				# Converts substring into each's corresponding integer value.
+				converted_transmission = self.convert_serial()
+
+				print("Commands: " + str(converted_transmission))
+				# If non-null, send transmission via serial port.
+				send(g.PORT_MC_LORA.get_port(), converted_transmission)
 		# Null connection.
-		else:
+		except Exception as e:
 			print("Invalid connection to mission control's lora.")
-
+			print("Exception: " + str(e))
 
 	def convert_serial(self):
 		"""
@@ -481,41 +484,50 @@ class MC_Tab():
 
 		new_packet = ""
 
-		# Checks for normal serial operations.
-		if self.authority_mode is "AUTO":
-			new_packet += "$"
-			new_packet += ","
-			new_packet += convert_authority()
-			new_packet += ","
-			new_packet += convert_op_mode()
-			new_packet += ","
-			new_packet += convert_rc_mode()
-			new_packet += ","
-			new_packet += convert_anchor()
-			new_packet += ","
-			new_packet += self.target_throttle
-			new_packet += ","
-			new_packet += self.target_altitude
-			new_packet += ","
-			new_packet += self.target_latitude
-			new_packet += ","
-			new_packet += self.target_longitude
-			new_packet += ","
-			new_packet += "$"
+		try:
+			# Checks for normal serial operations.
+			if self.authority_mode.get() == "AUTO":
+				new_packet += "$"
+				new_packet += ","
+				new_packet += str(self.convert_authority())
+				new_packet += ","
+				new_packet += str(self.convert_op_mode())
+				new_packet += ","
+				new_packet += str(self.convert_rc_mode())
+				new_packet += ","
+				new_packet += str(self.convert_anchor())
+				new_packet += ","
+				new_packet += str(self.target_throttle.get())
+				new_packet += ","
+				new_packet += str(self.target_altitude.get())
+				new_packet += ","
+				new_packet += str(self.target_latitude.get())
+				new_packet += ","
+				new_packet += str(self.target_longitude.get())
+				new_packet += ","
+				new_packet += "$"
+				return new_packet
 
-		# Checks for roll call serial operations.
-		elif self.authority_mode is "MANUAL":
-			new_packet += "$"
-			new_packet += ","
-			new_packet += convert_authority()
-			new_packet += ","
-			new_packet += convert_direction()
-			new_packet += ","
-			new_packet += convert_anchor()
-			new_packet += ","
-			new_packet += "$"
+			# Checks for roll call serial operations.
+			elif self.authority_mode.get() == "MANUAL":
+				print("in manual")
+				new_packet += "$"
+				new_packet += ","
+				new_packet += str(self.convert_authority())
+				new_packet += ","
+				new_packet += "direction"  # str(self.convert_direction())
+				new_packet += ","
+				new_packet += str(self.convert_anchor())
+				new_packet += ","
+				new_packet += "$"
+				return new_packet
 
-		return new_packet
+		except Exception as e:
+			print("Unable to convert commands.")
+			print("Exception: " + str(e))
+
+		
+		
 
 	def convert_authority(self):
 		"""
@@ -524,9 +536,9 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		if self.authority_mode is "AUTO":
+		if self.authority_mode.get() == "AUTO":
 			return 1
-		elif self.authority_mode is "MANUAL":
+		elif self.authority_mode.get() == "MANUAL":
 			return 0
 
 	def convert_op_mode(self):
@@ -536,13 +548,13 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		if self.operational_mode is "NOT STARTED":
+		if self.operational_mode.get() == "NOT STARTED":
 			return 0
-		elif self.operational_mode is "ROLLCALL":
+		elif self.operational_mode.get() == "ROLLCALL":
 			return 1
-		elif self.operational_mode is "STANDBY":
+		elif self.operational_mode.get() == "STANDBY":
 			return 2
-		elif self.operational_mode is "NORMAL":
+		elif self.operational_mode.get() == "NORMAL":
 			return 3
 
 	def convert_rc_mode(self):
@@ -552,11 +564,11 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		if self.operational_mode is "NOT STARTED":
+		if self.roll_call_status.get() == "NOT STARTED":
 			return 0
-		elif self.operational_mode is "RUNNING":
+		elif self.roll_call_status.get() == "RUNNING":
 			return 1
-		elif self.operational_mode is "FINISHED":
+		elif self.roll_call_status.get() == "FINISHED":
 			return 2
 
 	def convert_anchor(self):
@@ -566,9 +578,9 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		if self.operational_mode is "DROPPED":
+		if self.craft_anchor.get() == "DROPPED":
 			return 0
-		elif self.operational_mode is "HOISTED":
+		elif self.craft_anchor.get() == "HOISTED":
 			return 1
 
 	def create_label_east(self, r, c, frame, title):

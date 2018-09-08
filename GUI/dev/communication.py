@@ -9,7 +9,7 @@
 import serial.tools.list_ports
 import serial
 import time
-from globals import *
+import globals as g
 from tkinter import *
 from tkinter.ttk import *
 
@@ -21,11 +21,15 @@ def setup_comms():
 	@param desired_connection - Developer specificed connection.
 	"""
 
+	print("\nStarting comms setup.----------------------------------")
+
 	ports = get_serial_ports()
 
 	validate_ports(ports)
 
 	config_scheduler()
+
+	print("Comms setup complete.----------------------------------\n")
 	
 
 def get_serial_ports():
@@ -40,6 +44,8 @@ def validate_ports(ports):
 
 	@param ports - Detected serial port connections.
 	"""
+
+	print("\nPinging active ports.")
 
 	# COM number.
 	com_number = ""
@@ -79,6 +85,7 @@ def validate_ports(ports):
 		# Pings microcontroller for name.
 		try:
 			if passed:
+				print("Pinging: " + port_description)
 				send(ser, "PING")
 
 				time.sleep(0.1)
@@ -89,8 +96,9 @@ def validate_ports(ports):
 				elif response in "CRAFT_MEGA":
 					PORT_CRAFT_MEGA = serial_object(ser, response, port_description)
 				elif response in "MC_LORA":
-					PORT_MC_LORA = serial_object(ser, response, port_description)
+					g.PORT_MC_LORA = serial_object(ser, response, port_description)
 				else:
+					passd = False
 					print("Unknown Micro-controller: " + str(response))
 		except Exception as e:
 			passed = False
@@ -106,6 +114,8 @@ def validate_ports(ports):
 			print("ser.port: " + ser.port)
 			print("ser.baudrate: " + str(ser.baudrate))
 			print("port status: " + str(ser.is_open) + "\n")
+		else:
+			print("Successful setup of: " + str(ser.port))
 
 
 def config_scheduler():
@@ -116,25 +126,26 @@ def config_scheduler():
 
 	try:
 		# Starts scheduler.
-		sched.start()
+		g.sched.start()
 		# Checks which ports are active.
-		if PORT_MC_LORA is not None:
-			sched.add_job(mc_lora_receive,
+		if g.PORT_MC_LORA is not None:
+			print("Scheduling task for LoRa.\n")
+			g.sched.add_job(mc_lora_receive,
 						 'interval', 
 						 id='mc_read', 
 						 seconds=1)
-		if PORT_CRAFT_LORA is not None:
-			sched.add_job(craft_lora_receive,
+		if g.PORT_CRAFT_LORA is not None:
+			g.sched.add_job(craft_lora_receive,
 						 'interval', 
 						 id='craft_lora_read', 
 						 seconds=1)
-		if PORT_CRAFT_MEGA is not None:
-			sched.add_job(craft_mega_receive,
+		if g.PORT_CRAFT_MEGA is not None:
+			g.sched.add_job(craft_mega_receive,
 						 'interval', 
 						 id='craft_mega_read', 
 						 seconds=1)
 	except Exception as e:
-		print("Unable to bind method to individual process.")
+		print("Unable to start setup scheduler.")
 		print("Exception: " + str(e))
 
 
@@ -152,7 +163,7 @@ def generic_receive(ser):
 			# Reads in and decodes incoming serial data.
 			message = ser.readline().decode()
 
-			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
+			print("Received from " + str(ser.port) + ". Input: " + message)
 			
 			# Return data.
 			return str(message)
@@ -170,7 +181,7 @@ def mc_lora_receive():
 	@param ser - Serial port instance.
 	"""
 
-	ser = PORT_MC_LORA.get_port()
+	ser = g.PORT_MC_LORA.get_port()
 
 	try:
 		# Checks for a incoming data.
@@ -181,10 +192,10 @@ def mc_lora_receive():
 			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
 			
 			# Return data.
-			PORT_MC_LORA.set_input(str(message))
+			g.PORT_MC_LORA.set_input(str(message))
 	except Exception as e:
 		print("Exception: " + str(e))
-		PORT_MC_LORA.set_input("Serial Error")
+		g.PORT_MC_LORA.set_input("Serial Error")
 
 
 def send(ser, message):
@@ -198,7 +209,7 @@ def send(ser, message):
 	# Ensure string datatype.
 	message = str(message)
 
-	print("\nSent to " + str(ser.port) + ". Message: " + message)
+	print("Sent to " + str(ser.port) + ". Message: " + message)
 
 	if ser.is_open == False:
 		ser.open()
