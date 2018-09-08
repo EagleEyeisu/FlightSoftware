@@ -11,11 +11,7 @@ from tkinter import *
 from tkinter.ttk import *
 from communication import *
 from inputs import get_gamepad
-
-# Node ID's.
-NODE_MISSION_CONTROL_ID = 0
-NODE_EAGLE_EYE_ID = 1
-NODE_RELAY_ID = 2
+from globals import *
 
 
 class MC_Tab():

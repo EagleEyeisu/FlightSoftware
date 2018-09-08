@@ -9,23 +9,9 @@
 import serial.tools.list_ports
 import serial
 import time
+from globals import *
 from tkinter import *
 from tkinter.ttk import *
-from apscheduler.schedulers.background import BackgroundScheduler
-
-
-# Serial Ports & attributes.
-INVALID_PORTS = []
-VALID_PORTS = []
-CONFIGURATION = None
-
-# Serial port objects. Object class defined at bottom of file.
-PORT_MC_LORA = None
-PORT_CRAFT_LORA = None
-PORT_CRAFT_MEGA = None
-
-# Task scheduler. 
-sched = BackgroundScheduler()
 
 
 def setup_comms():
@@ -54,10 +40,6 @@ def validate_ports(ports):
 
 	@param ports - Detected serial port connections.
 	"""
-
-	global PORT_MC_LORA
-	global PORT_CRAFT_MEGA
-	global PORT_CRAFT_LORA
 
 	# COM number.
 	com_number = ""
@@ -132,11 +114,6 @@ def config_scheduler():
 	serial input every x seconds. 
 	"""
 
-	global PORT_MC_LORA
-	global PORT_CRAFT_LORA
-	global PORT_CRAFT_MEGA
-	global sched
-
 	try:
 		# Starts scheduler.
 		sched.start()
@@ -192,7 +169,6 @@ def mc_lora_receive():
 
 	@param ser - Serial port instance.
 	"""
-	global PORT_MC_LORA
 
 	ser = PORT_MC_LORA.get_port()
 
