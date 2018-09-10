@@ -17,6 +17,12 @@ class DATA
     // Responsible for all serial communication to python GUI.
     void serial_comms();
 
+    // Sends appropriate infomation back to the GUI via serial. 
+    void update_gui();
+
+    // Reads in input from the GUI via serial. 
+    void retrieve_input();
+
     // Parses passed in message by using commas as the identifiers.
     float Parse(char message[], int objective);
 

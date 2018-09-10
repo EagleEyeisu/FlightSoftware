@@ -95,22 +95,39 @@ float DATA::Parse(char message[], int objective)
 
 
 /**
- * Reads in user input to set a new GPS (lat or lon) and motor throttle values.
+ * Responsible for all serial communication between the GUI and mission_control microcontroller.
  */
 void DATA::serial_comms()
+{	
+	// Reads in data from serial port. 
+	Data.retrieve_input();
+
+	// General delay to ensure the serial port is not trying to both read and write.
+	delay(200);
+
+	// Send useful information back to the python GUI. 
+	Data.update_gui();
+
+}
+
+
+/**
+ * Checks for an active serial port and reads/parses input if data is available.
+ */
+float DATA::retrieve_input()
 {
-	// Checks for a busy serial port.
+    // Checks for a busy serial port.
 	if(Serial.available())
 	{
-		String temp = "";
+		String temp_input = "";
 		while(Serial.available())
 		{
 			char t = Serial.read();
-			temp += t;
+			temp_input += t;
 		}
 
-		char toParse[temp.length()];
-		temp.toCharArray(toParse,temp.length());
+		char toParse[temp_input.length()];
+		temp_input.toCharArray(toParse,temp_input.length());
 
 		// Checks for correct data format.
 		if(toParse[0]=='$')
@@ -123,10 +140,33 @@ void DATA::serial_comms()
 				Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
 				Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
 			}
-			else if(toParse[2]=='1'){
-
+			// '1' at index 3 signifies automatic control. 
+			else if(toParse[2]=='1')
+			{
+				// To be implemented at a later date.
+			}
+			else if(toParse[2]=='R'){
+				// Roll Call stuff to be also be implemented later. (Prior to tethered flight.)
 			}
 		}
+	}
+}
+
+
+/**
+ * Sends mission_control & craft inforamtion back to the GUI.
+ */
+void DATA::update_gui()
+{
+	if(!Serial.available())
+	{
+		String temp_packet = "";
+
+		if(Radio.)
+		{
+
+		}
+
 	}
 }
 
