@@ -113,13 +113,58 @@ void DATA::serial_comms()
 		temp.toCharArray(toParse,temp.length());
 
 		// Checks for correct data format.
-		if(temp[0]=='$')
+		if(toParse[0]=='$')
 		{
 			// '0' at index 3 signifies manual control. 
-			if(temp[2]=='0')
+			if(toParse[2]=='0')
 			{
-			
+				Radio.Network.authority_mode = Data.get_serial_authority_mode(toParse);
+				Radio.Network.target_direction = Data.get_serial_direction(toParse);
+				Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
+				Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
+			}
+			else if(toParse[2]=='1'){
+
 			}
 		}
 	}
 }
+
+
+/**
+ * Parses serial input and returns the authority mode.
+ */
+float DATA::get_serial_authority_mode(char buf[])
+{
+    return (Parse(buf,1));
+}
+
+
+/**
+ * Parses serial input and returns the user's manual direction.
+ */
+float DATA::get_serial_direction(char buf[])
+{
+    return (Parse(buf,2));
+}
+
+
+/**
+ * Parses serial input and returns the anchor status.
+ */
+float DATA::get_serial_craft_anchor(char buf[])
+{
+    return (Parse(buf,3));
+}
+
+
+/**
+ * Parses serial input and returns the target throttle.
+ */
+float DATA::get_serial_target_throttle(char buf[])
+{
+    return (Parse(buf,4));
+}
+
+
+

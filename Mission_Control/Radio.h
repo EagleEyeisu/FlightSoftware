@@ -21,7 +21,7 @@ class RADIO
     float getStartStop(char buf[]);
 
     // Returns the transmission's CS variable.
-    float getTargetThrottle(char buf[]);
+    float getRadioTargetThrottle(char buf[]);
       
     // Returns the transmission's craft ID.
     float getCraftID(char buf[]);
@@ -127,8 +127,19 @@ class RADIO
     // the other nodes in the network. 
     struct Network_Data {
     	
+
+        /**
+         * These variables are modified by the network admin operating the mission_control node. 
+         */
+
+        // Automatic or Manual control of craft. 
+        // 0 - Manual
+        // 1 - Authority
+        float authority_mode = 0.0;
+
+
     	/**
-    	 * The first four varaibles are accessed and overseen by the Eagle Eye craft.
+    	 * This set of varaibles are accessed and overseen by the Eagle Eye craft.
     	 */
     	
     	// Each of these is defined in the Data.h struct. Refer to its documentation as needed.
@@ -139,7 +150,7 @@ class RADIO
     	float craft_event = 0.0;
     	
     	/**
-    	 * The last 3 variables are overseen by Mission Control.
+    	 * These variables are overseen by Mission Control.
     	 */
     	
         // Mission Control's ms Time stamp.
@@ -161,6 +172,16 @@ class RADIO
         // at a constant 40% if we set it to '40.0', but it will be able to iterate up and down from
         // that percentage of thrust. 
         float target_throttle = 0.0;
+
+        // Movement of craft dicated by the driver while in manual mode. Independent of throttle.
+        // 0 - Stopped
+        // 1 - Forward
+        // 2 - Right
+        // 3 - Backward
+        // 4 - Left
+        // 5 - Down
+        // 6 - Upward
+        float target_direction = 0.0
     	
     	/**
     	 * This varaible is updated by each craft right before the array is broadcasted.

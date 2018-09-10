@@ -26,7 +26,7 @@ void setup(){
     // Creates a serial communication line between the arduino and the serial port 
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
-
+    
     // Initializes the Radio.
     Radio.initialize();
 }
@@ -45,5 +45,5 @@ void loop(){
     // Also reads in incoming messages.
     Radio.manager();
 
-    delay(100);
+    delay(1000);
 }

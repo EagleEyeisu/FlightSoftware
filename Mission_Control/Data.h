@@ -20,11 +20,17 @@ class DATA
     // Parses passed in message by using commas as the identifiers.
     float Parse(char message[], int objective);
 
-    // Automatic or Manual control of craft. 
-    // 0 - Manual
-    // 1 - Authority
-    int authority_mode = 0;
+    // Parses serial input and returns the authority mode.
+    float get_serial_authority_mode(char buf[]);
 
+    // Parses serial input and returns the user's manual direction.
+    float get_serial_direction(char buf[]);
+
+    // Parses serial input and returns the target throttle.
+    float get_serial_target_throttle(char buf[]);
+
+    // Parses serial input and returns the anchor status.
+    float get_serial_craft_anchor(char buf[])
 };
 
 #endif

@@ -148,7 +148,7 @@ void RADIO::initialize()
 	// Valid connection, program proceeds as planned.
 	else
     {
-		// Serial.println("LoRa radio init OK!");
+		Serial.println("LoRa radio init OK!");
 	}
 	
 	// Checks the radio objects set frequency. 
@@ -161,7 +161,7 @@ void RADIO::initialize()
 	// Valid connection, program proceeds as planned.
 	else
     {
-		// Serial.print("Set Freq to: "); Serial.println(RF95_FREQ);
+		Serial.print("Set Freq to: "); Serial.println(RF95_FREQ,3);
 	}
 	// Sets the max power to be used to in the amplification of the signal being sent out.
 	rf95.setTxPower(23, false);
@@ -239,9 +239,11 @@ void RADIO::nodeCheckIn()
  */
 void RADIO::radioReceive()
 {
+    //Serial.println("Checking for packet...");
     // Checks if radio message has been received.
     if (rf95.available())
     {
+        // Serial.println("Incoming packet...");
         // Creates a temporary varaible to read in the incoming transmission. 
         uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
         // Gets the length of the above temporary varaible.
@@ -249,8 +251,11 @@ void RADIO::radioReceive()
         // Reads in the avaiable radio transmission.
         if(rf95.recv(buf, &len))
         {
-            //Used to display the received data in the GUI.
+            // Used to display the received data in the GUI.
             radio_input = buf;
+            // Serial.print("Received: ");
+            // Serial.println(radio_input);
+            blink_led();
             // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
             // unsigned char array for parsing. 
             String str = (char*)buf;
