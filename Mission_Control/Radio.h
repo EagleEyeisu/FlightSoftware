@@ -100,10 +100,6 @@ class RADIO
     // Holds the ID of the craft that just broadcasted. THIS IS ANOTHER NODE, NOT MISSION CONTROL. 
     float received_id = 0.0;
 
-    // State of RollCall.
-    enum rollCallStatus {NOTSTARTED, RUNNING, COMPLETE};
-    enum rollCallStatus rc_state = NOTSTARTED;
-
     // List of nodes currently logged into network. 
     // MC - 1
     // EE - 2

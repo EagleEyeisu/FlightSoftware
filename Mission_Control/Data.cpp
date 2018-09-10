@@ -99,56 +99,45 @@ float DATA::Parse(char message[], int objective)
  */
 void DATA::serial_comms()
 {	
-	// Reads in data from serial port.
-	Data.retrieve_input();
-
 	// General delay to ensure the serial port is not trying to both read and write.
-	delay(200);
+	delay(50);
 
 	// Send useful information back to the python GUI.
 	Data.update_gui();
-
 }
 
 
 /**
- * Checks for an active serial port and reads/parses input if data is available.
+ * Interrupt set to the serial port going high. 
  */
-float DATA::retrieve_input()
+void serialEvent()
 {
-    // Checks for a busy serial port.
-	if(Serial.available())
+
+	String temp_input = "";
+	while(Serial.available())
 	{
-		String temp_input = "";
-		while(Serial.available())
+		char t = Serial.read();
+		temp_input += t;
+	}
+
+	char toParse[temp_input.length()];
+	temp_input.toCharArray(toParse,temp_input.length());
+
+	// Checks for correct data format.
+	if(toParse[0]=='$')
+	{
+		// '0' at index 3 signifies manual control. 
+		if(toParse[2]=='0')
 		{
-			char t = Serial.read();
-			temp_input += t;
+			Radio.Network.authority_mode = Data.get_serial_authority_mode(toParse);
+			Radio.Network.target_direction = Data.get_serial_direction(toParse);
+			Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
+			Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
 		}
-
-		char toParse[temp_input.length()];
-		temp_input.toCharArray(toParse,temp_input.length());
-
-		// Checks for correct data format.
-		if(toParse[0]=='$')
+		// '1' at index 3 signifies automatic control. 
+		else if(toParse[2]=='1')
 		{
-			// '0' at index 3 signifies manual control. 
-			if(toParse[2]=='0')
-			{
-				Radio.Network.authority_mode = Data.get_serial_authority_mode(toParse);
-				Radio.Network.target_direction = Data.get_serial_direction(toParse);
-				Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
-				Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
-			}
-			// '1' at index 3 signifies automatic control. 
-			else if(toParse[2]=='1')
-			{
-				// To be implemented at a later date.
-			}
-			else if(toParse[2]=='R')
-			{
-				// Roll Call stuff to be also be implemented later. (Prior to tethered flight.)
-			}
+			// To be implemented at a later date.
 		}
 	}
 }
@@ -162,10 +151,12 @@ void DATA::update_gui()
 	if(!Serial.available())
 	{
 		String temp_packet = "";
+		confirmed_packet = false;
 
 		// Roll Call config.
 		if(Radio.operation_mode == "ROLLCALL")
-		{
+		{	
+			confirmed_packet = true;
 			temp_packet += "$";
 			temp_packet += ",";
 			temp_packet += Radio.operation_mode;
@@ -178,8 +169,10 @@ void DATA::update_gui()
 			temp_packet += ",";
 			temp_packet += "$";
 		}
-		else if(Radio.operation_mode == "NORMAL" && Radio.operation_mode == "STANDBY")
-		{
+		// Normal GUI <-> mission_control Config.
+		else if((Radio.operation_mode == "NORMAL") || (Radio.operation_mode == "STANDBY") || (Radio.operation_mode == "NONE"))
+		{	
+			confirmed_packet = true;
 			temp_packet += "$";
 			temp_packet += ",";
 			temp_packet += "N";
@@ -193,16 +186,22 @@ void DATA::update_gui()
 			temp_packet += Radio.Network.craft_longitude;
 			temp_packet += ",";
 			temp_packet += Radio.Network.craft_event;
-			temp_packet += ",";
+			temp_packet += "/";
 			temp_packet += Radio.radio_input;
-			temp_packet += ",";
+			temp_packet += "/";
 			temp_packet += Radio.radio_output;
-			temp_packet += ",";
+			temp_packet += "/";
 			temp_packet += "$";
 		}
-		// Converts from String to char array. 
-		char serial_packet[temp_packet.length()];
-		temp.toCharArray(serial_packet, temp_packet.length());
+
+		if(confirmed_packet){
+			// Converts from String to char array. 
+			char serial_packet[temp_packet.length()];
+			temp.toCharArray(serial_packet, temp_packet.length());
+			// Sends packet via serial to python GUI.
+			Serial.write(serial_packet);
+		}
+		
 	}
 }
 

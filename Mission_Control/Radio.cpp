@@ -176,23 +176,23 @@ void RADIO::manager()
 	// Reads in radio transmission if available.
 	Radio.radioReceive();
 
-    // Checks to see if its time for Roll Call. Set via GUI. 
-    if(rc_state == RUNNING)
+    // Checks to see if its time to run Roll Call. Set via GUI. 
+    if(operation_mode == RUNNING)
     {
         // Broadcasts startup packet.
         Radio.rollCall();
     }
 	// After Roll Call is complete, Mission Control will broadcast the start signal.
-	else if((rc_state == COMPLETE) && (operation_mode == STANDBY))
+	else if((operation_mode == STANDBY))
     {
-        // Updates craft_id to the network start signal. 
+        // Updates craft_id to the network start signal.
         Radio.Network.craft_id = 555.0;
         // Updates radio state.
-        operation_mode = NORMAL;	
+        operation_mode = NORMAL;
 	}
 
 	// Each of the 2 crafts have 5 seconds to broadcast. That means each craft will broadcast every 10 seconds.
-	else if((millis() - start >= 10000) && (rc_state == COMPLETE) && (operation_mode == NORMAL))
+	else if((millis() - start >= 10000) && (operation_mode == NORMAL))
     {
 		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
 		start = millis();

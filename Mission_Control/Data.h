@@ -21,7 +21,7 @@ class DATA
     void update_gui();
 
     // Reads in input from the GUI via serial. 
-    void retrieve_input();
+    void serialEvent();
 
     // Parses passed in message by using commas as the identifiers.
     float Parse(char message[], int objective);
