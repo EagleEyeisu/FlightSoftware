@@ -99,13 +99,13 @@ float DATA::Parse(char message[], int objective)
  */
 void DATA::serial_comms()
 {	
-	// Reads in data from serial port. 
+	// Reads in data from serial port.
 	Data.retrieve_input();
 
 	// General delay to ensure the serial port is not trying to both read and write.
 	delay(200);
 
-	// Send useful information back to the python GUI. 
+	// Send useful information back to the python GUI.
 	Data.update_gui();
 
 }
@@ -145,7 +145,8 @@ float DATA::retrieve_input()
 			{
 				// To be implemented at a later date.
 			}
-			else if(toParse[2]=='R'){
+			else if(toParse[2]=='R')
+			{
 				// Roll Call stuff to be also be implemented later. (Prior to tethered flight.)
 			}
 		}
@@ -162,11 +163,46 @@ void DATA::update_gui()
 	{
 		String temp_packet = "";
 
-		if(Radio.)
+		// Roll Call config.
+		if(Radio.operation_mode == "ROLLCALL")
 		{
-
+			temp_packet += "$";
+			temp_packet += ",";
+			temp_packet += Radio.operation_mode;
+			temp_packet += ",";
+			temp_packet += Radio.mc_node.node_status;
+			temp_packet += ",";
+			temp_packet += Radio.ee_node.node_status;
+			temp_packet += ",";
+			temp_packet += Radio.relay_node.node_status;
+			temp_packet += ",";
+			temp_packet += "$";
 		}
-
+		else if(Radio.operation_mode == "NORMAL" && Radio.operation_mode == "STANDBY")
+		{
+			temp_packet += "$";
+			temp_packet += ",";
+			temp_packet += "N";
+			temp_packet += ",";
+			temp_packet += Radio.Network.craft_anchor;
+			temp_packet += ",";
+			temp_packet += Radio.Network.craft_altitude;
+			temp_packet += ",";
+			temp_packet += Radio.Network.craft_latitude;
+			temp_packet += ",";
+			temp_packet += Radio.Network.craft_longitude;
+			temp_packet += ",";
+			temp_packet += Radio.Network.craft_event;
+			temp_packet += ",";
+			temp_packet += Radio.radio_input;
+			temp_packet += ",";
+			temp_packet += Radio.radio_output;
+			temp_packet += ",";
+			temp_packet += "$";
+		}
+		// Converts from String to char array. 
+		char serial_packet[temp_packet.length()];
+		temp.toCharArray(serial_packet, temp_packet.length());
 	}
 }
 

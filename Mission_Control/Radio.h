@@ -107,7 +107,7 @@ class RADIO
     // List of nodes currently logged into network. 
     // MC - 1
     // EE - 2
-    float nodeList[2] = {1.0, 0.0};
+    float nodeList[2] = {0.0, 1.0};
 
     // State of Radio program. 
     // ROLLCALL - Currently in RollCall process. 
@@ -201,6 +201,23 @@ class RADIO
     // Timer is used to for the 10 second interval that the craft will broadcast on for RollCall. 
     // This value is in milliseconds.  
     unsigned long rc_broadcast = 0;
+
+    // Used to house node objects. 
+    struct Network_Node {
+
+        // General status of node.
+        // 0 - Offline
+        // 1 - Online
+        // 2 - Error State
+        float node_status = 0.0;
+
+        // TBD @ a later date. Heart beat of node.
+        float last_contact = 0.0;
+    }
+    // Node declarations.
+    struct Network_Node mc_node;
+    struct Network_Node ee_node;
+    struct Network_Node relay_node;
 };
 
 #endif
