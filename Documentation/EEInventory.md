@@ -8,7 +8,8 @@
 | --------- | ----- | ---------- |
 | Cheetah Pack Battery (for motors/servos) | 6S 22.2V 5100mAh 35C LiPo | 7"x2"x2" |
 | Microcontroller Battery | 3.7V 2200mAh | 2.5"x2"xN/A |
-| Turnigy Battery (for valve) | 2S 7.4V 100mAh 30-40C LiPo | 2.75"x1.4"x0.5" |
+| Turnigy Battery | 2S 7.4V 100mAh 30-40C LiPo | 2.75"x1.4"x0.5" |
+| Thunde Power RC Battery | 4S 14.8V 2600mAh 20-40C LiPo | 4"x1.25"x1.25" |
 
 # Sensors
 
