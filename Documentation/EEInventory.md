@@ -7,10 +7,10 @@
 | Component | Specs | Dimensions |
 | --------- | ----- | ---------- |
 | Cheetah Pack Battery -> Motors | 6S 22.2V 5100mAh 35C LiPo | 7"x2"x2" |
-| Powerizer Battery | 2S 7.4V 4800mAh 30C LiPo | 5.5"x1.75"x0.75" |
+| Powerizer Battery -> Servos | 2S 7.4V 4800mAh 30C LiPo | 5.5"x1.75"x0.75" |
 | Thunder Power RC Battery -> Valve | 4S 14.8V 2600mAh 20-40C LiPo | 4"x1.25"x1.25" |
-| Espressif Board Battery | 3S 11.1V 2100mAh 20C LiPo | 4.15"x1.4"x1" |
-| LoRa Batter | 3.7V 2000mAh | 2.5"x2"xN/A |
+| Mega/Espressif Board Battery | 3S 11.1V 2100mAh 20C LiPo | 4.15"x1.4"x1" |
+| LoRa Battery | 3.7V 2000mAh | 2.5"x2"xN/A |
 | Turnigy Battery -> Not In Use | 2S 7.4V 1000mAh 30-40C LiPo | 2.75"x1.4"x0.5" |
 
 
