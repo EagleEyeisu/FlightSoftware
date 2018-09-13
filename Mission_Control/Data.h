@@ -21,7 +21,7 @@ class DATA
     void update_gui();
 
     // Reads in input from the GUI via serial. 
-    void serialEvent();
+    void serial_input();
 
     // Parses passed in message by using commas as the identifiers.
     float Parse(char message[], int objective);
@@ -39,7 +39,7 @@ class DATA
     float get_serial_craft_anchor(char buf[]);
 
     // Parses serial input and returns the operation state of the network.
-    void get_serial_op_state(char buf[]);
+    void get_serial_op_mode(char buf[]);
 
     // Connection status to the GUI.
     bool gui_connection = false;

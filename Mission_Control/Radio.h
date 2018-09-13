@@ -177,7 +177,7 @@ class RADIO
         // 4 - Left
         // 5 - Down
         // 6 - Upward
-        float target_direction = 0.0
+        float target_direction = 0.0;
     	
     	/**
     	 * This varaible is updated by each craft right before the array is broadcasted.
@@ -209,7 +209,7 @@ class RADIO
 
         // TBD @ a later date. Heart beat of node.
         float last_contact = 0.0;
-    }
+    };
     // Node declarations.
     struct Network_Node mc_node;
     struct Network_Node ee_node;

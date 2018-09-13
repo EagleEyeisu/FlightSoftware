@@ -107,7 +107,7 @@ def validate_ports(ports):
 				send(ser, "PING")
 				# Pauses program execution for 1/10th a second. To allow time for the microcontroller to
 				# process the request for info and reply.
-				time.sleep(0.1)
+				time.sleep(1)
 				# Reads incoming serial port data from the passed in serial port object. 
 				response = generic_receive(ser)
 				# Checks if microcontroller response matches that of known Eagle Eye hardware.

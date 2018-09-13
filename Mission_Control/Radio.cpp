@@ -81,7 +81,7 @@ float RADIO::getStartStop(char buf[])
 /**
  * Parses and returns the radio transmission's targetThrottle
  */
-float RADIO::getTargetThrottle(char buf[])
+float RADIO::getRadioTargetThrottle(char buf[])
 {
     return (Data.Parse(buf,7));
 }
@@ -177,22 +177,22 @@ void RADIO::manager()
 	Radio.radioReceive();
 
     // Checks to see if its time to run Roll Call. Set via GUI. 
-    if(operation_mode == RUNNING)
+    if(operation_mode == Radio.ROLLCALL)
     {
         // Broadcasts startup packet.
         Radio.rollCall();
     }
 	// After Roll Call is complete, Mission Control will broadcast the start signal.
-	else if((operation_mode == STANDBY))
+	else if((operation_mode == Radio.STANDBY))
     {
         // Updates craft_id to the network start signal.
         Radio.Network.craft_id = 555.0;
         // Updates radio state.
-        operation_mode = NORMAL;
+        operation_mode = Radio.NORMAL;
 	}
 
 	// Each of the 2 crafts have 5 seconds to broadcast. That means each craft will broadcast every 10 seconds.
-	else if((millis() - start >= 10000) && (operation_mode == NORMAL))
+	else if((millis() - start >= 10000) && (operation_mode == Radio.NORMAL))
     {
 		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
 		start = millis();
