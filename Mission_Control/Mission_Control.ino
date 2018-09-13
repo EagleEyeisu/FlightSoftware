@@ -37,13 +37,18 @@ void setup(){
  */
 void loop(){
 	
-    // Checks for serial input from the GUI. Parses accordingly.
-    Data.serial_comms();
+    // Ensures the gui is connected prior to starting the micro controllers tasks.
+    if(Data.gui_connection)
+    {
 
-    // Responsible for grabbing all of the craft's current information, 
-    // turning that data into an array that can be sent out via radio.
-    // Also reads in incoming messages.
-    Radio.manager();
+        // Checks for serial input from the GUI. Parses accordingly.
+        Data.serial_comms();
 
+        // Responsible for grabbing all of the craft's current information, 
+        // turning that data into an array that can be sent out via radio.
+        // Also reads in incoming messages.
+        Radio.manager();
+    }
+    
     delay(1000);
 }

@@ -36,7 +36,13 @@ class DATA
     float get_serial_target_throttle(char buf[]);
 
     // Parses serial input and returns the anchor status.
-    float get_serial_craft_anchor(char buf[])
+    float get_serial_craft_anchor(char buf[]);
+
+    // Parses serial input and returns the operation state of the network.
+    void get_serial_op_state(char buf[]);
+
+    // Connection status to the GUI.
+    bool gui_connection = false;
 };
 
 #endif

@@ -350,6 +350,7 @@ void RADIO::broadcast()
     temp.toCharArray(transmission, temp.length());
     // Blinks LED onboard of LoRa to signal broadcast
     blink_led();
+    blink_led();
     // Sends message passed in as paramter via antenna.
     rf95.send(transmission, sizeof(transmission));
     // Pauses all operations until the micro controll has guaranteed the transmission of the
@@ -365,7 +366,7 @@ void RADIO::blink_led()
 {
     // ON
     digitalWrite(LED, HIGH);
-    delay(10);
+    delay(50);
     // OFF
     digitalWrite(LED, LOW);
 }

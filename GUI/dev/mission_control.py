@@ -343,28 +343,48 @@ class MC_Tab():
 
 		temp_packet = ""
 
-		# Update 
-		temp_packet += "$"
-		temp_packet += ","
-		temp_packet += str(self.authority_mode.get())
-		temp_packet += ","
-		temp_packet += str(self.operational_mode.get())
-		temp_packet += ","
-		temp_packet += str(self.roll_call_status.get())
-		temp_packet += ","
-		temp_packet += str(self.craft_anchor.get())
-		temp_packet += ","
-		temp_packet += str(self.target_throttle.get())
-		temp_packet += ","
-		temp_packet += str(self.target_altitude.get())
-		temp_packet += ","
-		temp_packet += str(self.target_latitude.get())
-		temp_packet += ","
-		temp_packet += str(self.target_longitude.get())
-		temp_packet += ","
-		temp_packet += "$"
+		try:
+			# Checks for normal serial operations.
+			if self.authority_mode.get() == "AUTO":
+				temp_packet += "$"
+				temp_packet += ","
+				temp_packet += str(self.authority_mode.get())
+				temp_packet += ","
+				temp_packet += str(self.operational_mode.get())
+				temp_packet += ","
+				temp_packet += str(self.craft_anchor.get())
+				temp_packet += ","
+				temp_packet += str(self.target_throttle.get())
+				temp_packet += ","
+				temp_packet += str(self.target_altitude.get())
+				temp_packet += ","
+				temp_packet += str(self.target_latitude.get())
+				temp_packet += ","
+				temp_packet += str(self.target_longitude.get())
+				temp_packet += ","
+				temp_packet += "$"
 
-		self.modified_commands.set(temp_packet)
+			# Checks for roll call serial operations.
+			elif self.authority_mode.get() == "MANUAL":
+				temp_packet += "$"
+				temp_packet += ","
+				temp_packet += str(self.authority_mode.get())
+				temp_packet += ","
+				temp_packet += "direction_placeholder"  # str(self.convert_direction())
+				temp_packet += ","
+				temp_packet += str(self.craft_anchor.get())
+				temp_packet += ","
+				temp_packet += str(self.target_throttle.get())
+				temp_packet += ","
+				temp_packet += str(self.operational_mode.get())
+				temp_packet += ","
+				temp_packet += "$"
+
+			self.modified_commands.set(temp_packet)
+
+		except Exception as e:
+			print("Unable to change packet type.")
+			print("Exception: " + str(e))
 
 	def callback_roll_call_start(self):
 		"""
@@ -493,8 +513,6 @@ class MC_Tab():
 				new_packet += ","
 				new_packet += str(self.convert_op_mode())
 				new_packet += ","
-				new_packet += str(self.convert_rc_mode())
-				new_packet += ","
 				new_packet += str(self.convert_anchor())
 				new_packet += ","
 				new_packet += str(self.target_throttle.get())
@@ -519,6 +537,10 @@ class MC_Tab():
 				new_packet += ","
 				new_packet += str(self.convert_anchor())
 				new_packet += ","
+				new_packet += str(self.target_throttle.get())
+				new_packet += ","
+				new_packet += str(self.convert_op_mode())
+				new_packet += ","
 				new_packet += "$"
 				return new_packet
 
@@ -526,8 +548,6 @@ class MC_Tab():
 			print("Unable to convert commands.")
 			print("Exception: " + str(e))
 
-		
-		
 
 	def convert_authority(self):
 		"""

@@ -99,9 +99,6 @@ float DATA::Parse(char message[], int objective)
  */
 void DATA::serial_comms()
 {	
-	// General delay to ensure the serial port is not trying to both read and write.
-	delay(50);
-
 	// Send useful information back to the python GUI.
 	Data.update_gui();
 }
@@ -119,9 +116,23 @@ void serialEvent()
 		char t = Serial.read();
 		temp_input += t;
 	}
+	// Blinks LED (on the LoRa) to show serial packet was recieved.
+	Radio.blink_led();
 
+	// Creates a character array of the length of the serial input. 
 	char toParse[temp_input.length()];
+	// Converts said string to character array.
 	temp_input.toCharArray(toParse,temp_input.length());
+
+	// Checks for the python gui starting up and attemping to establish serial connection
+	// to this microcontroller. 
+	if(toParse[0] == 'P' && Data.gui_connection == false)
+	{
+		// Responds to the gui with the microcontroller ID tag.
+        Serial.write("MC_LORA");
+        // Updates connection status.
+        Data.gui_connection = true;
+    }
 
 	// Checks for correct data format.
 	if(toParse[0]=='$')
@@ -131,8 +142,10 @@ void serialEvent()
 		{
 			Radio.Network.authority_mode = Data.get_serial_authority_mode(toParse);
 			Radio.Network.target_direction = Data.get_serial_direction(toParse);
-			Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
 			Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
+			Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
+			// Directly sets variables due to operation_mode being an enum state.
+			Data.get_serial_op_mode(toParse);
 		}
 		// '1' at index 3 signifies automatic control. 
 		else if(toParse[2]=='1')
@@ -155,7 +168,7 @@ void DATA::update_gui()
 
 		// Roll Call config.
 		if(Radio.operation_mode == "ROLLCALL")
-		{	
+		{
 			confirmed_packet = true;
 			temp_packet += "$";
 			temp_packet += ",";
@@ -171,7 +184,7 @@ void DATA::update_gui()
 		}
 		// Normal GUI <-> mission_control Config.
 		else if((Radio.operation_mode == "NORMAL") || (Radio.operation_mode == "STANDBY") || (Radio.operation_mode == "NONE"))
-		{	
+		{
 			confirmed_packet = true;
 			temp_packet += "$";
 			temp_packet += ",";
@@ -201,7 +214,6 @@ void DATA::update_gui()
 			// Sends packet via serial to python GUI.
 			Serial.write(serial_packet);
 		}
-		
 	}
 }
 
@@ -242,4 +254,30 @@ float DATA::get_serial_target_throttle(char buf[])
 }
 
 
+/**
+ * Parses serial input and returns the operational mode.
+ */
+void DATA::get_serial_op_mode(char buf[])
+{	
+	// Parses out operation_mode representated as integer.
+    int temp_mode = (Parse(buf,5));
+
+    // Converts integer representation to the appropriate state.
+    if(temp_mode == 0.0)
+    {
+    	Radio.operation_mode = NONE;
+    }
+    else if(temp_mode == 1.0)
+    {
+    	Radio.operation_mode = ROLLCALL;
+    }
+    else if(temp_mode == 2.0)
+    {
+    	Radio.operation_mode = STANDBY;
+    }
+    else if(temp_mode == 1.0)
+    {
+    	Radio.operation_mode = NORMAL;
+    }
+}
 

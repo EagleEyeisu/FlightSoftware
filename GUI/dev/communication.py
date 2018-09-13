@@ -98,7 +98,7 @@ def validate_ports(ports):
 				elif response in "MC_LORA":
 					g.PORT_MC_LORA = serial_object(ser, response, port_description)
 				else:
-					passd = False
+					passed = False
 					print("Unknown Micro-controller: " + str(response))
 		except Exception as e:
 			passed = False
@@ -107,13 +107,13 @@ def validate_ports(ports):
 
 		# Prints all info related to port (used for debug in case of failure).
 		if not passed:
-			print("\nport:" + str(port))
+			print("port:" + str(port))
 			print("com_number: " + com_number)
 			print("port_description: " + port_description)
 			print("ser object: " + str(ser))
 			print("ser.port: " + ser.port)
 			print("ser.baudrate: " + str(ser.baudrate))
-			print("port status: " + str(ser.is_open) + "\n")
+			print("port status: " + str(ser.is_open))
 		else:
 			print("Successful setup of: " + str(ser.port))
 
