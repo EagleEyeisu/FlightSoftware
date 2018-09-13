@@ -380,10 +380,14 @@ class MC_Tab():
 				temp_packet += ","
 				temp_packet += "$"
 
+			# Sets the variable to the update packet.
 			self.modified_commands.set(temp_packet)
 
+		# Prints exeception status.
 		except Exception as e:
+			# Prints general error statement. (Used to tell which method errored out)
 			print("Unable to change packet type.")
+			# Prints actual error.
 			print("Exception: " + str(e))
 
 	def callback_roll_call_start(self):
@@ -491,6 +495,7 @@ class MC_Tab():
 				send(g.PORT_MC_LORA.get_port(), converted_transmission)
 		# Null connection.
 		except Exception as e:
+			# Prints general error statement. (Used to tell which method errored out)
 			print("Invalid connection to mission control's lora.")
 			print("Exception: " + str(e))
 
@@ -524,6 +529,7 @@ class MC_Tab():
 				new_packet += str(self.target_longitude.get())
 				new_packet += ","
 				new_packet += "$"
+				# Returns new packet.
 				return new_packet
 
 			# Checks for roll call serial operations.
@@ -542,9 +548,12 @@ class MC_Tab():
 				new_packet += str(self.convert_op_mode())
 				new_packet += ","
 				new_packet += "$"
+				# Returns new packet.
 				return new_packet
 
+		# Prints exception handler.
 		except Exception as e:
+			# Prints general error statement. (Used to tell which method errored out)
 			print("Unable to convert commands.")
 			print("Exception: " + str(e))
 

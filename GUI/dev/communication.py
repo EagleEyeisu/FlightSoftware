@@ -23,10 +23,13 @@ def setup_comms():
 
 	print("\nStarting comms setup.----------------------------------")
 
+	# Returns a list of all serial connections.
 	ports = get_serial_ports()
 
+	# Validates the current ports to ensure they are Eagle Eye's micro controllers.
 	validate_ports(ports)
 
+	# Starets timer based tasks to check for incoming serial data. 
 	config_scheduler()
 
 	print("Comms setup complete.----------------------------------\n")
@@ -54,16 +57,20 @@ def validate_ports(ports):
 
 	# Cycles over all detected ports.
 	for port in ports:
-
 		# Temporary serial port variable.
 		ser = None
-
+		# If at any point the recreation of the serial port fails. This is set true for debugging.
 		passed = True
+
 		# Parses out port info.
 		try:
+			# Splits the port info. 
 			com_number, port_description = str(port).split("-")
+			# Trims whitespace.
 			com_number = com_number.strip()
+			# Trims whitespace. 
 			port_description = port_description.strip()
+		# Prints exception handler.
 		except Exception as e:
 			passed = False
 			print("Exception: " + str(e))
@@ -71,12 +78,19 @@ def validate_ports(ports):
 
 		# Attempts to recreate serial connection to ensure validity.
 		try: 
+			# If all previous steps have passed, the recreation process coninutes.
 			if passed:
+				# Creates empty serial object.
 				ser = serial.Serial()
+				# Assigns the com port number to the serial object.
 				ser.port = com_number
+				# Assigns the baudrate used in the Eagle Eye project.
 				ser.baudrate = 115200
+				# Sets the timeout of the serial port to 1 second.
 				ser.timeout = 1
+				# Opens configured serial port
 				ser.open()
+		# Prints exception handler.
 		except Exception as e:
 			passed = False
 			print("Exception: " + str(e))
@@ -84,28 +98,42 @@ def validate_ports(ports):
 
 		# Pings microcontroller for name.
 		try:
+			# If all previous steps have passed, the recreation process coninutes.
 			if passed:
+				# Debug info. 
 				print("Pinging: " + port_description)
+				# Contacts the Eagle Eye microcontroller to figure out what type of microcontroller its
+				# connected to.
 				send(ser, "PING")
-
+				# Pauses program execution for 1/10th a second. To allow time for the microcontroller to
+				# process the request for info and reply.
 				time.sleep(0.1)
+				# Reads incoming serial port data from the passed in serial port object. 
 				response = generic_receive(ser)
-
+				# Checks if microcontroller response matches that of known Eagle Eye hardware.
 				if response in "CRAFT_LORA":
+					# Creates a serial object instance with the temporary serial object.
+					# Class defined at bottom of file.
 					PORT_CRAFT_LORA = serial_object(ser, response, port_description)
 				elif response in "CRAFT_MEGA":
+					# Creates a serial object instance with the temporary serial object.
+					# Class defined at bottom of file.
 					PORT_CRAFT_MEGA = serial_object(ser, response, port_description)
 				elif response in "MC_LORA":
+					# Creates a serial object instance with the temporary serial object.
+					# Class defined at bottom of file.
 					g.PORT_MC_LORA = serial_object(ser, response, port_description)
+				# Unknown microcontroller connection.
 				else:
 					passed = False
 					print("Unknown Micro-controller: " + str(response))
+		# Prints exception handler.
 		except Exception as e:
 			passed = False
 			print("Exception: " + str(e))
 			print("Unknown Response: " + str(response))
 
-		# Prints all info related to port (used for debug in case of failure).
+		# Prints all info related to port (used for debugging).
 		if not passed:
 			print("port:" + str(port))
 			print("com_number: " + com_number)
@@ -114,6 +142,7 @@ def validate_ports(ports):
 			print("ser.port: " + ser.port)
 			print("ser.baudrate: " + str(ser.baudrate))
 			print("port status: " + str(ser.is_open))
+		# Otherwise prints the success message of the port.
 		else:
 			print("Successful setup of: " + str(ser.port))
 
@@ -127,23 +156,29 @@ def config_scheduler():
 	try:
 		# Starts scheduler.
 		g.sched.start()
-		# Checks which ports are active.
+		# Checks for valid connection the the mc's Arduino LoRa.
 		if g.PORT_MC_LORA is not None:
-			print("Scheduling task for LoRa.\n")
+			print("Scheduling task for mc LoRa.\n")
+			# Adds a job to the scheduler. Configures a timer based method call.
 			g.sched.add_job(mc_lora_receive,
 						 'interval', 
 						 id='mc_read', 
 						 seconds=1)
+		# Checks for valid connection the the craft's Arduino MEGA.
 		if g.PORT_CRAFT_LORA is not None:
+			# Adds a job to the scheduler. Configures a timer based method call.
 			g.sched.add_job(craft_lora_receive,
 						 'interval', 
 						 id='craft_lora_read', 
 						 seconds=1)
+		# Checks for valid connection the the craft's Arduino LoRa.
 		if g.PORT_CRAFT_MEGA is not None:
+			# Adds a job to the scheduler. Configures a timer based method call.
 			g.sched.add_job(craft_mega_receive,
 						 'interval', 
 						 id='craft_mega_read', 
 						 seconds=1)
+	# Prints exception handler.
 	except Exception as e:
 		print("Unable to start setup scheduler.")
 		print("Exception: " + str(e))
@@ -162,13 +197,14 @@ def generic_receive(ser):
 		if(ser.in_waiting != 0):
 			# Reads in and decodes incoming serial data.
 			message = ser.readline().decode()
-
+			# Debug message.
 			print("Received from " + str(ser.port) + ". Input: " + message)
-			
-			# Return data.
+			# Return data in string datatype.
 			return str(message)
+		# No incoming data.
 		else:
 			return "No response."
+	# Prints exception handler.
 	except Exception as e:
 		print("Exception: " + str(e))
 		return "No response."
@@ -181,6 +217,7 @@ def mc_lora_receive():
 	@param ser - Serial port instance.
 	"""
 
+	# Pulls mission_control's serial port object down to a local instanced variable.
 	ser = g.PORT_MC_LORA.get_port()
 
 	try:
@@ -188,14 +225,64 @@ def mc_lora_receive():
 		if(ser.in_waiting != 0):
 			# Reads in and decodes incoming serial data.
 			message = ser.readline().decode()
-
+			# Debug info.
 			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
-			
 			# Return data.
 			g.PORT_MC_LORA.set_input(str(message))
+	# Print exception handler.
 	except Exception as e:
 		print("Exception: " + str(e))
 		g.PORT_MC_LORA.set_input("Serial Error")
+
+
+def craft_lora_receive():
+	"""
+	Responsible for reading in data on the given serial port.
+
+	@param ser - Serial port instance.
+	"""
+
+	# Pulls the serial data from the craft LoRa port object down to a local instanced variable.
+	ser = g.PORT_CRAFT_LORA.get_port()
+
+	try:
+		# Checks for a incoming data.
+		if(ser.in_waiting != 0):
+			# Reads in and decodes incoming serial data.
+			message = ser.readline().decode()
+			# Debug info.
+			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
+			# Return data.
+			g.PORT_CRAFT_LORA.set_input(str(message))
+	# Print exception handler.
+	except Exception as e:
+		print("Exception: " + str(e))
+		g.PORT_CRAFT_LORA.set_input("Serial Error")
+
+
+def craft_mega_receive():
+	"""
+	Responsible for reading in data on the given serial port.
+
+	@param ser - Serial port instance.
+	"""
+
+	# Pulls the serial data from the craft MEGA port object down to a local instanced variable.
+	ser = g.PORT_MEGA_LORA.get_port()
+
+	try:
+		# Checks for a incoming data.
+		if(ser.in_waiting != 0):
+			# Reads in and decodes incoming serial data.
+			message = ser.readline().decode()
+			# Debug info.
+			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
+			# Return data.
+			g.PORT_MEGA_LORA.set_input(str(message))
+	# Print exception handler.
+	except Exception as e:
+		print("Exception: " + str(e))
+		g.PORT_MEGA_LORA.set_input("Serial Error")
 
 
 def send(ser, message):
@@ -208,13 +295,12 @@ def send(ser, message):
 
 	# Ensure string datatype.
 	message = str(message)
-
+	# Debug info.
 	print("Sent to " + str(ser.port) + ". Message: " + message)
-
+	# Checks if port is closed.
 	if ser.is_open == False:
+		# If true, opens the port.
 		ser.open()
-
-	# print("\nSending: " + message)
 	# Encode message to bits & send via serial.
 	ser.write(message.encode())
 
