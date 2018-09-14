@@ -6,10 +6,6 @@
 #           Jared Danner
 #
 #############################################################
-from apscheduler.schedulers.background import BackgroundScheduler
-
-# Task scheduler. 
-sched = BackgroundScheduler()
 
 # Serial port objects. Object class defined at bottom of communication.py. 
 PORT_MC_LORA = None

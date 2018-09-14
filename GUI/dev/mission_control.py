@@ -117,16 +117,16 @@ class MC_Tab():
 		self.craft_latitude.set("-------")
 		self.craft_longitude.set("-------")
 		self.craft_event.set("-------")
-		self.craft_anchor.set("-------")
+		self.craft_anchor.set("DROPPED")
 		self.craft_received_id.set("-------")
 		self.home_time.set("-------")
-		self.target_throttle.set("-------")
+		self.target_throttle.set("0")
 		self.target_throttle_set.set("")
 		self.target_altitude.set("-------") # Hook this up
 		self.target_latitude.set("-------")
 		self.target_longitude.set("-------")
 		self.authority_mode.set("MANUAL")
-		self.modified_commands.set("-------")
+		self.modified_commands.set("")
 
 	def create_entry_objects(self):
 		""" 
@@ -398,7 +398,7 @@ class MC_Tab():
 		"""
 
 		self.roll_call_status.set("RUNNING")
-		self.operational_mode.set("ROLL CALL")
+		self.operational_mode.set("ROLLCALL")
 
 	def callback_roll_call_stop(self):
 		"""
@@ -585,20 +585,6 @@ class MC_Tab():
 			return 2
 		elif self.operational_mode.get() == "NORMAL":
 			return 3
-
-	def convert_rc_mode(self):
-		"""
-		Converts to correct integer value.
-
-		@param self - Instance of the class.
-		"""
-
-		if self.roll_call_status.get() == "NOT STARTED":
-			return 0
-		elif self.roll_call_status.get() == "RUNNING":
-			return 1
-		elif self.roll_call_status.get() == "FINISHED":
-			return 2
 
 	def convert_anchor(self):
 		"""

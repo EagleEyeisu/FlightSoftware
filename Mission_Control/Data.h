@@ -43,6 +43,9 @@ class DATA
 
     // Connection status to the GUI.
     bool gui_connection = false;
+
+    // Timer used for sending serial updates to gui.
+    unsigned long serial_timer = 0;
 };
 
 #endif

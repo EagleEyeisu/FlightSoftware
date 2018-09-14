@@ -99,9 +99,14 @@ void DATA::serial_comms()
  */
 void DATA::update_gui()
 {
-	if(!Serial.available())
+  // Only sends info to update gui every 2 seconds to relieve traffic.
+	if(!Serial.available() && (millis() - Data.serial_timer >= 2000))
 	{
+    // Resets / starts timer.
+    Data.serial_timer = millis();
+    // Holds outgoing message.
 		String temp_packet = "";
+    // Gets set true if a packet (TO BE SENT) has been created.
 		bool confirmed_packet = false;
 		// Roll Call config.
 		if(Radio.operation_mode == Radio.ROLLCALL)
@@ -109,6 +114,8 @@ void DATA::update_gui()
 			confirmed_packet = true;
 			temp_packet += "$";
 			temp_packet += ",";
+      temp_packet += "R";
+      temp_packet += ",";
 			temp_packet += Radio.operation_mode;
 			temp_packet += ",";
 			temp_packet += Radio.mc_node.node_status;
@@ -197,22 +204,29 @@ float DATA::get_serial_target_throttle(char buf[])
 void DATA::get_serial_op_mode(char buf[])
 {	
 	// Parses out operation_mode representated as integer.
-    int temp_mode = (Parse(buf,5));
+    int temp_mode = (int)(Parse(buf,5));
     // Converts integer representation to the appropriate state.
     if(temp_mode == 0.0)
     {
+      Serial.write("NONE");
     	Radio.operation_mode = Radio.NONE;
     }
     else if(temp_mode == 1.0)
     {
+      Serial.write("ROLLCALL");
     	Radio.operation_mode = Radio.ROLLCALL;
     }
     else if(temp_mode == 2.0)
     {
+      Serial.write("STANDBY");
     	Radio.operation_mode = Radio.STANDBY;
     }
     else if(temp_mode == 1.0)
     {
+      Serial.write("NORMAL");
     	Radio.operation_mode = Radio.NORMAL;
+    }
+    else{
+      Serial.write("nope");
     }
 }

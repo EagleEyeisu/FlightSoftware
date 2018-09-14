@@ -41,7 +41,7 @@ void loop(){
     // Ensures the gui is connected prior to starting the micro controllers tasks.
     if(Data.gui_connection)
     {
-        // Checks for serial input from the GUI. Parses accordingly.
+        // Updates GUI/user with situational info.
         Data.serial_comms();
         // Responsible for grabbing all of the craft's current information, 
         // turning that data into an array that can be sent out via radio.

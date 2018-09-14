@@ -9,6 +9,7 @@
 import serial.tools.list_ports
 import serial
 import time
+import threading
 import globals as g
 from tkinter import *
 from tkinter.ttk import *
@@ -149,35 +150,26 @@ def validate_ports(ports):
 
 def config_scheduler():
 	"""
-	Schedules a timer like object to run a method to capture 
+	Sets a thread bound timer object to run a method to capture 
 	serial input every x seconds. 
 	"""
 
 	try:
-		# Starts scheduler.
-		g.sched.start()
 		# Checks for valid connection the the mc's Arduino LoRa.
 		if g.PORT_MC_LORA is not None:
 			print("Scheduling task for mc LoRa.\n")
-			# Adds a job to the scheduler. Configures a timer based method call.
-			g.sched.add_job(mc_lora_receive,
-						 'interval', 
-						 id='mc_read', 
-						 seconds=30)
+			timer = threading.Timer(2.0, mc_lora_receive)
+			timer.start()
 		# Checks for valid connection the the craft's Arduino MEGA.
 		if g.PORT_CRAFT_LORA is not None:
-			# Adds a job to the scheduler. Configures a timer based method call.
-			g.sched.add_job(craft_lora_receive,
-						 'interval', 
-						 id='craft_lora_read', 
-						 seconds=1)
+			print("Scheduling task for craft LoRa.\n")
+			timer = threading.Timer(2.0, craft_lora_receive)
+			timer.start()
 		# Checks for valid connection the the craft's Arduino LoRa.
 		if g.PORT_CRAFT_MEGA is not None:
-			# Adds a job to the scheduler. Configures a timer based method call.
-			g.sched.add_job(craft_mega_receive,
-						 'interval', 
-						 id='craft_mega_read', 
-						 seconds=1)
+			print("Scheduling task for craft MEGA.\n")
+			timer = threading.Timer(2.0, craft_mega_receive)
+			timer.start()
 	# Prints exception handler.
 	except Exception as e:
 		print("Unable to start setup scheduler.")
@@ -211,32 +203,37 @@ def generic_receive(ser):
 
 
 def mc_lora_receive():
-	"""
-	Responsible for reading in data on the given serial port.
-
-	@param ser - Serial port instance.
-	"""
+	""" Responsible for reading in data on the given serial port. """
+	print("LoRa Recieve callback.")
+	timer = threading.Timer(2.0, mc_lora_receive)
+	timer.start()
 
 	# Pulls mission_control's serial port object down to a local instanced variable.
 	ser = g.PORT_MC_LORA.get_port()
+	try:
+		# Checks for a incoming data.
+		if(ser.in_waiting != 0):
+			# Reads in and decodes incoming serial data.
+			message = ser.readline().decode()
+			# Debug info.
+			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
+			# Return data.
+			g.PORT_MC_LORA.set_input(str(message))
+		return
+	# Prints exception handler.
+	except Exception as e:
+		print("Exception: " + str(e))
+		g.PORT_MC_LORA.set_input("Serial Error")
+		return
 
-	# Checks for a incoming data.
-	if(ser.in_waiting != 0):
-		# Reads in and decodes incoming serial data.
-		message = ser.readline().decode()
-		# Debug info.
-		print("Received from " + str(ser.port) + ". Input: " + message + "\n")
-		# Return data.
-		g.PORT_MC_LORA.set_input(str(message))
+	
 
 
 def craft_lora_receive():
-	"""
-	Responsible for reading in data on the given serial port.
+	""" Responsible for reading in data on the given serial port. """
 
-	@param ser - Serial port instance.
-	"""
-
+	timer = threading.Timer(2.0, mc_lora_receive)
+	timer.start()
 	# Pulls the serial data from the craft LoRa port object down to a local instanced variable.
 	ser = g.PORT_CRAFT_LORA.get_port()
 
@@ -249,19 +246,19 @@ def craft_lora_receive():
 			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
 			# Return data.
 			g.PORT_CRAFT_LORA.set_input(str(message))
+		return
 	# Print exception handler.
 	except Exception as e:
 		print("Exception: " + str(e))
 		g.PORT_CRAFT_LORA.set_input("Serial Error")
+		return
 
 
 def craft_mega_receive():
-	"""
-	Responsible for reading in data on the given serial port.
+	""" Responsible for reading in data on the given serial port. """
 
-	@param ser - Serial port instance.
-	"""
-
+	timer = threading.Timer(2.0, mc_lora_receive)
+	timer.start()
 	# Pulls the serial data from the craft MEGA port object down to a local instanced variable.
 	ser = g.PORT_MEGA_LORA.get_port()
 
@@ -274,10 +271,12 @@ def craft_mega_receive():
 			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
 			# Return data.
 			g.PORT_MEGA_LORA.set_input(str(message))
+		return
 	# Print exception handler.
 	except Exception as e:
 		print("Exception: " + str(e))
 		g.PORT_MEGA_LORA.set_input("Serial Error")
+		return
 
 
 def send(ser, message):
