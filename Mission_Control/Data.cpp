@@ -37,21 +37,16 @@ float DATA::Parse(char message[], int objective)
 
 	// Used to iterate through the passed in character array.
 	int i = 0;
-
 	// This iterator is used to pull the wanted part of the 'message' from the entire array.
 	// Used to gather information such as how long the new parsed section is.
 	int tempIter = 0;
-
 	// Counts the commas as the character array is iterated over.
 	int commaCounter = 0;
-
 	// This turns true when the correct number of commas has been achieved, which signals that the following 
 	// section is the part that the program wants to parse from the entire sentence.
 	bool Goal = false;
-
 	// Temporary string used to hold the newly parsed array.
 	char tempArr[20];
-
   	// Iterators over the entire array.
   	for(i=0;i<120;i++)
   	{
@@ -69,26 +64,21 @@ float DATA::Parse(char message[], int objective)
 		    {
 		    	// Copies the message's character to the temporary array.
 		        tempArr[tempIter] = message[i];
-		        
 		        // Iterator used to tell how long the temporary array is.
 		        tempIter++;
 		    }
 	    }
   	}
-  	
 	// Charater array used with a fitted length of the parsed section.
 	char arr[tempIter];
-	
 	// Iterates through the temporary array copying over the info to the variable which will be returned.
 	for(i=0;i<tempIter;i++)
 	{
 		// Copying of the information between arrays.
 	    arr[i]=tempArr[i];
 	}
-  
 	// Converts the final array to a float.
 	float temp = atof(arr);
-  
 	// Returns the desired parsed section in number (float) form.
   	return temp;
 }
@@ -99,74 +89,8 @@ float DATA::Parse(char message[], int objective)
  */
 void DATA::serial_comms()
 {
-
-	// Reads in serial data.
-	Data.serial_input();
-
-	// The mission control 
-	if(Data.gui_connection)
-	{
-		// Send useful information back to the python GUI.
-		Data.update_gui();
-	}
-}
-
-
-/**
- * Reads in serial data.
- */
-void DATA::serial_input()
-{
-  	bool new_input = false;
-	String temp_input = "";
-	while(Serial.available())
-	{
-    	new_input = true;
-    	Radio.blink_led();
-		char t = Serial.read();
-		temp_input += t;
-	}
-
-  	if(new_input)
-  	{
-    	// Creates a character array of the length of the serial input. 
-		char toParse[temp_input.length()];
-		// Converts said string to character array.
-		temp_input.toCharArray(toParse,temp_input.length());
-
-		// Checks for the python gui starting up and attemping to establish serial connection
-		// to this microcontroller. 
-		if(toParse[0] == 'P' && Data.gui_connection == false)
-		{
-			// Responds to the gui with the microcontroller ID tag.
-	        Serial.write("MC_LORA");
-	        // Updates connection status.
-	        Data.gui_connection = true;
-	        // Blinks LED (on the LoRa) to show serial packet was recieved.
-	        Radio.blink_led();
-	        Radio.blink_led();
-	        Radio.blink_led();
-	    }
-		// Checks for correct data format and prior connection status to the gui.
-		else if(toParse[0]=='$' && Data.gui_connection == true)
-		{
-			// '0' at index 3 signifies manual control. 
-			if(toParse[2]=='0')
-			{
-				Radio.Network.authority_mode = Data.get_serial_authority_mode(toParse);
-				Radio.Network.target_direction = Data.get_serial_direction(toParse);
-				Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
-				Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
-				// Directly sets variables due to operation_mode being an enum state.
-				Data.get_serial_op_mode(toParse);
-			}
-			// '1' at index 3 signifies automatic control. 
-			else if(toParse[2]=='1')
-			{
-				// To be implemented at a later date.
-			}
-		}
-  	}
+	// Send useful information back to the python GUI.
+	Data.update_gui();
 }
 
 
@@ -179,7 +103,6 @@ void DATA::update_gui()
 	{
 		String temp_packet = "";
 		bool confirmed_packet = false;
-
 		// Roll Call config.
 		if(Radio.operation_mode == Radio.ROLLCALL)
 		{
@@ -275,7 +198,6 @@ void DATA::get_serial_op_mode(char buf[])
 {	
 	// Parses out operation_mode representated as integer.
     int temp_mode = (Parse(buf,5));
-
     // Converts integer representation to the appropriate state.
     if(temp_mode == 0.0)
     {

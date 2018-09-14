@@ -59,8 +59,11 @@ class RADIO
     // Sends the desired signal out over the radio antenna.
     void broadcast();
 
-    // Blinks the LED on the LoRa uC to show a signal has been received.
+    // Blinks the LED on the LoRa uC (quick blink).
     void blink_led();
+
+    // Blinks the LED on the LoRa uC (long duration pulse).
+    void blink_led_long();
 
     // Compares current node against others. Prevents duplicates. 
     void nodeCheckIn();

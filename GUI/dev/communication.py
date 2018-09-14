@@ -107,7 +107,7 @@ def validate_ports(ports):
 				send(ser, "PING")
 				# Pauses program execution for 1/10th a second. To allow time for the microcontroller to
 				# process the request for info and reply.
-				time.sleep(1)
+				time.sleep(0.1)
 				# Reads incoming serial port data from the passed in serial port object. 
 				response = generic_receive(ser)
 				# Checks if microcontroller response matches that of known Eagle Eye hardware.
@@ -163,7 +163,7 @@ def config_scheduler():
 			g.sched.add_job(mc_lora_receive,
 						 'interval', 
 						 id='mc_read', 
-						 seconds=1)
+						 seconds=30)
 		# Checks for valid connection the the craft's Arduino MEGA.
 		if g.PORT_CRAFT_LORA is not None:
 			# Adds a job to the scheduler. Configures a timer based method call.
@@ -220,19 +220,14 @@ def mc_lora_receive():
 	# Pulls mission_control's serial port object down to a local instanced variable.
 	ser = g.PORT_MC_LORA.get_port()
 
-	try:
-		# Checks for a incoming data.
-		if(ser.in_waiting != 0):
-			# Reads in and decodes incoming serial data.
-			message = ser.readline().decode()
-			# Debug info.
-			print("Received from " + str(ser.port) + ". Input: " + message + "\n")
-			# Return data.
-			g.PORT_MC_LORA.set_input(str(message))
-	# Print exception handler.
-	except Exception as e:
-		print("Exception: " + str(e))
-		g.PORT_MC_LORA.set_input("Serial Error")
+	# Checks for a incoming data.
+	if(ser.in_waiting != 0):
+		# Reads in and decodes incoming serial data.
+		message = ser.readline().decode()
+		# Debug info.
+		print("Received from " + str(ser.port) + ". Input: " + message + "\n")
+		# Return data.
+		g.PORT_MC_LORA.set_input(str(message))
 
 
 def craft_lora_receive():

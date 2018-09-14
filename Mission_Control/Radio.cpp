@@ -121,47 +121,33 @@ void RADIO::initialize()
 {
 	// Assigns pin 13 to have an output power connection to the LoRa's onboard LED.
 	pinMode(LED, OUTPUT);
-	
 	// Assigns pin 4 to have an output singal connection to the LoRa's radio port.
 	pinMode(RFM95_RST, OUTPUT);
-	
 	// Sends a high signal to the radio port for intialization.
 	digitalWrite(RFM95_RST, HIGH);
-	
 	// Adjust the LED to be insync with radio trasmission.
 	digitalWrite(RFM95_RST, LOW);
-	
 	// 10 millisecond delay to allow for radio setup to complete before next instruction.
 	delay(10);
-	
 	// Turns the radio output high to compelte setup.
 	digitalWrite(RFM95_RST, HIGH);
-	
-	
 	// Checks for the creation of the radio object and its physical connection attribute.
-	// If invalid connection, the program will stall and print an error message.
 	if(!rf95.init())
     {
-		// Serial.println("LoRa radio init failed");
-		while (1);
+        // If invalid connection, the program will stall and pulse the onbaord led.
+		while (1)
+        {
+            Radio.blink_led();
+        }
 	}
-	// Valid connection, program proceeds as planned.
-	else
-    {
-		Serial.println("LoRa radio init OK!");
-	}
-	
-	// Checks the radio objects set frequency. 
-	// If invalid connection, the program will stall and print an error message.
+	// Checks the radio objects tuned frequency. 
 	if(!rf95.setFrequency(RF95_FREQ))
     {
-		// Serial.println("setFrequency failed");
-		while (1);
-	}
-	// Valid connection, program proceeds as planned.
-	else
-    {
-		Serial.print("Set Freq to: "); Serial.println(RF95_FREQ,3);
+		// If invalid connection, the program will stall and pulse the onbaord led.
+        while (1)
+        {
+            Radio.blink_led();
+        }
 	}
 	// Sets the max power to be used to in the amplification of the signal being sent out.
 	rf95.setTxPower(23, false);
@@ -175,7 +161,6 @@ void RADIO::manager()
 {
 	// Reads in radio transmission if available.
 	Radio.radioReceive();
-
     // Checks to see if its time to run Roll Call. Set via GUI. 
     if(operation_mode == Radio.ROLLCALL)
     {
@@ -190,7 +175,6 @@ void RADIO::manager()
         // Updates radio state.
         operation_mode = Radio.NORMAL;
 	}
-
 	// Each of the 2 crafts have 5 seconds to broadcast. That means each craft will broadcast every 10 seconds.
 	else if((millis() - start >= 10000) && (operation_mode == Radio.NORMAL))
     {
@@ -253,9 +237,6 @@ void RADIO::radioReceive()
         {
             // Used to display the received data in the GUI.
             radio_input = buf;
-            // Serial.print("Received: ");
-            // Serial.println(radio_input);
-            blink_led();
             // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
             // unsigned char array for parsing. 
             String str = (char*)buf;
@@ -264,12 +245,11 @@ void RADIO::radioReceive()
 
             // This whole section is comparing the currently held varaibles from the last radio update
             // to that of the newly received signal. Updates the LoRa's owned variables and copies
-            // down the other nodes varaibles. If the time LoRa currently holds the most updated values
+            // down the other nodes' varaibles. If the time LoRa currently holds the most updated values
             // for another node (LoRa's time stamp is higher than the new signal's), it replaces those vars.
           
             // Reads in the time stamp for Mission Control's last broadcast.
             float temp_LoRa = Radio.getTimeStamp(toParse, 0);
-          
             // Compares the currently brought in time stamp to the one stored onboad.
             if(temp_LoRa > Radio.Network.craft_ts)
             {
@@ -281,10 +261,8 @@ void RADIO::radioReceive()
                 Network.craft_longitude = Radio.getRadioLongitude(toParse);
                 Network.craft_event = Radio.getLoRaEvent(toParse);
             }
-
             // Reads in Craft ID to see where signal came from. 
             received_id = Radio.getCraftID(toParse);
-
             // Compares the transmission's craftID to see if its a brand new craft. If so, it logs it. 
             Radio.nodeCheckIn();
         }
@@ -320,7 +298,6 @@ void RADIO::broadcast()
     // Casting all float values to a character array with commas saved in between values
     // so the character array can be parsed when received by another craft.
     String temp = "";
-
     temp += Network.craft_ts;
     temp += ",";
     temp += Network.craft_altitude;
@@ -342,7 +319,6 @@ void RADIO::broadcast()
     temp += Network.target_throttle;
     temp += ",";
     temp += Network.craft_id;
-
     // Copy contents. 
     radio_output = temp;
     // Converts from String to char array. 
@@ -367,6 +343,19 @@ void RADIO::blink_led()
     // ON
     digitalWrite(LED, HIGH);
     delay(50);
+    // OFF
+    digitalWrite(LED, LOW);
+}
+
+
+/*
+ * Blinks LED long duration.
+ */
+void RADIO::blink_led_long()
+{
+    // ON
+    digitalWrite(LED, HIGH);
+    delay(2000);
     // OFF
     digitalWrite(LED, LOW);
 }
