@@ -353,6 +353,14 @@ class MC_Tab():
 				junk, junk, t_anchor, t_alt, t_lat, t_lon, t_event = str(serial_data).split(",")
 				t_radio_in, t_radio_out, junk = str(radio_data).split("/")
 
+				self.craft_anchor.set(t_anchor)
+				self.craft_altitude.set(t_alt)
+				self.craft_latitude.set(t_lat)
+				self.craft_longitude.set(t_lon)
+				self.craft_event.set(t_event)
+				self.radio_received.set(t_radio_in)
+				self.radio_sent.set(t_radio_out)
+
 		if g.PORT_CRAFT_LORA is not None:
 			placeholder = 1 + 1
 
