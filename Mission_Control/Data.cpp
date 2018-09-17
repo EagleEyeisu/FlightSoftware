@@ -114,8 +114,8 @@ void DATA::update_gui()
 			confirmed_packet = true;
 			temp_packet += "$";
 			temp_packet += ",";
-      temp_packet += "R";
-      temp_packet += ",";
+      		temp_packet += "R";
+      		temp_packet += ",";
 			temp_packet += Radio.operation_mode;
 			temp_packet += ",";
 			temp_packet += Radio.mc_node.node_status;
@@ -143,12 +143,13 @@ void DATA::update_gui()
 			temp_packet += Radio.Network.craft_longitude;
 			temp_packet += ",";
 			temp_packet += Radio.Network.craft_event;
-			temp_packet += "/";
+			temp_packet += "]";
 			temp_packet += Radio.radio_input;
 			temp_packet += "/";
 			temp_packet += Radio.radio_output;
 			temp_packet += "/";
 			temp_packet += "$";
+      		temp_packet += "$"; // Weird serial issue where it only sends one of the '$'. To be looked into.
 		}
 
 		if(confirmed_packet){
@@ -208,25 +209,21 @@ void DATA::get_serial_op_mode(char buf[])
     // Converts integer representation to the appropriate state.
     if(temp_mode == 0.0)
     {
-      Serial.write("NONE");
     	Radio.operation_mode = Radio.NONE;
     }
     else if(temp_mode == 1.0)
     {
-      Serial.write("ROLLCALL");
     	Radio.operation_mode = Radio.ROLLCALL;
     }
     else if(temp_mode == 2.0)
     {
-      Serial.write("STANDBY");
     	Radio.operation_mode = Radio.STANDBY;
     }
     else if(temp_mode == 1.0)
     {
-      Serial.write("NORMAL");
     	Radio.operation_mode = Radio.NORMAL;
     }
-    else{
-      Serial.write("nope");
+    else{ // Debug scenario.
+      //Serial.write("nope");
     }
 }

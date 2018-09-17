@@ -290,9 +290,6 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		# Configures serial environment.
-		setup_comms()
-
 		# Initializes class variables.
 		self.variable_setup()
 		# Creates/configures the tk widgets. 
@@ -303,6 +300,9 @@ class MC_Tab():
 		self.layout_network()
 		self.layout_craft()
 		self.layout_mission_control()
+
+		# Configures serial environment.
+		setup_comms()
 
 	def callback_config_controller(self):
 		"""
@@ -331,6 +331,33 @@ class MC_Tab():
 					junk = 1 + 1
 			except:
 				pass
+
+	def callback_update_gui(self):
+		"""
+		Method is run each time the connected microcontrollers send serial data to the gui.
+		This method is triggered via a .trace() on the StringVar object .input which
+		can be found near the bottom of the communication.py file.
+
+		@param self - Instance of the class.
+		"""
+
+		temp_input = ""
+
+		if g.PORT_MC_LORA is not None:
+			temp_input = g.PORT_MC_LORA.input.get()
+			if "N" in temp_input:
+				serial_data, radio_data = str(temp_input).split("[")
+				# Variables such as '$' and 'N' are thrown out as junk.
+				# t_ stands for temp because the numbers need to be converted to the 
+				# corresponding string for the gui to show.
+				junk, junk, t_anchor, t_alt, t_lat, t_lon, t_event = str(serial_data).split(",")
+				t_radio_in, t_radio_out, junk = str(radio_data).split("/")
+
+		if g.PORT_CRAFT_LORA is not None:
+			placeholder = 1 + 1
+
+		if g.PORT_CRAFT_MEGA is not None:
+			placeholder = 1 + 1
 
 	def callback_update_transmission(self, *args):
 		"""
@@ -565,10 +592,10 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		if self.authority_mode.get() == "AUTO":
-			return 1
-		elif self.authority_mode.get() == "MANUAL":
-			return 0
+		if self.authority_mode.get() == "MANUAL":
+			return float(0)
+		elif self.authority_mode.get() == "AUTO":
+			return float(1)
 
 	def convert_op_mode(self):
 		"""
@@ -578,13 +605,13 @@ class MC_Tab():
 		"""
 
 		if self.operational_mode.get() == "NOT STARTED":
-			return 0
+			return float(0)
 		elif self.operational_mode.get() == "ROLLCALL":
-			return 1
+			return float(1)
 		elif self.operational_mode.get() == "STANDBY":
-			return 2
+			return float(2)
 		elif self.operational_mode.get() == "NORMAL":
-			return 3
+			return float(3)
 
 	def convert_anchor(self):
 		"""
@@ -594,9 +621,9 @@ class MC_Tab():
 		"""
 
 		if self.craft_anchor.get() == "DROPPED":
-			return 0
+			return float(0)
 		elif self.craft_anchor.get() == "HOISTED":
-			return 1
+			return float(1)
 
 	def create_label_east(self, r, c, frame, title):
 		"""

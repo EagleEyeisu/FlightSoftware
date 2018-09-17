@@ -16,3 +16,6 @@ PORT_CRAFT_MEGA = None
 NODE_MISSION_CONTROL_ID = 0
 NODE_EAGLE_EYE_ID = 1
 NODE_RELAY_ID = 2
+
+# Tkinter frame objects.
+mc_frame_reference = None

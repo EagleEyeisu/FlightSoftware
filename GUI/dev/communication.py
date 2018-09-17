@@ -15,12 +15,15 @@ from tkinter import *
 from tkinter.ttk import *
 
 
-def setup_comms():
+def setup_comms(frame):
 	""" 
 	Oversees the serial port connection process.
 
-	@param desired_connection - Developer specificed connection.
+	@param frame - Mission_control (self.mc_frame) instance.
 	"""
+
+	# Update frame instance stored as global.
+	g.mc_reference_frame = frame
 
 	print("\nStarting comms setup.----------------------------------")
 
@@ -158,17 +161,17 @@ def config_scheduler():
 		# Checks for valid connection the the mc's Arduino LoRa.
 		if g.PORT_MC_LORA is not None:
 			print("Scheduling task for mc LoRa.\n")
-			timer = threading.Timer(2.0, mc_lora_receive)
+			timer = threading.Timer(0.6, mc_lora_receive)
 			timer.start()
 		# Checks for valid connection the the craft's Arduino MEGA.
 		if g.PORT_CRAFT_LORA is not None:
 			print("Scheduling task for craft LoRa.\n")
-			timer = threading.Timer(2.0, craft_lora_receive)
+			timer = threading.Timer(1.0, craft_lora_receive)
 			timer.start()
 		# Checks for valid connection the the craft's Arduino LoRa.
 		if g.PORT_CRAFT_MEGA is not None:
 			print("Scheduling task for craft MEGA.\n")
-			timer = threading.Timer(2.0, craft_mega_receive)
+			timer = threading.Timer(1.0, craft_mega_receive)
 			timer.start()
 	# Prints exception handler.
 	except Exception as e:
@@ -204,8 +207,7 @@ def generic_receive(ser):
 
 def mc_lora_receive():
 	""" Responsible for reading in data on the given serial port. """
-	print("LoRa Recieve callback.")
-	timer = threading.Timer(2.0, mc_lora_receive)
+	timer = threading.Timer(0.6, mc_lora_receive)
 	timer.start()
 
 	# Pulls mission_control's serial port object down to a local instanced variable.
@@ -232,7 +234,7 @@ def mc_lora_receive():
 def craft_lora_receive():
 	""" Responsible for reading in data on the given serial port. """
 
-	timer = threading.Timer(2.0, mc_lora_receive)
+	timer = threading.Timer(0.6, mc_lora_receive)
 	timer.start()
 	# Pulls the serial data from the craft LoRa port object down to a local instanced variable.
 	ser = g.PORT_CRAFT_LORA.get_port()
@@ -257,7 +259,7 @@ def craft_lora_receive():
 def craft_mega_receive():
 	""" Responsible for reading in data on the given serial port. """
 
-	timer = threading.Timer(2.0, mc_lora_receive)
+	timer = threading.Timer(1.0, mc_lora_receive)
 	timer.start()
 	# Pulls the serial data from the craft MEGA port object down to a local instanced variable.
 	ser = g.PORT_MEGA_LORA.get_port()
@@ -305,7 +307,8 @@ class serial_object():
 		self.ser = ser
 		self.port_name = name
 		self.context = description
-		self.input = ""
+		self.input = StringVar()
+		self.input.trace("w", g.mc_reference_frame.callback_update_gui)
 
 	def get_context(self):
 		"""
@@ -342,4 +345,4 @@ class serial_object():
 		@param new_input - Brand new serial port data.
 		"""
 
-		self.input = new_input
+		self.input.set(new_input)
