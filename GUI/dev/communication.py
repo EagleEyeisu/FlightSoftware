@@ -15,7 +15,7 @@ from tkinter import *
 from tkinter.ttk import *
 
 
-def setup_comms(frame):
+def setup_comms(mc_class_instance):
 	""" 
 	Oversees the serial port connection process.
 
@@ -23,7 +23,7 @@ def setup_comms(frame):
 	"""
 
 	# Update frame instance stored as global.
-	g.mc_reference_frame = frame
+	g.mc_class_reference = mc_class_instance
 
 	print("\nStarting comms setup.----------------------------------")
 
@@ -308,7 +308,7 @@ class serial_object():
 		self.port_name = name
 		self.context = description
 		self.input = StringVar()
-		self.input.trace("w", g.mc_reference_frame.callback_update_gui)
+		self.input.trace("w", g.mc_class_reference.callback_update_gui)
 
 	def get_context(self):
 		"""

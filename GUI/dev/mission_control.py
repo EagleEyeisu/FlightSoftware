@@ -191,7 +191,7 @@ class MC_Tab():
 		self.checkbox_manual = Checkbutton(self.mc_frame, text="Manual      ", variable=self.authority_mode, onvalue="MANUAL", offvalue="OFF")
 		
 	def layout_network(self):
-		""" 
+		"""
 		Binds the sections of widgets related to the network to the top
 		portion of the frame.
 
@@ -221,7 +221,7 @@ class MC_Tab():
 		terminal_divider_one.grid(row=5, column=0, columnspan=20, sticky='we')
 
 	def layout_craft(self):
-		""" 
+		"""
 		Binds the sections of widgets related to the craft to the middle
 		portion of the frame.
 
@@ -302,7 +302,7 @@ class MC_Tab():
 		self.layout_mission_control()
 
 		# Configures serial environment.
-		setup_comms()
+		setup_comms(self)
 
 	def callback_config_controller(self):
 		"""
@@ -332,13 +332,14 @@ class MC_Tab():
 			except:
 				pass
 
-	def callback_update_gui(self):
+	def callback_update_gui(self, *args):
 		"""
 		Method is run each time the connected microcontrollers send serial data to the gui.
 		This method is triggered via a .trace() on the StringVar object .input which
 		can be found near the bottom of the communication.py file.
 
 		@param self - Instance of the class.
+		@param *args - Any other random system varaible that gets passed in.
 		"""
 
 		temp_input = ""
@@ -346,11 +347,11 @@ class MC_Tab():
 		if g.PORT_MC_LORA is not None:
 			temp_input = g.PORT_MC_LORA.input.get()
 			if "N" in temp_input:
-				serial_data, radio_data = str(temp_input).split("[")
+				serial_data, radio_data = str(temp_input).split("]")
 				# Variables such as '$' and 'N' are thrown out as junk.
 				# t_ stands for temp because the numbers need to be converted to the 
 				# corresponding string for the gui to show.
-				junk, junk, t_anchor, t_alt, t_lat, t_lon, t_event = str(serial_data).split(",")
+				junk, junk ,t_craft_ts, t_alt, t_lat, t_lon, t_event, t_anchor, t_craft_id = str(serial_data).split(",")
 				t_radio_in, t_radio_out, junk = str(radio_data).split("/")
 
 				self.craft_anchor.set(t_anchor)
@@ -358,6 +359,8 @@ class MC_Tab():
 				self.craft_latitude.set(t_lat)
 				self.craft_longitude.set(t_lon)
 				self.craft_event.set(t_event)
+				self.craft_time.set(t_craft_ts)
+				self.craft_received_id.set(t_craft_id)
 				self.radio_received.set(t_radio_in)
 				self.radio_sent.set(t_radio_out)
 

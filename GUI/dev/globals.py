@@ -18,4 +18,4 @@ NODE_EAGLE_EYE_ID = 1
 NODE_RELAY_ID = 2
 
 # Tkinter frame objects.
-mc_frame_reference = None
+mc_class_reference = None
