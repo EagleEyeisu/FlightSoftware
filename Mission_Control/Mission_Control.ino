@@ -38,7 +38,7 @@ void setup(){
 void loop(){
     // Reads in serial port data if available.
     serial_input();
-    // Ensures the gui is connected prior to starting the micro controllers tasks.
+    // Ensures the gui is connected prior to starting the microcontroller's tasks.
     if(Data.gui_connection)
     {
         // Updates GUI/user with situational info.

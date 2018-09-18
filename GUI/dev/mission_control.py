@@ -73,9 +73,9 @@ class MC_Tab():
 		# their value is changed.
 		self.operational_mode = StringVar(self.mc_frame)
 		self.roll_call_status = StringVar(self.mc_frame)
-		self.node_mission_control = "HOME"
-		self.node_eagle_eye = "CRAFT"
-		self.node_relay = "RELAY"
+		self.node_mission_control = StringVar(self.mc_frame)
+		self.node_eagle_eye = StringVar(self.mc_frame)
+		self.node_relay = StringVar(self.mc_frame)
 		self.radio_received = StringVar(self.mc_frame)
 		self.radio_sent = StringVar(self.mc_frame)
 		self.craft_time = StringVar(self.mc_frame)
@@ -98,6 +98,9 @@ class MC_Tab():
 		self.modified_commands = StringVar(self.mc_frame)
 
 		# Configures tracing for all variables.
+		self.node_mission_control.trace("w", self.callback_update_mc_node_status)
+		self.node_eagle_eye.trace("w", self.callback_update_ee_node_status)
+		self.node_relay.trace("w", self.callback_update_relay_node_status)
 		self.operational_mode.trace("w", self.callback_update_transmission)
 		self.roll_call_status.trace("w", self.callback_update_transmission)
 		self.craft_anchor.trace('w', self.callback_update_transmission)
@@ -108,7 +111,6 @@ class MC_Tab():
 		self.authority_mode.trace("w", self.callback_update_transmission)
 
 		# Initialization of varaibles on GUI startup.
-		self.operational_mode.set("NOT STARTED")
 		self.roll_call_status.set("NOT STARTED")
 		self.radio_received.set("-------")
 		self.radio_sent.set("-------")
@@ -166,9 +168,6 @@ class MC_Tab():
 		"""
 
 		# Creates button widgets. (Triggers specified callback method.)
-		self.button_node_mission_control = Button(self.mc_frame, state=DISABLED, text=self.node_mission_control)
-		self.button_node_eagle_eye = Button(self.mc_frame, state=DISABLED, text=self.node_eagle_eye)
-		self.button_node_relay = Button(self.mc_frame, state=DISABLED, text=self.node_relay)
 		self.button_roll_call_start = Button(self.mc_frame, text="RC Start", command=self.callback_roll_call_start)
 		self.button_roll_call_stop = Button(self.mc_frame, text="RC Stop", command=self.callback_roll_call_stop)
 		self.button_start_network = Button(self.mc_frame, text="Network Start", command=self.callback_network_start)
@@ -178,6 +177,21 @@ class MC_Tab():
 		self.button_target_latitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_latitude)
 		self.button_target_longitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_longitude)
 		self.button_queue_commands = Button(self.mc_frame, text="Send", command=self.callback_queue_commands)
+
+
+	def create_label_objects(self):
+		""" 
+		Creates/configures Label objects.
+
+		@param self - Instance of the class.
+		"""
+
+		self.label_mc_node = Label(self.mc_frame, text="GROUND STATION", relief='solid')
+		self.label_mc_node.configure(background='red')
+		self.label_ee_node = Label(self.mc_frame, text="CRAFT", relief='solid')
+		self.label_ee_node.configure(background='red')
+		self.label_relay_node = Label(self.mc_frame,  text="RELAY", relief='solid')
+		self.label_relay_node.configure(background='red')
 
 	def create_checkbox_objects(self):
 		""" 
@@ -204,9 +218,9 @@ class MC_Tab():
 		self.create_label_east(1, 0, self.mc_frame, "Roll Call Status:")
 		self.entry_roll_call_status.grid(row=1, column=1, sticky='w')
 		self.create_label_east(0, 2, self.mc_frame, "Node Status:")
-		self.button_node_mission_control.grid(row=0, column=3, sticky='we')
-		self.button_node_eagle_eye.grid(row=1, column=3, sticky='we')
-		self.button_node_relay.grid(row=0, column=4, sticky='we')
+		self.label_mc_node.grid(row=0, column=3, sticky='nswe')
+		self.label_ee_node.grid(row=1, column=3, sticky='nswe')
+		self.label_relay_node.grid(row=0, column=4, sticky='nswe')
 		self.create_label_east(0, 5, self.mc_frame, "Received:")
 		self.entry_radio_received.grid(row=0, column=6, columnspan=14, sticky='we')
 		self.create_label_east(1, 5, self.mc_frame, "Sent:")
@@ -295,14 +309,18 @@ class MC_Tab():
 		# Creates/configures the tk widgets. 
 		self.create_entry_objects()
 		self.create_button_objects()
+		self.create_label_objects()
 		self.create_checkbox_objects()
 		# Aligns the widgets to the frame's grid.
 		self.layout_network()
 		self.layout_craft()
 		self.layout_mission_control()
 
+		# Update class instance stored as global.
+		g.mc_class_reference = self
+
 		# Configures serial environment.
-		setup_comms(self)
+		setup_comms()
 
 	def callback_config_controller(self):
 		"""
@@ -332,6 +350,53 @@ class MC_Tab():
 			except:
 				pass
 
+	def callback_update_mc_node_status(self, *args):
+		""" 
+		Upon serial data notification that the mc_node's network status has been
+		updated, this method will change the color of the visual representation on
+		the gui to inform the user. 
+		Green = Connected. 
+		Yellow = Was, but lost. 
+		Red = Not connected / lost.
+
+		@param self - Instance of the class.
+		"""
+
+		if self.node_mission_control.get() in "0.00":
+			self.label_mc_node.configure(background='red')
+		elif self.node_mission_control.get() in "1.00":
+			self.label_mc_node.configure(background='green')
+		elif self.node_mission_control.get() in "2.00":
+			self.label_mc_node.configure(background='yellow')
+
+	def callback_update_ee_node_status(self, *args):
+		""" 
+		Upon serial data notification that the ee_node's network status has been
+		updated, this method will change the color of the visual representation on
+		the gui to inform the user. 
+		Green = Connected. 
+		Yellow = Was, but lost. 
+		Red = Not connected / lost.
+
+		@param self - Instance of the class.
+		"""
+		junk = 1 + 1
+
+
+	def callback_update_relay_node_status(self, *args):
+		""" 
+		Upon serial data notification that the relay_node's network status has been
+		updated, this method will change the color of the visual representation on
+		the gui to inform the user. 
+		Green = Connected. 
+		Yellow = Was, but lost. 
+		Red = Not connected / lost.
+
+		@param self - Instance of the class.
+		"""
+		junk = 1 + 1
+
+
 	def callback_update_gui(self, *args):
 		"""
 		Method is run each time the connected microcontrollers send serial data to the gui.
@@ -344,18 +409,19 @@ class MC_Tab():
 
 		temp_input = ""
 
+		# Checks for none null connection to mission_control Uc.
 		if g.PORT_MC_LORA is not None:
 			temp_input = g.PORT_MC_LORA.input.get()
+			# N signifies the packet being of normal communication type.
 			if "N" in temp_input:
 				serial_data, radio_data = str(temp_input).split("]")
 				# Variables such as '$' and 'N' are thrown out as junk.
 				# t_ stands for temp because the numbers need to be converted to the 
 				# corresponding string for the gui to show.
-				junk, junk ,t_craft_ts, t_alt, t_lat, t_lon, t_event, t_anchor, t_craft_id, t_mc_ts = str(serial_data).split(",")
+				junk, junk ,t_craft_ts, t_alt, t_lat, t_lon, t_event, t_craft_id, t_mc_ts = str(serial_data).split(",")
 				t_radio_in, t_radio_out, junk = str(radio_data).split("/")
-
+				# Setting individual variables from the parsed packet.
 				self.home_time.set(t_mc_ts)
-				self.craft_anchor.set(t_anchor)
 				self.craft_altitude.set(t_alt)
 				self.craft_latitude.set(t_lat)
 				self.craft_longitude.set(t_lon)
@@ -364,6 +430,16 @@ class MC_Tab():
 				self.craft_received_id.set(t_craft_id)
 				self.radio_received.set(t_radio_in)
 				self.radio_sent.set(t_radio_out)
+			# R signifies the packet being of type Roll Call.
+			elif "R" in temp_input:
+				# Variables such as '$' and 'R' are thrown out as junk.
+				# t_ stands for temp because the numbers need to be converted to the 
+				# corresponding string for the gui to show.
+				junk, junk, t_mc_node, t_ee_node, t_relay_node, junk = str(temp_input).split(",")
+				# Setting individual variables from the parsed packet.
+				self.node_mission_control.set(t_mc_node)
+				self.node_eagle_eye.set(t_ee_node)
+				self.node_relay.set(t_relay_node)
 
 		if g.PORT_CRAFT_LORA is not None:
 			placeholder = 1 + 1
@@ -525,11 +601,8 @@ class MC_Tab():
 		try:
 			# Checks for non-null connection to mission control's lora microcontroller.
 			if g.PORT_MC_LORA is not None:
-
 				# Converts substring into each's corresponding integer value.
 				converted_transmission = self.convert_serial()
-
-				print("Commands: " + str(converted_transmission))
 				# If non-null, send transmission via serial port.
 				send(g.PORT_MC_LORA.get_port(), converted_transmission)
 		# Null connection.
@@ -573,7 +646,6 @@ class MC_Tab():
 
 			# Checks for roll call serial operations.
 			elif self.authority_mode.get() == "MANUAL":
-				print("in manual")
 				new_packet += "$"
 				new_packet += ","
 				new_packet += str(self.convert_authority())

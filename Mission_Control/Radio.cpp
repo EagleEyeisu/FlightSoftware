@@ -168,7 +168,7 @@ void RADIO::manager()
         Radio.rollCall();
     }
 	// After Roll Call is complete, Mission Control will broadcast the start signal.
-	else if((operation_mode == Radio.STANDBY))
+	else if(operation_mode == Radio.STANDBY)
     {
         // Updates craft_id to the network start signal.
         Radio.Network.craft_id = 555.0;
@@ -202,7 +202,7 @@ void RADIO::nodeCheckIn()
         {
             // Checks to see if node has already checked in. Prevents duplicates.
             if(nodeList[i] == received_id)
-            {
+            {   // If already found, discard repeated node.
                 break;
             }
             else if(nodeList[i] == 0.0)

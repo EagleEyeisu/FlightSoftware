@@ -116,8 +116,6 @@ void DATA::update_gui()
 			temp_packet += ",";
       		temp_packet += "R";
       		temp_packet += ",";
-			temp_packet += Radio.operation_mode;
-			temp_packet += ",";
 			temp_packet += Radio.mc_node.node_status;
 			temp_packet += ",";
 			temp_packet += Radio.ee_node.node_status;
@@ -143,8 +141,6 @@ void DATA::update_gui()
 			temp_packet += Radio.Network.craft_longitude;
 			temp_packet += ",";
 			temp_packet += Radio.Network.craft_event;
-		    temp_packet += ",";
-		    temp_packet += Radio.Network.craft_anchor;
 		    temp_packet += ",";
 		    temp_packet += Radio.Network.craft_id;
 		    temp_packet += ",";
@@ -211,7 +207,7 @@ float DATA::get_serial_target_throttle(char buf[])
 void DATA::get_serial_op_mode(char buf[])
 {	
 	// Parses out operation_mode representated as integer.
-    int temp_mode = (int)(Parse(buf,5));
+    int temp_mode = (Parse(buf,5));
     // Converts integer representation to the appropriate state.
     if(temp_mode == 0.0)
     {
@@ -220,16 +216,14 @@ void DATA::get_serial_op_mode(char buf[])
     else if(temp_mode == 1.0)
     {
     	Radio.operation_mode = Radio.ROLLCALL;
+      Radio.mc_node.node_status = 1.0;
     }
     else if(temp_mode == 2.0)
     {
     	Radio.operation_mode = Radio.STANDBY;
     }
-    else if(temp_mode == 1.0)
+    else if(temp_mode == 3.0)
     {
     	Radio.operation_mode = Radio.NORMAL;
-    }
-    else{ // Debug scenario.
-      //Serial.write("nope");
     }
 }

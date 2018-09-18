@@ -15,16 +15,8 @@ from tkinter import *
 from tkinter.ttk import *
 
 
-def setup_comms(mc_class_instance):
-	""" 
-	Oversees the serial port connection process.
-
-	@param frame - Mission_control (self.mc_frame) instance.
-	"""
-
-	# Update frame instance stored as global.
-	g.mc_class_reference = mc_class_instance
-
+def setup_comms():
+	""" Oversees the serial port connection process. """
 	print("\nStarting comms setup.----------------------------------")
 
 	# Returns a list of all serial connections.
@@ -166,12 +158,12 @@ def config_scheduler():
 		# Checks for valid connection the the craft's Arduino MEGA.
 		if g.PORT_CRAFT_LORA is not None:
 			print("Scheduling task for craft LoRa.\n")
-			timer = threading.Timer(1.0, craft_lora_receive)
+			timer = threading.Timer(0.6, craft_lora_receive)
 			timer.start()
 		# Checks for valid connection the the craft's Arduino LoRa.
 		if g.PORT_CRAFT_MEGA is not None:
 			print("Scheduling task for craft MEGA.\n")
-			timer = threading.Timer(1.0, craft_mega_receive)
+			timer = threading.Timer(0.6, craft_mega_receive)
 			timer.start()
 	# Prints exception handler.
 	except Exception as e:
@@ -259,7 +251,7 @@ def craft_lora_receive():
 def craft_mega_receive():
 	""" Responsible for reading in data on the given serial port. """
 
-	timer = threading.Timer(1.0, mc_lora_receive)
+	timer = threading.Timer(0.6, mc_lora_receive)
 	timer.start()
 	# Pulls the serial data from the craft MEGA port object down to a local instanced variable.
 	ser = g.PORT_MEGA_LORA.get_port()
