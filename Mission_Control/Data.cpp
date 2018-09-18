@@ -134,7 +134,7 @@ void DATA::update_gui()
 			temp_packet += ",";
 			temp_packet += "N";
 			temp_packet += ",";
-			temp_packet += Radio.Network.craft_anchor;
+      		temp_packet += Radio.Network.craft_ts;
 			temp_packet += ",";
 			temp_packet += Radio.Network.craft_altitude;
 			temp_packet += ",";
@@ -143,6 +143,12 @@ void DATA::update_gui()
 			temp_packet += Radio.Network.craft_longitude;
 			temp_packet += ",";
 			temp_packet += Radio.Network.craft_event;
+		    temp_packet += ",";
+		    temp_packet += Radio.Network.craft_anchor;
+		    temp_packet += ",";
+		    temp_packet += Radio.Network.craft_id;
+		    temp_packet += ",";
+		    temp_packet += Radio.Network.home_ts;
 			temp_packet += "]";
 			temp_packet += Radio.radio_input;
 			temp_packet += "/";

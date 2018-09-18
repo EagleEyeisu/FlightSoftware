@@ -351,9 +351,10 @@ class MC_Tab():
 				# Variables such as '$' and 'N' are thrown out as junk.
 				# t_ stands for temp because the numbers need to be converted to the 
 				# corresponding string for the gui to show.
-				junk, junk ,t_craft_ts, t_alt, t_lat, t_lon, t_event, t_anchor, t_craft_id = str(serial_data).split(",")
+				junk, junk ,t_craft_ts, t_alt, t_lat, t_lon, t_event, t_anchor, t_craft_id, t_mc_ts = str(serial_data).split(",")
 				t_radio_in, t_radio_out, junk = str(radio_data).split("/")
 
+				self.home_time.set(t_mc_ts)
 				self.craft_anchor.set(t_anchor)
 				self.craft_altitude.set(t_alt)
 				self.craft_latitude.set(t_lat)
