@@ -159,10 +159,12 @@ void RADIO::manager()
 { 
 	// Reads in radio transmission if available.
 	Radio.radio_receive();
- 
+    
+    Serial.println("After received.");
 	// Checks for a specific Craft ID. '999.9' signals the start of operation.
 	if(received_id == 999.0 && !Radio.checked_in)
-    {
+    {   
+        Serial.println("Roll Call started.");
         // Updates crafts state.
         operation_mode = Radio.ROLLCALL;
 		// Responds to Mission Control with the correct ID to signal this node is here and listening.
@@ -218,7 +220,7 @@ void RADIO::radio_receive()
             str.toCharArray(to_parse,str.length());
             // Used to display the received data in the GUI.
             radio_input = buf;
-          
+            
             // This whole section is comparing the currently held varaibles from the last radio update
             // to that of the newly received signal. Updates the craft's owned variables and copies
             // down the other nodes varaibles. If the timestamp indicates that this craft currently 
@@ -252,11 +254,13 @@ void RADIO::roll_call()
 {
 	// Updates the Craft_ID to Eagle Eye's specific ID #.
 	Network.craft_id = 2.0;
+    Serial.println("RollCall broadcast.");
 	// Sends the transmission via radio.
 	Radio.broadcast();
-	// Updates Checked_In Status.
+    Serial.println("Broadcasted.");
+	// Updates the node's network status.
 	checked_in = true;
-    // Updates craft states. 
+    // Updates craft states.
     operation_mode = Radio.STANDBY;
 }
 

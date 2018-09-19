@@ -24,7 +24,7 @@ class I2C
   	void create_mega_packet();
 	
 	// Sends byte array to MEGA.
-	void send_mega();
+	void send_mega_packet();
 
   	// Inter-Intergrated Circuit (I^2C) packet..
   	String i2c_packet = "";

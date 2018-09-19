@@ -42,7 +42,7 @@ float DATA::Parse(char message[], int objective)
 	//        1           2         3          4           5       6     7     8     9         10          11
 	//
 	// The number of commas that the program needs to pass before it started parsing the data.
-  
+  	
 	// Used to iterate through the passed in character array.
 	int i = 0;
 	// This iterator is used to pull the wanted part of the 'message' from the entire array.

@@ -43,7 +43,7 @@ void I2C::manager()
     // Clears and fills the network packet to be sent to the Mega.
     create_mega_packet();
     // Uploads message to CAN to be delivered to Mega.
-    send_mega();
+    send_mega_packet();
 }
 
 
@@ -92,7 +92,7 @@ void I2C::create_mega_packet()
 /**
  * Sends byte over I2C Connection. (Utilizing the Arduino's CAN)
  */
-void I2C::send_mega()
+void I2C::send_mega_packet()
 {
     // Iterator
     int character_iterator = 0;

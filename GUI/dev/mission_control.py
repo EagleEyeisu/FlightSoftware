@@ -380,7 +380,12 @@ class MC_Tab():
 
 		@param self - Instance of the class.
 		"""
-		junk = 1 + 1
+		if self.node_eagle_eye.get() in "0.00":
+			self.label_ee_node.configure(background='red')
+		elif self.node_eagle_eye.get() in "1.00":
+			self.label_ee_node.configure(background='green')
+		elif self.node_eagle_eye.get() in "2.00":
+			self.label_ee_node.configure(background='yellow')
 
 
 	def callback_update_relay_node_status(self, *args):
@@ -394,7 +399,12 @@ class MC_Tab():
 
 		@param self - Instance of the class.
 		"""
-		junk = 1 + 1
+		if self.node_relay.get() in "0.00":
+			self.label_relay_node.configure(background='red')
+		elif self.node_relay.get() in "1.00":
+			self.label_relay_node.configure(background='green')
+		elif self.node_relay.get() in "2.00":
+			self.label_relay_node.configure(background='yellow')
 
 
 	def callback_update_gui(self, *args):
