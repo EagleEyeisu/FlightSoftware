@@ -19,3 +19,13 @@ NODE_RELAY_ID = 2
 
 # Tkinter frame objects.
 mc_class_reference = None
+
+# Threaded timer objects.
+timer_mc_lora = None
+timer_craft_lora = None
+timer_craft_mega = None
+
+# Flags to stop the threaded timers.
+stop_mc_lora_flag = False
+stop_craft_lora_flag = False
+stop_craft_mega_flag = False

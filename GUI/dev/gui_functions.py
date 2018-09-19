@@ -10,6 +10,7 @@
 from tkinter import *
 from tkinter.ttk import *
 from mission_control import *
+import globals as g
 
 
 class GUI_Terminal():
@@ -37,7 +38,7 @@ class GUI_Terminal():
 		self.gui_window.title("Eagle Eye Serial GUI")
 		self.gui_window.configure(background='#666666')
 		self.gui_window.attributes('-fullscreen', True)
-		self.gui_window.bind("<Escape>", lambda e: self.gui_window.quit())
+		self.gui_window.bind("<Escape>", self.callback_quit_gui)
 
 		# Creates and defines the notebook object.
 		self.configure_notebook()
@@ -75,3 +76,22 @@ class GUI_Terminal():
 
 		book.add(self.mc_frame, text="Mission Control")
 		book.add(self.craft_frame, text="     Eagle Eye       ")
+
+
+	def callback_quit_gui(self, *args):
+		"""
+		Bound to the user pressing the 'ESC' key. Kills all active threads
+		and shuts down the gui object. This method ensure the program is shut down
+		correctly and doesn't cause a stall due to the still active threads.
+
+		@param self - Instance of the class.
+		"""
+
+		if g.timer_mc_lora is not None:
+			g.timer_mc_lora.cancel()
+		if g.timer_craft_lora is not None:
+			g.timer_craft_lora.cancel()
+		if g.timer_craft_mega is not None:
+			g.timer_craft_mega.cancel()
+
+		self.gui_window.quit()

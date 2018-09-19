@@ -153,18 +153,18 @@ def config_scheduler():
 		# Checks for valid connection the the mc's Arduino LoRa.
 		if g.PORT_MC_LORA is not None:
 			print("Scheduling task for mc LoRa.\n")
-			timer = threading.Timer(0.6, mc_lora_receive)
-			timer.start()
+			g.timer_mc_lora = threading.Timer(0.6, mc_lora_receive)
+			g.timer_mc_lora.start()
 		# Checks for valid connection the the craft's Arduino MEGA.
 		if g.PORT_CRAFT_LORA is not None:
 			print("Scheduling task for craft LoRa.\n")
-			timer = threading.Timer(0.6, craft_lora_receive)
-			timer.start()
+			g.timer_craft_lora = threading.Timer(0.6, craft_lora_receive)
+			g.timer.start()
 		# Checks for valid connection the the craft's Arduino LoRa.
 		if g.PORT_CRAFT_MEGA is not None:
 			print("Scheduling task for craft MEGA.\n")
-			timer = threading.Timer(0.6, craft_mega_receive)
-			timer.start()
+			g.timer_craft_mega = threading.Timer(0.6, craft_mega_receive)
+			g.timer_craft_mega.start()
 	# Prints exception handler.
 	except Exception as e:
 		print("Unable to start setup scheduler.")
@@ -199,8 +199,8 @@ def generic_receive(ser):
 
 def mc_lora_receive():
 	""" Responsible for reading in data on the given serial port. """
-	timer = threading.Timer(0.6, mc_lora_receive)
-	timer.start()
+	g.timer_mc_lora = threading.Timer(0.6, mc_lora_receive)
+	g.timer_mc_lora.start()
 
 	# Pulls mission_control's serial port object down to a local instanced variable.
 	ser = g.PORT_MC_LORA.get_port()

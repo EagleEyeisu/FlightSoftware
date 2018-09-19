@@ -532,7 +532,7 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		self.operational_mode.set("RUNNING")
+		self.operational_mode.set("NORMAL")
 
 	def callback_craft_anchor(self):
 		"""

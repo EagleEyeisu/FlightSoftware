@@ -174,96 +174,17 @@ void RADIO::manager()
         Radio.Network.craft_id = 555.0;
 	}
 	// Each of the 2 crafts have 5 seconds to broadcast. That means each craft will broadcast every 10 seconds.
-	else if((millis() - start >= 10000) && (operation_mode == Radio.NORMAL))
+	else if((millis() - broadcast_timer >= 10000) && (operation_mode == Radio.NORMAL))
     {
 		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
-		start = millis();
+		broadcast_timer = millis();
 		// Sends the transmission via radio.
 		Radio.broadcast();
         // Switch start signal to craft ID. Normal operations have begun. 
-        if(Network.craft_id == 555.0)
+        if(Radio.Network.craft_id == 555.0)
         {
-            Network.craft_id = 1.0;
+            Radio.Network.craft_id = 1.0;
     	}
-    }
-}
-
-
-/**
- * Checks for response from node after rollcall broadcast. If not found, adds to network.
- */
-void RADIO::nodeCheckIn()
-{
-    // Checks for response from node after rollcall broadcast.
-    if(received_id != 0.0)
-    {
-        // Cycles through nodes that have already checked in.
-        for(int i=0;i<2;i++)
-        {
-            // Checks to see if node has already checked in. Prevents duplicates.
-            if(nodeList[i] == received_id)
-            {   // If already found, discard repeated node.
-                break;
-            }
-            else if(nodeList[i] == 0.0)
-            {
-                // If not found and an empty spot is found, it adds the node to the network. 
-                nodeList[i] = received_id;
-                break;
-            }
-        }
-    }
-}
-
-
-/**
- * Responsible for reading in signals over the radio antenna.
- */
-void RADIO::radioReceive()
-{
-    //Serial.println("Checking for packet...");
-    // Checks if radio message has been received.
-    if (rf95.available())
-    {
-        // Serial.println("Incoming packet...");
-        // Creates a temporary varaible to read in the incoming transmission. 
-        uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
-        // Gets the length of the above temporary varaible.
-        uint8_t len = sizeof(buf);
-        // Reads in the avaiable radio transmission.
-        if(rf95.recv(buf, &len))
-        {
-            // Used to display the received data in the GUI.
-            radio_input = buf;
-            // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
-            // unsigned char array for parsing. 
-            String str = (char*)buf;
-            char toParse[str.length()];
-            str.toCharArray(toParse,str.length());
-
-            // This whole section is comparing the currently held varaibles from the last radio update
-            // to that of the newly received signal. Updates the LoRa's owned variables and copies
-            // down the other nodes' varaibles. If the time LoRa currently holds the most updated values
-            // for another node (LoRa's time stamp is higher than the new signal's), it replaces those vars.
-          
-            // Reads in the time stamp for Mission Control's last broadcast.
-            float temp_LoRa = Radio.getTimeStamp(toParse, 0);
-            // Compares the currently brought in time stamp to the one stored onboad.
-            if(temp_LoRa > Radio.Network.craft_ts)
-            {
-                // If the incoming signal has more up-to-date versions, we overwrite our saved version with
-                // the new ones.
-                Network.craft_ts = temp_LoRa;
-                Network.craft_altitude = Radio.getRadioAltitude(toParse);
-                Network.craft_latitude = Radio.getRadioLatitude(toParse);
-                Network.craft_longitude = Radio.getRadioLongitude(toParse);
-                Network.craft_event = Radio.getLoRaEvent(toParse);
-            }
-            // Reads in Craft ID to see where signal came from. 
-            received_id = Radio.getCraftID(toParse);
-            // Compares the transmission's craftID to see if its a brand new craft. If so, it logs it. 
-            Radio.nodeCheckIn();
-        }
     }
 }
 
@@ -273,8 +194,8 @@ void RADIO::radioReceive()
  */
 void RADIO::rollCall()
 {
-	// Updates the Craft_ID to the network call in signal "999.0".
-	Network.craft_id = 999.0;
+  // Updates the Craft_ID to the network call in signal "999.0".
+  Network.craft_id = 999.0;
     // Timer of 5 seconds.
     if(millis() - rc_broadcast >= 5000)
     {
@@ -330,6 +251,84 @@ void RADIO::broadcast()
     // Pauses all operations until the micro controll has guaranteed the transmission of the
     // signal. 
     rf95.waitPacketSent();
+}
+
+
+/**
+ * Checks for response from node after rollcall broadcast. If not found, adds to network.
+ */
+void RADIO::nodeCheckIn()
+{
+    // Checks for response from node after rollcall broadcast.
+    if(received_id != 0.0)
+    {
+        // Cycles through nodes that have already checked in.
+        for(int i=0;i<2;i++)
+        {
+            // Checks to see if node has already checked in. Prevents duplicates.
+            if(nodeList[i] == received_id)
+            {   // If already found, discard repeated node.
+                break;
+            }
+            else if(nodeList[i] == 0.0)
+            {
+                // If not found and an empty spot is found, it adds the node to the network. 
+                nodeList[i] = received_id;
+                break;
+            }
+        }
+    }
+}
+
+
+/**
+ * Responsible for reading in signals over the radio antenna.
+ */
+void RADIO::radioReceive()
+{
+    // Checks if radio message has been received.
+    if (rf95.available())
+    {
+        // Serial.println("Incoming packet...");
+        // Creates a temporary varaible to read in the incoming transmission. 
+        uint8_t buf[RH_RF95_MAX_MESSAGE_LEN];
+        // Gets the length of the above temporary varaible.
+        uint8_t len = sizeof(buf);
+        // Reads in the avaiable radio transmission.
+        if(rf95.recv(buf, &len))
+        {
+            // Used to display the received data in the GUI.
+            radio_input = buf;
+            // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
+            // unsigned char array for parsing. 
+            String str = (char*)buf;
+            char toParse[str.length()];
+            str.toCharArray(toParse,str.length());
+
+            // This whole section is comparing the currently held varaibles from the last radio update
+            // to that of the newly received signal. Updates the LoRa's owned variables and copies
+            // down the other nodes' varaibles. If the time LoRa currently holds the most updated values
+            // for another node (LoRa's time stamp is higher than the new signal's), it replaces those vars.
+          
+            // Reads in the time stamp for Mission Control's last broadcast.
+            float temp_LoRa = Radio.getTimeStamp(toParse, 0);
+            // Compares the currently brought in time stamp to the one stored onboad.
+            if(temp_LoRa > Radio.Network.craft_ts)
+            {
+                // If the incoming signal has more up-to-date versions, we overwrite our saved version with
+                // the new ones.
+                Network.craft_ts = temp_LoRa;
+                Network.craft_altitude = Radio.getRadioAltitude(toParse);
+                Network.craft_latitude = Radio.getRadioLatitude(toParse);
+                Network.craft_longitude = Radio.getRadioLongitude(toParse);
+                Network.craft_event = Radio.getLoRaEvent(toParse);
+            }
+            // Reads in Craft ID to see where signal came from. 
+            received_id = Radio.getCraftID(toParse);
+            // Compares the transmission's craftID to see if its a brand new craft. If so, it logs it. 
+            Radio.nodeCheckIn();
+        }
+    }
 }
 
 

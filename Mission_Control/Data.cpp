@@ -102,6 +102,9 @@ void DATA::update_gui()
   // Only sends info to update gui every 2 seconds to relieve traffic.
 	if(!Serial.available() && (millis() - Data.serial_timer >= 2000))
 	{
+    // Starts or updates mission control microsecond timer. (Converts to seconds w/ 2 decimal places for easy of use)
+    Radio.Network.home_ts = millis()/1000.0;
+    
     // Resets / starts timer.
     Data.serial_timer = millis();
     // Holds outgoing message.
