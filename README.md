@@ -10,4 +10,4 @@ All software for EE onboard micro controllers.
 Main interface for the Eagle Eye program. Has the ability to get/set serial & Radio data from any connected microcontrollers.
 	
 ## Mission_Control:
-Main ground system. Displays telemetry data from all nodes.
+Ground station radio.
