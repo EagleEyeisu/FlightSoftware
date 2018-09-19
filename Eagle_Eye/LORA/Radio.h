@@ -36,10 +36,10 @@ class RADIO
     float get_radio_target_throttle(char buf[]);
 
     // Parses and returns the radio Target Latitude.
-    float get_radio_target_lat(char buf[]);
+    float get_radio_target_latitude(char buf[]);
 
     // Parses and returns the radio Target Longitude.
-    float get_radio_target_lon(char buf[]);
+    float get_radio_target_longitude(char buf[]);
 
     // Returns the transmission's time stamp.
     float get_radio_timestamp(char buf[], int selector);
@@ -75,6 +75,9 @@ class RADIO
 
 	// Craft ID (Used to set start times)
 	const byte NODE_ID = 2;
+
+    // Pins used to blink an LED to signal receival packet.
+    const byte LED = 13;
 	
 	// Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
 	#define RF95_FREQ 433.0
@@ -96,13 +99,13 @@ class RADIO
     // STANDBY  - RollCall completed, waiting for user to send out start signal. 
     // NORMAL   - Radio is running in its normal operation state. 
     enum RadioStatus {NONE, ROLLCALL, STANDBY, NORMAL};
-    enum RadioStatus OperationMode = NONE;
+    enum RadioStatus operation_mode = NONE;
   
 	// Stores all information related to the network of the Eagle Eye program.
 	// This struct reads specific indexes and than rebroadcasts the updated transmission to
 	// the other nodes in the network. 
-	struct Network_Data {
-		
+	struct Network_Data 
+    {
 		 /**
          * These variables are modified by the network admin operating the mission_control node. 
          */
@@ -170,9 +173,8 @@ class RADIO
     struct Network_Data Network;
 
   // Used in the computation of the radio system. 
-  unsigned long start = 0;
+  unsigned long broadcast_timer = 0;
   
 };
 
 #endif
-

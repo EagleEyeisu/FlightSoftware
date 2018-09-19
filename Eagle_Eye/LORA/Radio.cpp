@@ -165,7 +165,6 @@ void RADIO::manager()
     {
         // Updates crafts state.
         operation_mode = Radio.ROLLCALL;
-        
 		// Responds to Mission Control with the correct ID to signal this node is here and listening.
         delay(100);
 		Radio.roll_call();
@@ -180,8 +179,9 @@ void RADIO::manager()
     {
         if(received_id == 555.0)
         {
-            // Delays 5 seconds.
+            // Delays 5 seconds to offset this node from the main mission_control node.
             delay(5000);
+            // Updates network state.
             operation_mode = Radio.NORMAL;
         }
 	}
@@ -199,7 +199,7 @@ void RADIO::manager()
 /**
  * Responsible for reading in signals over the radio antenna.
  */
-void RADIO::radioReceive()
+void RADIO::radio_receive()
 {
     // Checks if radio message has been received.
     if (rf95.available())
@@ -217,7 +217,7 @@ void RADIO::radioReceive()
             char to_parse[str.length()];
             str.toCharArray(to_parse,str.length());
             // Used to display the received data in the GUI.
-            radioInput = buf;
+            radio_input = buf;
           
             // This whole section is comparing the currently held varaibles from the last radio update
             // to that of the newly received signal. Updates the craft's owned variables and copies
@@ -270,10 +270,10 @@ void RADIO::broadcast()
     Network.craft_ts = millis()/1000.0;
     // Updates the Network's struct to reflect the craft's most up-to-date postioning before
     // it broadcasts the signal on the network.
-    Network.craft_altitude = Data.Local.altitude;
-    Network.craft_latitude = Data.Local.latitude;
-    Network.craft_longitude = Data.Local.longtitude;
-    Network.craft_event = Data.Local.event;
+    Network.craft_altitude = Data.Local.current_altitude;
+    Network.craft_latitude = Data.Local.current_latitude;
+    Network.craft_longitude = Data.Local.current_longitude;
+    Network.craft_event = Data.Local.current_event;
     // Casting all float values to a character array with commas saved in between values
     // allows the character array to be parsed when received by another craft.
     String temp = "";

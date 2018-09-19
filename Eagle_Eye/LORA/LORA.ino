@@ -15,10 +15,10 @@ GPS Gps;
 I2C Comm;
 RADIO Radio;
 
-//Directs the radio object to focus on two specific ports.
+// Directs the radio object to focus on two specific ports.
 RH_RF95 rf95(8,7);
 
-//Creates an instance of the gps class from TinyGPSPlus.
+// Creates an instance of the gps class from TinyGPSPlus.
 TinyGPSPlus gps;
 
 

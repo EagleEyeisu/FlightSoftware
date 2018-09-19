@@ -27,7 +27,7 @@ class DATA
 	{
 		// Altitude of the craft gathered from GPS.
 		float current_altitude  = 0.0;
-	
+		
 		// Latitude of the craft gathered from GPS.
 		float current_latitude = 0.0;
 		
@@ -51,7 +51,7 @@ class DATA
 
 	   	// Target Latitude for craft.
 	    float current_target_latitude = 0.0;
-	  
+	  	
 	    // Target Longitude for craft.
 	    float current_target_longitude = 0.0;
 
@@ -60,13 +60,13 @@ class DATA
 
 		// Holds the crafts previous altitude.
 		float previous_altitude = 0.0;
-	  
+	  	
 		// Holds the crafts previous latitude.
 		float previous_latitude = 0.0;
-	  
+	  	
 		// Holds the crafts previous longitude.
 		float previous_longitude = 0.0;
-
+		
 	    // Holds the crafts previous target distance.
 	    float previous_target_distance = 0.0;
 	};
