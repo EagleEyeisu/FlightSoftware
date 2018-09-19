@@ -262,7 +262,7 @@ void RADIO::node_check_in()
     if(received_id != 0.0)
     {
         // Cycles through nodes that have already checked in.
-        for(int i=0;i<node_list;i++)
+        for(int i=0;i<3;i++) //Update w/ dynamic constanst.
         {
             // Checks to see if node has already checked in. Prevents duplicates.
             if(node_list[i] == received_id)

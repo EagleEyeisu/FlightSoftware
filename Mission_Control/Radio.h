@@ -36,10 +36,10 @@ class RADIO
     float get_radio_timestamp(char buf[], int selector);
 
     // Parses and returns the radio Target Latitude.
-    float get_radio_target_lat(char buf[]);
+    float get_radio_target_latitude(char buf[]);
 
     // Parses and returns the radio Target Longitude.
-    float get_radio_target_lon(char buf[]);
+    float get_radio_target_longitude(char buf[]);
 
     // Returns the transmission's target throttle variable.
     float get_radio_target_throttle(char buf[]);
@@ -85,9 +85,6 @@ class RADIO
     // Pins used to blink an LED to signal receival packet.
     const byte LED = 13;
 
-    // Max amount of nodes allowed in the network.
-    const byte NETWORK_MAX_SIZE = 3;
-
     // Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
     #define RF95_FREQ 433.0
 
@@ -97,7 +94,7 @@ class RADIO
     // List of nodes currently logged into network. 
     // MC - 1
     // EE - 2
-    float node_list[NETWORK_MAX_SIZE] = {1.0, 0.0, 0.0};  // In future, need to cycle through null list and fill out 0.0.
+    float node_list[3] = {1.0, 0.0, 0.0};  // In future, need to cycle through null list and fill out 0.0.
 
     // State of Radio program. 
     // ROLLCALL - Currently in RollCall process. 
