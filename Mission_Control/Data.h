@@ -4,7 +4,7 @@
 
 #ifndef DATA_h
 #define DATA_h
-
+ 
 #include <Arduino.h>
 
 class DATA

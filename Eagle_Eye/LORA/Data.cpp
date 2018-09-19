@@ -42,7 +42,6 @@ float DATA::Parse(char message[], int objective)
 	//        1           2         3          4           5       6     7     8     9         10          11
 	//
 	// The number of commas that the program needs to pass before it started parsing the data.
-	// parameter objective ^^^
   
 	// Used to iterate through the passed in character array.
 	int i = 0;
@@ -56,7 +55,6 @@ float DATA::Parse(char message[], int objective)
 	bool Goal = false;
 	// Temporary string used to hold the newly parsed array.
 	char tempArr[20];
-  
 	// Iterators over the entire array.
 	for(i=0;i<150;i++)
 	{
@@ -79,7 +77,6 @@ float DATA::Parse(char message[], int objective)
 			}
 		}
 	}
- 
 	// Charater array used with a fitted length of the parsed section.
 	char arr[tempIter];
 	// Iterates through the temporary array copying over the info to the variable which will be returned.
@@ -88,56 +85,8 @@ float DATA::Parse(char message[], int objective)
 		// Copying of the information between arrays.
 		arr[i]=tempArr[i];
 	}
-  
 	// Converts the final array to a float.
 	float temp = atof(arr);
 	// Returns the desired parsed section in number (float) form.
 	return temp;
-}
-
-
-/**
- * Prints information to screen. 
- */
-void DATA::displayInfo()
-{
-  if(newData == YES)
-  {
-    // Prints out data struct to the screen for debugging/following along purposes.
-    Serial.println("-----------------------------------------------------------------------------");
-    Serial.println("-----------------------------------------------------------------------------");
-    Serial.println("-----------------------------------------------------------------------------");
-    Serial.println("|                                Craft Data                                 |");
-    Serial.println("|                                                                           |");
-    Serial.print(  "|  Received: ");  Serial.print(Radio.radioInput);  Serial.println("");
-    Serial.print(  "|  Sent:     ");  Serial.print(Radio.radioOutput); Serial.println("");
-    Serial.println("|                                                                           |");
-    Serial.println("-----------------------------------------------------------------------------");
-    Serial.println("|                                                                           |");
-    Serial.print(  "|  Operation Mode:   "); Serial.print(Radio.getOpSTATE()); Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Roll Call Status: "); Serial.print(Radio.getRCSTATE()); Serial.println("\t\t\t\t\t\t    |");
-    Serial.println("|                                                                           |");
-    Serial.println("-----------------------------------------------------------------------------");
-    Serial.println("|                                                                           |");
-    Serial.print(  "|  Lora Time Stamp:  "); Serial.print(Radio.Network.L_TS);  Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Altitude:   "); Serial.print(Radio.Network.Altitude);    Serial.print(" m"); Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Latitude:   "); Serial.print(Radio.Network.Latitude,5);  Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Longitude:  "); Serial.print(Radio.Network.Longitude,5); Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  LoRa Event: "); Serial.print(Radio.Network.LE);          Serial.println("\t\t\t\t\t\t\t    |");
-    Serial.println("|                                                                           |");
-    Serial.println("-----------------------------------------------------------------------------");
-    Serial.println("|                                                                           |");
-    Serial.print(  "|  Mission Control Time Stamp: "); Serial.print(Radio.Network.MC_TS);          Serial.println("\t\t\t\t\t    |");
-    Serial.print(  "|  Operational Status: ");         Serial.print(Radio.getFunctionalSTATE());   Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Target Throttle: ");            Serial.print(Radio.Network.TargetThrottle); Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Target Lat: ");                 Serial.print(Radio.Network.TargetLon,5);    Serial.println("\t\t\t\t\t\t    |");
-    Serial.print(  "|  Target Lon: ");                 Serial.print(Radio.Network.TargetLat,5);    Serial.println("\t\t\t\t\t\t    |");
-    Serial.println("|                                                                           |");
-    Serial.println("-----------------------------------------------------------------------------");
-    Serial.print(  "|  Received ID:  ");  Serial.print(Radio.receivedID); Serial.println("\t\t\t\t\t\t\t    |");
-    Serial.println("-----------------------------------------------------------------------------");
-  
-    // Resets the newData state to no new data.
-    Data.newData = Data.NO;
-  }
 }
