@@ -27,21 +27,15 @@ TinyGPSPlus gps;
  */
 void setup(){
 
-  //Creates a serial communication line between the arduino and the serial port 
-  //   found under 'Tools' -> 'Serial Monitor'
-  Serial.begin(115200);
+    // Creates a serial communication line between the arduino and the serial port 
+    // found under 'Tools' -> 'Serial Monitor'
+    Serial.begin(115200);
 
-  for(int i=0;i<100;i++){
-    Serial.println("RESET");
-  }
-  
+    // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
+    Comm.initialize();
 
-  //Initializes the Inter-Intergrated Circuit (I^2C) protocol.
-  Comm.initialize();
-
-  //Initializes the Radio.
-  Radio.initialize();
-  
+    // Initializes the Radio.
+    Radio.initialize();
 }
 
 
@@ -50,20 +44,15 @@ void setup(){
  */
 void loop(){
   
-  //Reads in a new NMEA sentence.
-  Gps.manager();
+    // Reads in a new NMEA sentence.
+    Gps.manager();
 
-  //Communicates with the Mega to check for certain events happening
-  //   throughout the system.
-  Comm.manager();
+    // Communicates with the Mega to check for certain events happening
+    // throughout the system.
+    Comm.manager();
 
-  //Responsible for grabbing all of the craft's current information, 
-  //   turning that data into an array that can be sent out via radio.
-  //   Also reads in incoming messages.
-  Radio.manager();
-
-  //Displays current information of craft. 
-  Data.displayInfo();
-
-  delay(5000);
+    // Responsible for grabbing all of the craft's current information, 
+    // turning that data into an array, and transmitting the array via radio.
+    // Also reads incoming network packets.
+    Radio.manager();
 }

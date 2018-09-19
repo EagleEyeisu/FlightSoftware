@@ -36,25 +36,26 @@ void I2C::initialize()
 
 
 /**
- * Controls what message gets sent where much like an old telephone switchboard operator.
+ * Controls what message gets sent and where they go. 
+ * Much like an old telephone switchboard operator.
  */
 void I2C::manager()
 {
   // Clears and fills the network packet to be sent to the Mega.
-  preLoadCAN();
+  create_mega_packet();
   
   // Uploads message to CAN to be delivered to Mega.
-  upLoadCAN();
+  send_mega();
 }
 
 
 /**
- * Builds the message to sent to the Mega via CAN.
+ * Builds the message to sent to the Mega via I2^C.
  */
-void I2C::preLoadCAN(){
+void I2C::create_mega_packet(){
 
   /**
-   *                EXAMPLE OF CONTROLLER ACCESS NETWORK PROTOCOL PACKET
+   *                EXAMPLE OF I2^C PACKET.
    *            
    * $,Altitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$
    *      1          2         3          4          5          6            7           8      9
@@ -88,7 +89,7 @@ void I2C::preLoadCAN(){
   temp += '$';
 
   // Copies over values Offical string.
-  NDP = temp;
+  i2c_packet = temp;
   
 }
 
@@ -96,57 +97,45 @@ void I2C::preLoadCAN(){
 /**
  * Sends byte over I2C Connection. (Utilizing the Arduino's CAN)
  */
-void I2C::upLoadCAN()
+void I2C::send_mega()
 {
   // Iterator
-  int i = 0;
-
+  int character_iterator = 0;
   // Sends the first installment of 32 characters to the Mega. (0-32)
-  
 	// Assigns address of the receiving board.
 	Wire.beginTransmission(8);
-  
 	// Sends the message.
-	while(i<32){
-    Wire.write(NDP[i]);
-    // Serial.print(NDP[i]);
-    i++;
+	while(character_iterator<32)
+  {
+    Wire.write(i2c_packet[character_iterator]);
+    character_iterator++;
 	}
-	
 	// Closes the transmission.
 	Wire.endTransmission();
-  
   delay(100);
   
   // Sends the second installment of 32 characters to the Mega. (32-64)
-  
+  // Assigns address of the receiving board.
   Wire.beginTransmission(8);
-  
   // Sends the message.
-  while(i<64){
-    Wire.write(NDP[i]);
-    // Serial.print(NDP[i]);
-    i++;
+  while(character_iterator<64)
+  {
+    Wire.write(i2c_packet[character_iterator]);
+    character_iterator++;
   }
-  
   // Closes the transmission.
   Wire.endTransmission();
-
   delay(100);
 
   // Sends the third installment of 32 characters to the Mega. (64-96)
-  
+  // Assigns address of the receiving board.
   Wire.beginTransmission(8);
-  
   // Sends the message.
-  while(i<96){
-    Wire.write(NDP[i]);
-    // Serial.print(NDP[i]);
-    i++;
+  while(character_iterator<96)
+  {
+    Wire.write(i2c_packet[character_iterator]);
+    character_iterator++;
   }
-  
   // Closes the transmission.
   Wire.endTransmission();
-  
-  // Serial.println();
 }

@@ -22,7 +22,7 @@ RADIO::RADIO()
 /**
  * Parses and returns the radio transmission's altitude.
  */
-float RADIO::getRadioAltitude(char buf[])
+float RADIO::get_radio_craft_altitude(char buf[])
 {
     return (Data.Parse(buf,1));
 }
@@ -31,7 +31,7 @@ float RADIO::getRadioAltitude(char buf[])
 /**
  * Parses and returns the radio transmission's latitude.
  */
-float RADIO::getRadioLatitude(char buf[])
+float RADIO::get_radio_craft_latitude(char buf[])
 {
     return (Data.Parse(buf,2)) / 10000.0;
 }
@@ -40,20 +40,39 @@ float RADIO::getRadioLatitude(char buf[])
 /**
  * Parses and returns the radio transmission's longitude.
  */
-float RADIO::getRadioLongitude(char buf[])
+float RADIO::get_radio_craft_longitude(char buf[])
 {
     return (Data.Parse(buf,3)) / 10000.0;
 }
 
 
 /**
- * Parses and returns the radio transmission's LoRa Event.
+ * Parses and returns the radio transmission's craft Event.
  */
-float RADIO::getLoRaEvent(char buf[])
+float RADIO::get_radio_craft_event(char buf[])
 {
     return (Data.Parse(buf,4));
 }
 
+
+/**
+ * Parses and returns the radio transmission's anchor variable.
+ * 0.0 -> pause
+ * 1.0 -> running
+ */
+float RADIO::get_radio_craft_anchor(char buf[])
+{
+    return (Data.Parse(buf,6));
+}
+
+
+/**
+ * Parses and returns the radio transmission's Craft ID.
+ */
+float RADIO::get_radio_craft_id(char buf[])
+{
+    return (Data.Parse(buf,10));
+}
 
 
 /**
@@ -61,36 +80,16 @@ float RADIO::getLoRaEvent(char buf[])
  *    LoRa  -> 0
  *    MC    -> 5
  */
-float RADIO::getTimeStamp(char buf[], int selector)
+float RADIO::get_radio_timestamp(char buf[], int selector)
 {
     return (Data.Parse(buf, selector));
 }
 
 
 /**
- * Parses and returns the radio transmission's Start or Stop variable.
- * 0.0 -> pause
- * 1.0 -> running
- */
-float RADIO::getStartStop(char buf[])
-{
-    return (Data.Parse(buf,6));
-}
-
-
-/**
- * Parses and returns the radio transmission's targetThrottle
- */
-float RADIO::getRadioTargetThrottle(char buf[])
-{
-    return (Data.Parse(buf,7));
-}
-
-
-/**
  * Parses and returns the radio Target Latitude.
  */
-float RADIO::getRadioTargetLat(char buf[])
+float RADIO::get_radio_target_latitude(char buf[])
 {
     return (Data.Parse(buf,8)) / 10000.0;
 }
@@ -99,18 +98,18 @@ float RADIO::getRadioTargetLat(char buf[])
 /**
  * Parses and returns the radio Target Longitude.
  */
-float RADIO::getRadioTargetLon(char buf[])
+float RADIO::get_radio_target_longitude(char buf[])
 {
     return (Data.Parse(buf,9)) / 10000.0;
 }
 
 
 /**
- * Parses and returns the radio transmission's Craft ID.
+ * Parses and returns the radio transmission's target throttle variable.
  */
-float RADIO::getCraftID(char buf[])
+float RADIO::get_radio_target_throttle(char buf[])
 {
-    return (Data.Parse(buf,10));
+    return (Data.Parse(buf,7));
 }
 
 
@@ -160,12 +159,12 @@ void RADIO::initialize()
 void RADIO::manager()
 {
 	// Reads in radio transmission if available.
-	Radio.radioReceive();
+	Radio.radio_receive();
     // Checks to see if its time to run Roll Call. Set via GUI. 
     if(operation_mode == Radio.ROLLCALL)
     {
         // Broadcasts startup packet.
-        Radio.rollCall();
+        Radio.roll_call();
     }
 	// After Roll Call is complete, Mission Control will broadcast the start signal.
 	else if(operation_mode == Radio.STANDBY)
@@ -192,7 +191,7 @@ void RADIO::manager()
 /**
  * Alters the craft ID of the radio transmission and broadcasts back to Mission Control.
  */
-void RADIO::rollCall()
+void RADIO::roll_call()
 {
   // Updates the Craft_ID to the network call in signal "999.0".
   Network.craft_id = 999.0;
@@ -257,23 +256,37 @@ void RADIO::broadcast()
 /**
  * Checks for response from node after rollcall broadcast. If not found, adds to network.
  */
-void RADIO::nodeCheckIn()
+void RADIO::node_check_in()
 {
     // Checks for response from node after rollcall broadcast.
     if(received_id != 0.0)
     {
         // Cycles through nodes that have already checked in.
-        for(int i=0;i<2;i++)
+        for(int i=0;i<node_list;i++)
         {
             // Checks to see if node has already checked in. Prevents duplicates.
-            if(nodeList[i] == received_id)
+            if(node_list[i] == received_id)
             {   // If already found, discard repeated node.
                 break;
             }
-            else if(nodeList[i] == 0.0)
+            // Node id not found in current list. (New node to check in)
+            else if(node_list[i] == 0.0)
             {
-                // If not found and an empty spot is found, it adds the node to the network. 
-                nodeList[i] = received_id;
+                // Adds the node to the network. (Known node id's list)
+                node_list[i] = received_id;
+                // Checks for craft's node id.
+                if(received_id == 2.0)
+                {
+                    // Sets Eagle Eye's network status as connected. (Used by GUI.)
+                    Radio.ee_node.node_status = 1.0;
+                }
+                // Checks for relay's node id. (Technically anything 3.0 and above but not implemented yet)
+                else if (received_id == 3.0)
+                {
+                    // Sets the relay's network status as connected. (Used by GUI.)
+                    Radio.relay_node.node_status = 1.0;
+                }
+                // Breaks FOR loop.
                 break;
             }
         }
@@ -284,7 +297,7 @@ void RADIO::nodeCheckIn()
 /**
  * Responsible for reading in signals over the radio antenna.
  */
-void RADIO::radioReceive()
+void RADIO::radio_receive()
 {
     // Checks if radio message has been received.
     if (rf95.available())
@@ -302,8 +315,8 @@ void RADIO::radioReceive()
             // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
             // unsigned char array for parsing. 
             String str = (char*)buf;
-            char toParse[str.length()];
-            str.toCharArray(toParse,str.length());
+            char to_parse[str.length()];
+            str.toCharArray(to_parse,str.length());
 
             // This whole section is comparing the currently held varaibles from the last radio update
             // to that of the newly received signal. Updates the LoRa's owned variables and copies
@@ -311,22 +324,22 @@ void RADIO::radioReceive()
             // for another node (LoRa's time stamp is higher than the new signal's), it replaces those vars.
           
             // Reads in the time stamp for Mission Control's last broadcast.
-            float temp_LoRa = Radio.getTimeStamp(toParse, 0);
+            float temp_LoRa = Radio.get_radio_timestamp(to_parse, 0);
             // Compares the currently brought in time stamp to the one stored onboad.
             if(temp_LoRa > Radio.Network.craft_ts)
             {
                 // If the incoming signal has more up-to-date versions, we overwrite our saved version with
                 // the new ones.
                 Network.craft_ts = temp_LoRa;
-                Network.craft_altitude = Radio.getRadioAltitude(toParse);
-                Network.craft_latitude = Radio.getRadioLatitude(toParse);
-                Network.craft_longitude = Radio.getRadioLongitude(toParse);
-                Network.craft_event = Radio.getLoRaEvent(toParse);
+                Network.craft_altitude = Radio.get_radio_craft_altitude(to_parse);
+                Network.craft_latitude = Radio.get_radio_craft_latitude(to_parse);
+                Network.craft_longitude = Radio.get_radio_craft_longitude(to_parse);
+                Network.craft_event = Radio.get_radio_craft_event(to_parse);
             }
             // Reads in Craft ID to see where signal came from. 
-            received_id = Radio.getCraftID(toParse);
+            received_id = Radio.get_radio_craft_id(to_parse);
             // Compares the transmission's craftID to see if its a brand new craft. If so, it logs it. 
-            Radio.nodeCheckIn();
+            Radio.node_check_in();
         }
     }
 }

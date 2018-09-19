@@ -14,35 +14,35 @@ class RADIO
     // Constructor
     RADIO();
 
-    // Returns the transmission's Altitude.
-    float getRadioAltitude(char buf[]);
-      
-    // Returns the transmission's CR variable.
-    float getStartStop(char buf[]);
+    // Returns the transmission's craft's altitude.
+    float get_radio_craft_altitude(char buf[]);
 
-    // Returns the transmission's CS variable.
-    float getRadioTargetThrottle(char buf[]);
+    // Returns the transmission's Latitude.
+    float get_radio_craft_latitude(char buf[]);
       
+    // Returns the transmission's longitude.
+    float get_radio_craft_longitude(char buf[]);
+
+    // Returns the transmission's craft event.
+    float get_radio_craft_event(char buf[]);
+      
+    // Returns the transmission's craft anchor variable.
+    float get_radio_craft_anchor(char buf[]);
+
     // Returns the transmission's craft ID.
-    float getCraftID(char buf[]);
-      
-    // Returns the transmission's Latitude.
-    float getRadioLatitude(char buf[]);
-      
-    // Returns the transmission's Longitude.
-    float getRadioLongitude(char buf[]);
-      
-    // Returns the transmission's Latitude.
-    float getLoRaEvent(char buf[]);
-
-    // Parses and returns the radio Target Latitude.
-    float getRadioTargetLat(char buf[]);
-
-    // Parses and returns the radio Target Latitude.
-    float getRadioTargetLon(char buf[]);
+    float get_radio_craft_id(char buf[]);
 
     // Returns the transmission's time stamp.
-    float getTimeStamp(char buf[], int selector);
+    float get_radio_timestamp(char buf[], int selector);
+
+    // Parses and returns the radio Target Latitude.
+    float get_radio_target_lat(char buf[]);
+
+    // Parses and returns the radio Target Longitude.
+    float get_radio_target_lon(char buf[]);
+
+    // Returns the transmission's target throttle variable.
+    float get_radio_target_throttle(char buf[]);
 
     // Runs initialzation script for the Radio.
     void initialize();
@@ -51,31 +51,22 @@ class RADIO
     void manager();
 
     // Receives incoming transmission.
-    void radioReceive();
+    void radio_receive();
 
     // Responds to the RollCall signal sent from Mission Control.
-    void rollCall();
+    void roll_call();
 
     // Sends the desired signal out over the radio antenna.
     void broadcast();
+
+    // Compares current node against others. Prevents duplicates. 
+    void node_check_in();
 
     // Blinks the LED on the LoRa uC (quick blink).
     void blink_led();
 
     // Blinks the LED on the LoRa uC (long duration pulse).
     void blink_led_long();
-
-    // Compares current node against others. Prevents duplicates. 
-    void nodeCheckIn();
-
-    // Returns craft movement state in string format for UI. 
-    String getFunctionalSTATE();
-
-    // Returns craft operational state in string format for UI. 
-    String getOpSTATE();
-
-    // Returns craft Rollcall state in string format for UI. 
-    String getRCSTATE();
 
     /*-----------------------------------------------------------------------------*/
 
@@ -91,11 +82,11 @@ class RADIO
     // Craft ID (Used to set start times)
     const byte NODE_ID = 1;
 
-    // Interrupt pin to trigger RollCall.
-    const byte INTERRUPT_ROLLCALL_PIN = 3;
-
     // Pins used to blink an LED to signal receival packet.
     const byte LED = 13;
+
+    // Max amount of nodes allowed in the network.
+    const byte NETWORK_MAX_SIZE = 3;
 
     // Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
     #define RF95_FREQ 433.0
@@ -106,7 +97,7 @@ class RADIO
     // List of nodes currently logged into network. 
     // MC - 1
     // EE - 2
-    float nodeList[2] = {0.0, 1.0};
+    float node_list[NETWORK_MAX_SIZE] = {1.0, 0.0, 0.0};  // In future, need to cycle through null list and fill out 0.0.
 
     // State of Radio program. 
     // ROLLCALL - Currently in RollCall process. 
@@ -198,7 +189,7 @@ class RADIO
     unsigned long broadcast_timer = 0;
 
     // Timer is used to for the 10 second interval that the craft will broadcast on for RollCall. 
-    // This value is in milliseconds.  
+    // This value is in milliseconds.
     unsigned long rc_broadcast = 0;
 
     // Used to house node objects. 

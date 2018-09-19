@@ -20,14 +20,14 @@ class I2C
 	// Processes all incoming and outgoing 
 	void manager();
   
-  	// Builds byte array to be sent via Controller Access Network.
-  	void preLoadCAN();
+  	// Builds byte array to be sent to MEGA.
+  	void create_mega_packet();
 	
-	// Sends the NDP byte array via CAN bus.
-	void upLoadCAN();
+	// Sends byte array to MEGA.
+	void send_mega();
 
-  	// Neighbor Discovery Protocol to be sent via I2C CAN bus.
-  	String NDP = "";
+  	// Inter-Intergrated Circuit (I^2C) packet..
+  	String i2c_packet = "";
   
 };
 #endif
