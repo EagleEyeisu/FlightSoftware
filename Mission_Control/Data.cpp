@@ -24,63 +24,57 @@ DATA::DATA()
 float DATA::Parse(char message[], int objective)
 {
 
-	// Example GPS Transmission. (GGA)
+	// Example GPS Transmission. (GGA)-------------------------------------------------------------------------------------
 	//
 	// $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47
 	//
-	// Example Radio Transmission. 
+	// Example Radio Transmission.-----------------------------------------------------------------------------------------
 	//
 	//                    LORA                                        MISSION CONTROL                       CRAFT ID
 	// Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),craft_anchor,new_throttle,TargetLat,TargetLon, | Signal Origin
 	//
-	// The number of commas that the program needs to pass before it started parsing the data.
 
 	// Used to iterate through the passed in character array.
 	int i = 0;
 	// This iterator is used to pull the wanted part of the 'message' from the entire array.
 	// Used to gather information such as how long the new parsed section is.
-	int tempIter = 0;
+	int temp_iter = 0;
 	// Counts the commas as the character array is iterated over.
-	int commaCounter = 0;
-	// This turns true when the correct number of commas has been achieved, which signals that the following 
-	// section is the part that the program wants to parse from the entire sentence.
-	bool Goal = false;
+	int comma_counter = 0;
 	// Temporary string used to hold the newly parsed array.
-	char tempArr[20];
+	char temp_array[20];
   	// Iterators over the entire array.
-  	for(i=0;i<120;i++)
+  	for(i=0; i<120; i++)
   	{
     	// Checks to see if the current iterator's position is a comma. 
     	if(message[i] == ',')
     	{
     		// If so, it iterators the comma counter by 1.
-      		commaCounter++;
+      		comma_counter++;
     	}
     	// Checks to see if the desired amount of commas has been passed. 
-	    else if(commaCounter == objective)
+	    else if(comma_counter == objective)
 	    {
 		    // Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
 		    if(message[i] != ',')
 		    {
 		    	// Copies the message's character to the temporary array.
-		        tempArr[tempIter] = message[i];
+		        temp_array[temp_iter] = message[i];
 		        // Iterator used to tell how long the temporary array is.
-		        tempIter++;
+		        temp_iter++;
 		    }
 	    }
   	}
 	// Charater array used with a fitted length of the parsed section.
-	char arr[tempIter];
+	char arr[temp_iter];
 	// Iterates through the temporary array copying over the info to the variable which will be returned.
-	for(i=0;i<tempIter;i++)
+	for(i=0; i<temp_iter; i++)
 	{
 		// Copying of the information between arrays.
-	    arr[i]=tempArr[i];
+	    arr[i]=temp_array[i];
 	}
-	// Converts the final array to a float.
-	float temp = atof(arr);
-	// Returns the desired parsed section in number (float) form.
-  	return temp;
+	// Converts the final array to a float and returns.
+	return atof(arr);
 }
 
 
@@ -102,14 +96,14 @@ void DATA::update_gui()
   // Only sends info to update gui every 2 seconds to relieve traffic.
 	if(!Serial.available() && (millis() - Data.serial_timer >= 2000))
 	{
-    // Starts or updates mission control microsecond timer. (Converts to seconds w/ 2 decimal places for easy of use)
-    Radio.Network.home_ts = millis()/1000.0;
-    
-    // Resets / starts timer.
-    Data.serial_timer = millis();
-    // Holds outgoing message.
+		// Resets / starts timer.
+	    Data.serial_timer = millis();
+	    // Starts or updates mission control microsecond timer. (Converts to seconds w/ 2 decimal places for easy of use)
+	    Radio.Network.home_ts = millis()/1000.0;
+	    
+    	// Holds outgoing message.
 		String temp_packet = "";
-    // Gets set true if a packet (TO BE SENT) has been created.
+    	// Gets set true if a packet (TO BE SENT) has been created.
 		bool confirmed_packet = false;
 		// Roll Call config.
 		if(Radio.operation_mode == Radio.ROLLCALL)
