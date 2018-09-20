@@ -23,7 +23,6 @@ DATA::DATA()
  */
 float DATA::Parse(char message[], int objective)
 {
-
 	// Example GPS Transmission. (GGA)-------------------------------------------------------------------------------------
 	//
 	// $GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47

@@ -64,7 +64,7 @@ class DATA
     // without having it update every few milliseconds. (Potential future solution is
     // would be to use an external terminal such as SuperPuTTy)
     enum dataState {NO, YES};
-    enum dataState new_data = YES; // Initializes to yes to begin. Prints init UI.
+    enum dataState new_data = YES;
 
     // Stores all of Eagle Eye's current flight data.
     // The difference between this struct and the one initalized in Radio.h is that this information
@@ -90,41 +90,37 @@ class DATA
         // External temperature of craft.
         float mega_external_temperature = 0.0;
 
-        // Mega Event. This is assigned as needed throughout the program. Signals the Mega had a 
-        // specific event.
-        float craft_mega_event = 0.0;
-
         // lora
 
         // LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
         float craft_lora_event = 0.0;
 
         // Altitude of the craft. (Brought over from LoRa)
-        float GPSAltitude = 0.0;
+        float lora_current_altitude = 0.0;
 
         // Latitude of the craft. (Brought over from LoRa)
-        float Latitude = 0.0;
+        float lora_current_latitude = 0.0;
 
         // Longitude of the craft. (Brought over from LoRa)
-        float Longitude = 0.0; 
+        float lora_current_longitude = 0.0; 
 
         // Target Altitude (Brought over from LoRa)
-        float GPSTargetAlt = 0.0;
+        float lora_target_altitude = 0.0;
 
         // Target Latitude (Brought over from LoRa)
-        float GPSTargetLat = 0.0;
+        float lora_target_latitude = 0.0;
 
         // Target Longitude (Brought over from LoRa)
-        float GPSTargetLon = 0.0;
+        float lora_target_longitude = 0.0;
 
         // Current distance to target in meters. (Brought over from LoRa)
-        float GPSTargetDistance = 0.0;
+        float lora_destination_distance = 0.0;
 
         // Speed in meters per second. (Brought over from LoRa)
-        float GPSSpeed = 0.0;
+        float lora_current_speed = 0.0;
 
         // Time of flight. (Brought over from LoRa)
-        char GPSTime[10];
+        char lora_current_timestamp[10];
     };
     struct Flight_Data Local;
 };

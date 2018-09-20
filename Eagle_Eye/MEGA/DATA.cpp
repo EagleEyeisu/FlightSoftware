@@ -53,7 +53,7 @@ float DATA::get_i2c_current_longitude()
 /**
  *  Retrieves the distance to the target destination.
  */
-float DATA::get_i2c_current_distance()
+float DATA::get_i2c_destination_distance()
 {
  	return Data.Parse(Comm.NDP,7);
 }
@@ -116,22 +116,22 @@ void DATA::update_data()
 	// Creates new 'event' with the most current pressure sensor data.
 	bmp.getEvent(&event);
 	// MEGA DATA
-	Local.current_altitude = Data.getAltitude(event.pressure);
-	Local.Latitude = Data.getGPSLatitude() / 10000.0;
-	Local.Longitude = Data.getGPSLongitude() / 10000.0;
-	Local.TempExt = Thermo.getTempExt();
-	Local.Pressure = event.pressure;
-	Local.Roll = Imu.getRoll();
-	Local.Pitch = Imu.getPitch();
-	Local.Yaw = Imu.getYaw();
+	Local.current_altitude = Data.calculate_barometer_altitude(event.pressure);
+	Local.mega_external_temperature = Thermo.getTempExt();
+	Local.mega_pressure = event.pressure;
+	Local.mega_roll = Imu.getRoll();
+	Local.mega_pitch = Imu.getPitch();
+	Local.mega_yaw = Imu.getYaw();
 	// LORA DATA
-	Local.GPSAltitude = Data.getGPSAltitude();
-	Local.GPSTargetAlt = Data.getGPSTargetAlt();
-	Local.GPSTargetLat = Data.getGPSTargetLat() / 10000.0;
-	Local.GPSTargetLon = Data.getGPSTargetLon() / 10000.0;
-	Local.GPSTargetDistance = Data.getGPSTargetDistance();
-	Local.GPSSpeed = Data.getGPSSpeed();
-	Data.getGPSTime();
+	Local.lora_current_altitude = Data.get_i2c_();
+	Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
+	Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
+	Local.lora_target_altitude = Data.get_i2c_target_altitude();
+	Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
+	Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
+	Local.lora_destination_distance = Data.get_i2c_destination_distance();
+	Local.lora_current_timestamp = Data.get_i2c_current_speed();
+	Data.get_i2c_current_timestamp(); // Updates in the background.
 }
 
 
