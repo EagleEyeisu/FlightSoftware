@@ -19,61 +19,60 @@ IMU Imu;
 THERMO Thermo;
 MOTOR Movement;
 
-//Object used to pull and store the Thermocouple's information.
+// Object used to pull and store the Thermocouple's information.
 Adafruit_MAX31855 thermocouple(31, 30, 32);
 
-//Object used to pull and store information from the IMU.
-//   Use I2C, ID #1000
+// Object used to pull and store information from the IMU.
+// Use I2C, ID #1000
 Adafruit_LSM9DS0 lsm(1000);
 
-//Object used to communicate and pull information from the BMP085. (Pressure Sensor)
+// Object used to communicate and pull information from the BMP085. (Pressure Sensor)
 Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
 
 
 /**
  * INITIALIZES ALL REQUIRED PERIPHIALS AND DEPENDENCIES.
  */
-void setup(){
+void setup()
+{
+    // Creates a serial communication line between the arduino and the serial port 
+    // found under 'Tools' -> 'Serial Monitor'
+    Serial.begin(115200);
 
-  //Creates a serial communication line between the arduino and the serial port 
-  //   found under 'Tools' -> 'Serial Monitor'
-  Serial.begin(115200);
-  
-  //Initializes the Pressure Sensor.
-  Data.initialize();
+    // Initializes the Pressure Sensor.
+    Data.initialize();
 
-  //Initializes the Inter-Intergrated Circuit (I^2C) protocol.
-  Comm.initialize();
+    // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
+    Comm.initialize();
 
-  //Initializes the Interial Measurement Unit (IMU).
-  Imu.initialize();
+    // Initializes the Interial Measurement Unit (IMU).
+    Imu.initialize();
 
-  //Initializes all ESC's, TurboFans, & Servos.
-  Movement.initialize();
-
+    // Initializes all ESC's, TurboFans, & Servos.
+    Movement.initialize();
 }
 
 
 /**
  * MAIN PROGRAM CODE.
  */
-void loop(){
-
-  //Reads in all needed values from periphals.
+void loop()
+{
+  // Reads in all needed values from periphals.
   Data.updateData();
   
-  //Watches for LoRa to ask for permission to drop.
+  // Watches for LoRa to ask for permission to drop.
   Imu.manager();
 
-  //Dynamically updates the orientation & position of the craft. 
+  // Dynamically updates the orientation & position of the craft. 
   Movement.manager();
 
-  //Print data of the current cycle to the screen. Only prints when new
-  //   information is collected. 
+  // Print data of the current cycle to the screen. Only prints when new
+  // information is collected. 
   Data.toScreen();
   
-  //Resets the newData state to no new data.
-  Data.newData = Data.NO;
+  // Resets the new_data state to false.
+  Data.new_data = Data.NO;
 
   delay(5000);
 }

@@ -15,9 +15,10 @@ class THERMO
   // Constructor
   THERMO();
   
+  /*-----------------------------------------------------------------------------*/
+  
   // Returns the external temp from the thermocouple.
-  float getTempExt();
-
+  float get_external_temperature();
 };
 
 #endif

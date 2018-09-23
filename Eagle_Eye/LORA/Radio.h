@@ -76,7 +76,7 @@ class RADIO
 	// Craft ID (Used to set start times)
 	const byte NODE_ID = 2;
 
-    // Pins used to blink an LED to signal receival packet.
+    // Pins used to blink an LED to signal a radio packet has been received.
     const byte LED = 13;
 	
 	// Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!

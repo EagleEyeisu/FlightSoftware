@@ -32,22 +32,17 @@ IMU::IMU()
  */
 void IMU::initialize()
 {
-  // If invalid connection, the program will stall and print an error message.
-  if(!lsm.begin())
-  {
-	  Serial.print("PROBLEM WITH 9DOF");
-	  //while(1);
-  }
-  //Valid connection, program proceeds as planned.
-  else
-  {
-	  Serial.println("IMU Good.");
-  }
+    // If invalid connection, the program will stall and print an error message.
+    if(!lsm.begin())
+    {
+	   Serial.print("PROBLEM WITH 9DOF");
+	   while(1);
+    }
 
-  // Sets specific calibration values. DO NOT CHANGE.
-  lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
-  lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
-  lsm.setupGyro(lsm.LSM9DS0_GYROSCALE_245DPS);
+    // Sets specific calibration values. DO NOT CHANGE.
+    lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
+    lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
+    lsm.setupGyro(lsm.LSM9DS0_GYROSCALE_245DPS);
 	
 }
 
@@ -57,151 +52,152 @@ void IMU::initialize()
  */
 void IMU::manager()
 {
-  // Calculates the angle between the crafts current heading and the target.
-  angleToTarget();
 
-  // Checks the difference between where we want to be and where we actual are in terms of altitude.
-  checkAltitude();
+    // THIS IS WHERE I NEED TO IMPLEMENT CHECK FOR MANUAL OR AUTO.
 
-  // Calculates the distance in meters from the craft to the target location.
-  checkDistance();
+
+    // Calculates the angle between the crafts current heading and the target.
+    calculate_target_angle();
+    // Checks the difference between where we want to be and where we actual are in terms of altitude.
+    check_altitude_tolerance();
+    // Calculates the distance in meters from the craft to the target location.
+    check_distance_tolerance();
 }
 
 
 /**
  * Returns craft's current roll.
  */
-float IMU::getRoll()
+float IMU::get_roll()
 {
-  // Updates object calibration to use most current IMU information.
-  Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
-
-  sensors_vec_t   orientation;
-  
-  // Checks for connection to IMU.
-  if(ahrs.getOrientation(&orientation))
-  {
-	  return (orientation.roll);
-  }
+    // Updates object calibration to use most current IMU information.
+    Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
+    // Creates data sample object.
+    sensors_vec_t   data_sample;
+    // Checks for connection to IMU.
+    if(ahrs.getOrientation(&data_sample))
+    {
+	   return (data_sample.roll);
+    }
 }
 
 
 /**
  * Returns craft's current pitch.
  */
-float IMU::getPitch()
+float IMU::get_pitch()
 {
-  // Updates object calibration to use most current IMU information.
-  Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
-
-  sensors_vec_t   orientation;
-  
-  // Checks for connection to IMU.
-  if(ahrs.getOrientation(&orientation))
-  {
-	  return (orientation.pitch);
-  }
+    // Updates object calibration to use most current IMU information.
+    Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
+    // Creates data sample object.
+    sensors_vec_t   data_sample;
+    // Checks for connection to IMU.
+    if(ahrs.getOrientation(&data_sample))
+    {
+	   return (data_sample.pitch);
+    }
 }
 
 
 /**
  * Returns craft's current yaw.
  */
-float IMU::getYaw()
+float IMU::get_yaw()
 {
-  // Updates object calibration to use most current IMU information.
-  Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
-
-  sensors_vec_t   orientation;
-  
-  // Checks for connection to IMU.
-  if(ahrs.getOrientation(&orientation))
-  {
-	  return (orientation.heading);
-  }
+    // Updates object calibration to use most current IMU information.
+    Adafruit_Simple_AHRS ahrs(&lsm.getAccel(), &lsm.getMag());
+    // Creates data sample object.
+    sensors_vec_t   data_sample;
+    // Checks for connection to IMU.
+    if(ahrs.getOrientation(&data_sample))
+    {
+	   return (data_sample.heading);
+    }
 }
 
 /**
- * Sets turning booleans depending on the craft's orientation.
+ * Given the current heading and the lat/lng of the wanted destination,
+ * this method calculates the angle needed to turn either left (0 to -180)
+ * or right (0 to +180).
  */
-void IMU::angleToTarget()
+void IMU::calculate_target_heading()
 {
-  float lat1 = Data.Local.Latitude;
-  float lon1 = Data.Local.Longitude;
-  float lat2 = Data.Local.GPSTargetLat;
-  float lon2 = Data.Local.GPSTargetLon;
+    float lat1 = Data.Local.lora_current_latitude;
+    float lon1 = Data.Local.lora_current_longitude;
+    float lat2 = Data.Local.lora_target_latitude;
+    float lon2 = Data.Local.lora_target_longitude;
 
-  float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
-  float y = sin(lon2-lon1) * cos(lat2); 
-  bearing = atan2(y, x);
-  // Normalize to 0-360
-  bearing = fmod((bearing + 360.0),360.0);
+    float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
+    float y = sin(lon2-lon1) * cos(lat2); 
+    bearing = atan2(y, x);
+    // Normalize to 0-360
+    bearing = fmod((bearing + 360.0),360.0);
 
-  float angle = bearing - Imu.getYaw();
-  if(angle > 180)
-  {
-    angle -= 360;
-  }
-  else if(angle < -180)
-  {
-    angle += 360;
-  }
+    float angle = bearing - Imu.get_yaw();
+    if(angle > 180)
+    {
+        angle -= 360;
+    }
+    else if(angle < -180)
+    {
+        angle += 360;
+    }
 
-  if(angle < -angleTolerance)
-  {
-    turnRight = false;
-    turnLeft = true;
-  }
-  else if(angle > angleTolerance)
-  {
-    turnLeft = false;
-    turnRight = true;
-  }
-  else
-  {
-    turnRight = false;
-    turnLeft = false;
-  }
-  ATT = angle;
+    if(angle < -angleTolerance)
+    {
+        turnRight = false;
+        turnLeft = true;
+    }
+    else if(angle > angleTolerance)
+    {
+        turnLeft = false;
+        turnRight = true;
+    }
+    else
+    {
+        turnRight = false;
+        turnLeft = false;
+    }
+    target_heading = angle;
 }
 
 /**
  * Sets certain booleans true depending on the crafts orientation.
  */
-void IMU::checkAltitude()
+void IMU::check_altitude_tolerance()
 {
-  float diffAlt = Data.Local.GPSTargetAlt - Data.Local.GPSAltitude;
+    float altitude_difference = Data.Local.lora_target_altiude - Data.Local.lora_current_altitude;
 
-  if(diffAlt > altitudeTolerance)
-  {
-    moveUp = true;
-  }
-  else if(diffAlt < -altitudeTolerance)
-  {
-    moveDown = true;
-  }
-  else
-  {
-    moveUp = false;
-    moveDown = false;
-  }
+    if(altitude_difference > target_altitude_tolerance)
+    {
+        move_up = true;
+    }
+    else if(altitude_difference < -target_altitude_tolerance)
+    {
+        move_down = true;
+    }
+    else
+    {
+        move_up = false;
+        move_down = false;
+    }
 }
 
 /**
  * Checks the distance from the craft to the destination.
  */
-void IMU::checkDistance()
+void IMU::check_distance_tolerance()
 {
-  // Checks if distance is within tolerance.
-  if(Data.Local.GPSTargetDistance > distanceTolerance)
-  {
-    // If not, move the craft forward.
-    moveForward = true;
-  }
-  // If within tolerance.
-  else
-  {
-    // Power down the craft.
-    moveForward = false;
-  }
+    // Checks if distance is within tolerance.
+    if(Data.Local.lora_destination_distance > target_distance_tolerance)
+    {
+        // If not, move the craft forward.
+        move_forward = true;
+    }
+    // If within tolerance.
+    else
+    {
+        // Power down the craft.
+        move_forward = false;
+    }
 }

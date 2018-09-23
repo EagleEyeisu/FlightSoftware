@@ -24,7 +24,10 @@ class DATA
     void to_screen();
 
     // Reads in external pressure and calculates altitude.
-    float calculate_barometer_altitude(float _Pressure);
+    float calculate_barometer_altitude(float input_pressure);
+
+    // Captures a barometric pressure sample and sets the pressure variable.
+    void set_pressure();
 
     // Reads in the altitude via i2c.
     float get_i2c_current_altitude();
@@ -51,10 +54,12 @@ class DATA
     float get_i2c_current_speed();
 
     // Reads in the time of the LoRa via i2c.
-    void get_i2c_current_timestamp();
+    void set_i2c_current_timestamp();
 
     // Runs initialzation script for the barometer.
     void initialize();
+
+    /*-----------------------------------------------------------------------------*/
 
     // State of Data.
     // This enum is used in the UI display process. It will watch all the variables
@@ -72,6 +77,8 @@ class DATA
     // being passed between crafts (nodes).
     struct Flight_Data
     {
+        // mega information
+
         // Altitude of the craft.
         float mega_altitude = 0.0;
 
@@ -90,10 +97,7 @@ class DATA
         // External temperature of craft.
         float mega_external_temperature = 0.0;
 
-        // lora
-
-        // LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
-        float craft_lora_event = 0.0;
+        // lora information
 
         // Altitude of the craft. (Brought over from LoRa)
         float lora_current_altitude = 0.0;
@@ -112,6 +116,12 @@ class DATA
 
         // Target Longitude (Brought over from LoRa)
         float lora_target_longitude = 0.0;
+
+        // Holds the craft's target throttle position. This is not what the craft is currently at, 
+        // but what we want the craft's to have its upper limit be. For example, it will not be 
+        // at a constant 40% if we set it to '40.0', but it will be able to iterate up and down from
+        // that percentage of thrust. 
+        float lora_target_throttle = 0.0;
 
         // Current distance to target in meters. (Brought over from LoRa)
         float lora_destination_distance = 0.0;

@@ -10,28 +10,30 @@
 
 class I2C
 {
-  public:
+    public:
 
-  // Constructor
-  I2C();
+    // Constructor
+    I2C();
 
-  // Reads in a individual byte from the I2C port.
-  void receiveEvent(int howmany); 
-  
-	// Runs initialzation script for the I2C protocol.
-  void initialize();
-  
-  // Neighbor Discovery Protocol to be sent via I2C CAN bus.
-  String NDP;
+    // Reads in a individual byte from the I2C port.
+    void receiveEvent(int howmany); 
 
-  // Status for reception of the first 32 bits over the CAN bus.
-  bool First8 = false;
+    // Runs initialzation script for the I2C protocol.
+    void initialize();
 
-  // Status for reception of the second 32 bits over the CAN bus.
-  bool Second8 = false;
+    /*-----------------------------------------------------------------------------*/
 
-  // Status for reception of the third 32 bits over the CAN bus.
-  bool Third8 = false;
+    // Inter-Intergrated Circuit (I^2C) packet.
+    String i2c_packet;
+
+    // Status for reception of the first 32 bits via I2C protocol.
+    bool first_32 = false;
+
+    // Status for reception of the second 32 bits via the I2C protocol.
+    bool second_32 = false;
+
+    // Status for reception of the third 32 bits via the I2C protocol.
+    bool third_32 = false;
 };
 
 #endif

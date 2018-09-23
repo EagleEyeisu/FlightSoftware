@@ -25,8 +25,8 @@ TinyGPSPlus gps;
 /**
  * INITIALIZES ALL REQUIRED PERIPHIALS AND DEPENDENCIES.
  */
-void setup(){
-
+void setup()
+{
     // Creates a serial communication line between the arduino and the serial port 
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
@@ -42,8 +42,8 @@ void setup(){
 /**
  * MAIN PROGRAM CODE.
  */
-void loop(){
-  
+void loop()
+{
     // Reads in a new NMEA sentence.
     Gps.manager();
 

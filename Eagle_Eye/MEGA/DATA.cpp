@@ -98,7 +98,7 @@ float DATA::get_i2c_current_speed()
 /**
  * Updates the MEGA's copy of the time stamp onbaord the LoRa. (From GPS device)
  */ 
-void DATA::get_i2c_current_timestamp()
+void DATA::set_i2c_current_timestamp()
 {
 	// This is a junk variable. This method returns nothing, but must be called to update
 	// the time variable. Refer to the parse method in Data.cpp for more details.
@@ -111,19 +111,16 @@ void DATA::get_i2c_current_timestamp()
  */
 void DATA::update_data()
 {
-	// Object used to store the store the data pulled from the BMP085.
-	sensors_event_t event;
-	// Creates new 'event' with the most current pressure sensor data.
-	bmp.getEvent(&event);
+	
 	// MEGA DATA
-	Local.current_altitude = Data.calculate_barometer_altitude(event.pressure);
-	Local.mega_external_temperature = Thermo.getTempExt();
-	Local.mega_pressure = event.pressure;
-	Local.mega_roll = Imu.getRoll();
-	Local.mega_pitch = Imu.getPitch();
-	Local.mega_yaw = Imu.getYaw();
+	Local.mega_altitude = Data.calculate_barometer_altitude(event.pressure);
+	Local.mega_external_temperature = Thermo.get_external_temperature();
+	Data.set_pressure();
+	Local.mega_roll = Imu.get_roll();
+	Local.mega_pitch = Imu.get_pitch();
+	Local.mega_yaw = Imu.get_yaw();
 	// LORA DATA
-	Local.lora_current_altitude = Data.get_i2c_();
+	Local.lora_current_altitude = Data.get_i2c_current_altitude();
 	Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
 	Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
 	Local.lora_target_altitude = Data.get_i2c_target_altitude();
@@ -131,13 +128,27 @@ void DATA::update_data()
 	Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
 	Local.lora_destination_distance = Data.get_i2c_destination_distance();
 	Local.lora_current_timestamp = Data.get_i2c_current_speed();
-	Data.get_i2c_current_timestamp(); // Updates in the background.
+	Data.set_i2c_current_timestamp(); // Updates in the background.
+}
+
+
+/**
+ * Captures a barometric pressure sample and sets the pressure variable.
+ */
+void set_pressure()
+{
+	// Object used to store the store the data pulled from the BMP085.
+	sensors_event_t event;
+	// Creates new 'event' with the most current pressure sensor data.
+	bmp.getEvent(&event);
+	// Updates variable.
+	Local.mega_pressure = event.pressure;
 }
 
 
 void DATA::to_screen()
 {
-	if(newData == YES)
+	if(new_data == YES)
 	{
 	    // Prints out data struct to the screen for debugging/following along purposes.
 	    Serial.println("-----------------------------------------------------------------------------");
@@ -145,39 +156,38 @@ void DATA::to_screen()
 	    Serial.println("-----------------------------------------------------------------------------");
 	    Serial.println("|                                MEGA DATA                                  |");
 	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Altitude:     "); Serial.print(Local.Altitude,2); Serial.print(" m");  Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Temperature:  "); Serial.print(Local.TempExt);    Serial.print(" C");  Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Pressure:     "); Serial.print(Local.Pressure);   Serial.print(" hPa");Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Roll:         "); Serial.print(Local.Roll);                            Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Pitch:        "); Serial.print(Local.Pitch);                           Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Yaw:          "); Serial.print(Local.Yaw);                             Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  LoRa Event:   "); Serial.print(Local.LE);                              Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Mega Event:   "); Serial.print(Local.ME);                              Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Altitude:     "); Serial.print(Local.mega_altitude,2); 			   Serial.print(" m");  Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Temperature:  "); Serial.print(Local.mega_external_temperature);    Serial.print(" C");  Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Pressure:     "); Serial.print(Local.mega_pressure);   			   Serial.print(" hPa");Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Roll:         "); Serial.print(Local.mega_roll);                            				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Pitch:        "); Serial.print(Local.mega_pitch);                           				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Yaw:          "); Serial.print(Local.mega_yaw);                             				Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.println("|                                                                           |");
 	    Serial.println("-----------------------------------------------------------------------------");
 	    Serial.println("|                                LORA DATA                                  |");
 	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Time:         "); Serial.print(Local.GPSTime);                                Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  GPS Altitude: "); Serial.print(Local.GPSAltitude,2);     Serial.print(" m");  Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Latitude:     "); Serial.print(Local.Latitude,5);                             Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Longitude:    "); Serial.print(Local.Longitude,5);                            Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  TargetLat:    "); Serial.print(Local.GPSTargetLat,5);                         Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  TargetLon:    "); Serial.print(Local.GPSTargetLon,5);                         Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Speed:        "); Serial.print(Local.GPSSpeed);          Serial.print(" mps");Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Distance:     "); Serial.print(Local.GPSTargetDistance); Serial.print(" m");  Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Time:          "); Serial.print(Local.lora_current_timestamp);                           Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Cur Altitude:  "); Serial.print(Local.lora_current_altitude,2);    Serial.print(" m");   Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Cur Latitude:  "); Serial.print(Local.lora_current_latitude,5);                          Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Cur Longitude: "); Serial.print(Local.lora_current_longitude,5);                         Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Target Alt:    "); Serial.print(Local.lora_target_altitude,5);                           Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Target Lat:    "); Serial.print(Local.lora_target_latitude,5);                           Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Target Lon:    "); Serial.print(Local.lora_target_longitude,5);                          Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Speed:         "); Serial.print(Local.lora_current_speed);         Serial.print(" mps"); Serial.println("\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Distance:      "); Serial.print(Local.lora_destination_distance);  Serial.print(" m");   Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.println("|                                                                           |");
 	    Serial.println("-----------------------------------------------------------------------------");
 	    Serial.println("|                                                                           |");
 	    Serial.println("|                               MOTOR DATA                                  |");
-	    Serial.print(  "|  State:        "); Serial.print(Movement.getSTATE());Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Servo Pos   : "); Serial.print(Movement.pos);       Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Move Forward: "); Serial.print(Imu.moveForward);    Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Turn Right:   "); Serial.print(Imu.turnRight);      Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Turn Left:    "); Serial.print(Imu.turnLeft);       Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Move Up:      "); Serial.print(Imu.moveUp);         Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Move Down:    "); Serial.print(Imu.moveDown);       Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Target Angle: "); Serial.print(Imu.ATT);            Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Bearing:      "); Serial.print(Imu.bearing);        Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  State:          "); Serial.print(Movement.get_movement_state());		Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Servo Angle:    "); Serial.print(Movement.servo_degree);       		Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Move Forward:   "); Serial.print(Imu.move_forward);    				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Turn Right:     "); Serial.print(Imu.turn_right);      				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Turn Left:      "); Serial.print(Imu.turn_left);       				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Move Up:        "); Serial.print(Imu.move_up);         				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Move Down:      "); Serial.print(Imu.move_down);       				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Target Heading: "); Serial.print(Imu.target_heading);            	Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Cur Heading:    "); Serial.print(Imu.current_bearing);        		Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.println("|                                                                           |");
 	    Serial.println("-----------------------------------------------------------------------------");
   	}
@@ -285,50 +295,50 @@ float DATA::Parse(char message[], int objective)
  * Derives Crafts altitude based on current atmosphereic pressure.
  * DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD TO BY JARED.
  */
-float DATA::getAltitude(float _Pressure)
+float DATA::calculate_barometer_altitude(float input_pressure)
 {
 	// Converts the incoming pressure (hPa) into (mPa).
-	float pressure = _Pressure / 10.0;
+	float pressure = input_pressure / 10.0;
 	// Altitude value produced from the equations below.
   	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD TO BY JARED.
-	float alt;
+	float result;
 	// These variables represent parts of the equation. Think of it like this...
 	// (following symbols are not representative of what happens below)   
 	//
-	//            leftTop +- rightTop
-	//            -------------------     (leftTop and rightTop combined = topTotal)
+	//            left_top +- right_top
+	//            -------------------     (left_top and right_top combined = top_total)
 	//                  bottom
-	float leftTop;
-	float rightTop;
+	float left_top;
+	float right_top;
 	float bottom;
-	float topTotal;
+	float top_total;
 	// ABOVE 25,000m
   	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD BY JARED.
 	if (pressure < 2.55)
   	{                         
-		leftTop = -47454.8;
-		rightTop = pow(pressure, 0.087812) - 1.65374;
+		left_top = -47454.8;
+		right_top = pow(pressure, 0.087812) - 1.65374;
 		bottom = pow(pressure, 0.087812);
-		topTotal = leftTop * rightTop;
-		alt = (topTotal / bottom);
+		top_total = left_top * right_top;
+		result = (top_total / bottom);
 	}
 	// Between 25,000m and 11,000m
   	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD BY JARED.
 	else if(67.05 > pressure && pressure > 2.55)
   	{
-		rightTop = -6369.43;
-		leftTop = log(pressure) - 4.85016;
-		alt =  leftTop * rightTop;
+		right_top = -6369.43;
+		left_top = log(pressure) - 4.85016;
+		result =  left_top * right_top;
 	}
 	// BELOW 11,000m (Pressure > 67.05)
   	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD BY JARED.
 	else
   	{
-		leftTop = 44397.5;
-		rightTop = 18437 * pow(pressure, 0.190259);
-		alt = leftTop - rightTop;
+		left_top = 44397.5;
+		right_top = 18437 * pow(pressure, 0.190259);
+		result = left_top - right_top;
 	}
-	return alt;
+	return result;
 }
 
 
@@ -342,7 +352,6 @@ void DATA::initialize()
 	if(!bmp.begin())
  	{
 		Serial.println("PROBLEM WITH PRESSURE SENSOR.");
-		
 	}
 	//Valid connection, program proceeds as planned.
 	else

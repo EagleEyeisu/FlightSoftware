@@ -17,7 +17,7 @@ class I2C
 	// Runs initialzation script for the I2C protocol.
 	void initialize();
 	
-	// Processes all incoming and outgoing 
+	// Processes all outgoing packets.
 	void manager();
   
   	// Builds byte array to be sent to MEGA.
@@ -26,7 +26,7 @@ class I2C
 	// Sends byte array to MEGA.
 	void send_mega_packet();
 
-  	// Inter-Intergrated Circuit (I^2C) packet..
+  	// Inter-Intergrated Circuit (I^2C) packet.
   	String i2c_packet = "";
   
 };

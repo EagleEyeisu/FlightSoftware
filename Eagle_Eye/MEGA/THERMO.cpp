@@ -21,7 +21,7 @@ THERMO::THERMO()
 /**
  * Returns the current temperature of the thermocouple.
  */
-float THERMO::getTempExt()
+float THERMO::get_external_temperature()
 {
 	return thermocouple.readCelsius();
 }

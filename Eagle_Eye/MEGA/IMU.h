@@ -9,62 +9,62 @@
 
 class IMU
 {
-  public:
+    public:
 
-  // Constructor
-  IMU();
-  
-  // Runs initialzation script for the IMU.
-  void initialize();
+    // Constructor
+    IMU();
 
-  // Responsible relaying to the LoRa that the craft is in the correct orientation to detach.
-  void manager();
-  
-  // Returns the crafts current Roll angle.
-  float getRoll();
-  
-  // Returns the current Pitch angle.
-  float getPitch();
-  
-  // Returns the current Yaw angle.
-  float getYaw();
+    // Runs initialzation script for the IMU.
+    void initialize();
 
-  // Returns the difference between target and current heading and switches turn booleans accordingly
-  void angleToTarget();
+    // Responsible relaying to the LoRa that the craft is in the correct orientation to detach.
+    void manager();
 
-  // Returns difference between target and current altitudes and switches up/down booleans accordingly
-  void checkAltitude();
+    // Returns the crafts current Roll angle.
+    float get_roll();
 
-  // Compares current altitude against target altitude. Sets corresponding booleans.
-  void checkDistance();
+    // Returns the current Pitch angle.
+    float get_pitch();
 
-  // Current angle to the target.
-  float ATT = 0.0;
+    // Returns the current Yaw angle.
+    float get_yaw();
 
-  // Current bearing for craft
-  float bearing = 0.0;
-  
-  // Tolerance for heading angle
-  float angleTolerance = 10.0;
+    // Returns the difference between target and current heading and switches turn booleans accordingly.
+    void calculate_target_heading();
 
-  // Tolerance for difference in altitudes
-  float altitudeTolerance = 200.0;
+    // Returns difference between target and current altitudes and switches up/down booleans accordingly.
+    void check_altitude_tolerance();
 
-  // Tolerance for distance to target
-  float distanceTolerance = 20.0;
+    // Compares current altitude against target altitude. Sets corresponding booleans.
+    void check_distance_tolerance();
 
-  // Booleans to determine right/left turning action
-  bool turnRight = false;
-  bool turnLeft = false;
+    /*-----------------------------------------------------------------------------*/
 
-  // Booleans to determine upward/downward motion action
-  bool moveUp = false;
-  bool moveDown = false;
+    // Current angle to the target.
+    float target_heading = 0.0;
 
-  // Booleans to determine forward/backward motion action
-  bool moveForward = true;  
-  bool moveBackward = false;
-	
+    // Current bearing for craft.
+    float current_heading = 0.0;
+
+    // Tolerance for heading angle.
+    float target_heading_tolerance = 10.0;
+
+    // Tolerance for difference in altitudes.
+    float target_altitude_tolerance = 200.0;
+
+    // Tolerance for distance to target.
+    float target_distance_tolerance = 20.0;
+
+    // Booleans to determine right/left turning action.
+    bool turn_right = false;
+    bool turn_left = false;
+
+    // Booleans to determine upward/downward motion action.
+    bool move_up = false;
+    bool move_down = false;
+
+    // Booleans to determine forward motion action.
+    bool move_forward = true;  
 };
 
 #endif
