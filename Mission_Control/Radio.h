@@ -103,7 +103,7 @@ class RADIO
     enum RadioStatus {NONE, ROLLCALL, STANDBY, NORMAL};
     enum RadioStatus operation_mode = NONE;
 
-    // Holds the current received radio signal. 
+    // Holds the current received radio signal.
     String radio_input = "";
 
     // Holds the current sent radio signal.
@@ -168,7 +168,7 @@ class RADIO
         // 4 - Left
         // 5 - Down
         // 6 - Upward
-        float target_direction = 0.0;
+        float manual_direction = 0.0;
     	
     	/**
     	 * This varaible is updated by each craft right before the array is broadcasted.

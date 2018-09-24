@@ -12,6 +12,7 @@ from tkinter.ttk import *
 from communication import *
 from inputs import get_gamepad
 import globals as g
+import os
 
 
 class MC_Tab():
@@ -35,32 +36,35 @@ class MC_Tab():
 		self.node_relay = None
 		self.radio_received = None
 		self.radio_sent = None
+		self.manual_command = None
 
 		# Eagle Eye Craft variables.
-		self.craft_time = 0
-		self.craft_altitude = 0
-		self.craft_latitude = 0
-		self.craft_longitude = 0
-		self.craft_event = 0
+		self.craft_time = None
+		self.craft_altitude = None
+		self.craft_latitude = None
+		self.craft_longitude = None
+		self.craft_event = None
 		self.craft_received_id = None
 
 		# Mission Control variables.
-		self.home_time = 0
-		self.target_throttle = 0
-		self.target_throttle_set = 0
-		self.target_altitude = 0
-		self.target_altitude_set = 0
-		self.target_latitude = 0
-		self.target_latitude_set = 0
-		self.target_longitude = 0
-		self.target_longitude_set = 0
+		self.home_time = None
+		self.target_throttle = None
+		self.target_throttle_set = None
+		self.target_altitude = None
+		self.target_altitude_set = None
+		self.target_latitude = None
+		self.target_latitude_set = None
+		self.target_longitude = None
+		self.target_longitude_set = None
 
-		# Other
+		# Misc variables.
 		self.modified_commands = None
 
 		# Network Admin variables.
 		self.craft_anchor = 0  # Used for emergency stop (0 normal, 1 = STOP ALL MOVEMENT)
 		self.authority_mode = "MANUAL"
+
+
 
 	def variable_setup(self):
 		""" 
@@ -96,6 +100,7 @@ class MC_Tab():
 		self.target_longitude_set = StringVar(self.mc_frame)
 		self.authority_mode = StringVar(self.mc_frame)
 		self.modified_commands = StringVar(self.mc_frame)
+		self.manual_command = StringVar(self.mc_frame)
 
 		# Configures tracing for all variables.
 		self.node_mission_control.trace("w", self.callback_update_mc_node_status)
@@ -109,6 +114,7 @@ class MC_Tab():
 		self.target_latitude.trace("w", self.callback_update_transmission)
 		self.target_longitude.trace("w", self.callback_update_transmission)
 		self.authority_mode.trace("w", self.callback_update_transmission)
+		self.manual_command.trace("w", self.callback_update_transmission)
 
 		# Initialization of varaibles on GUI startup.
 		self.roll_call_status.set("NOT STARTED")
@@ -129,6 +135,7 @@ class MC_Tab():
 		self.target_longitude.set("-------")
 		self.authority_mode.set("MANUAL")
 		self.modified_commands.set("")
+		self.manual_command.set("0")
 
 	def create_entry_objects(self):
 		""" 
@@ -177,7 +184,6 @@ class MC_Tab():
 		self.button_target_latitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_latitude)
 		self.button_target_longitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_longitude)
 		self.button_queue_commands = Button(self.mc_frame, text="Send", command=self.callback_queue_commands)
-
 
 	def create_label_objects(self):
 		""" 
@@ -315,40 +321,114 @@ class MC_Tab():
 		self.layout_network()
 		self.layout_craft()
 		self.layout_mission_control()
-
 		# Update class instance stored as global.
 		g.mc_class_reference = self
-
 		# Configures serial environment.
 		setup_comms()
+		# Embeds command line into the gui.
+		#self.embed_cmd() # Work in progress for another day.
+		# Connects to the xbox controller.
+		self.setup_controller()
 
-	def callback_config_controller(self):
+	def setup_controller(self):
 		"""
-		Responsible for connecting to and monitoring the threaded processes for manual control.
+		Responsible for connecting to and monitoring the controller for its input.
 		(STARTS XBOX CONTROLLER / CONNECTS / MONITORS USER'S INPUT)
 		
 		@param self - Instance of the class.
 		"""
 
-		#thread_manual_input = threading.Thread(target=manual_mode_monitor, args=())
-		#thread_manual_input.start()
+		if g.PORT_MC_LORA is not None:
+			print("Starting connection process to xbox controller.")
+			g.timer_xbox_controller = threading.Timer(0.6, xbox_input_monitor)
+			g.timer_xbox_controller.start()
 
-	def manual_mode_monitor(self):
+	def xbox_input_monitor(self):
 		"""
-		Threaded method (its always running). 
 		This method monitors the changes in the authority mode (manual vs auto).
-		When in manual, this method reads an xbox controller's input every 3 seconds.
+		When in manual, this method reads an xbox controller's input every 2 seconds.
 
 		@param self - Instance of the class.
 		"""
 
-		while(1):
-			try:
-				# Checks for a incoming data.
-				if self.authority_mode.get() is "MANUAL":
-					junk = 1 + 1
-			except:
+		g.timer_xbox_controller = threading.Timer(0.6, xbox_input_monitor)
+		g.timer_xbox_controller.start()
+		try:
+			# Checks for a incoming data.
+			if self.authority_mode.get() is "MANUAL":
+				# Gathers the current information from the Xbox Controller.
+    			events = get_gamepad()
+				# Cycles through the objects data to check for desired 
+				# button presses. (1 button press = 1 event)
+				for event in events:
+					# Checks if the bottom gamepad arrow was pressed.
+				    if((event.code == "ABS_HAT0Y") and (event.state == 1)):
+				    	self.manual_command.set("NONE")
+				    # Checks if the top gamepad arrow was pressed.
+				    elif((event.code == "") and (event.state == 1)):
+				        self.manual_command.set("FORWARD")
+				    # Checks if the left gamepad arrow was pressed.
+				    elif((event.code == "") and (event.state == 1)):
+				        self.manual_command.set("LEFT")
+				    # Checks if the right gamepad arrow was pressed.
+				    elif((event.code == "") and (event.state == 1)):
+				        self.manual_command.set("RIGHT")
+				    # Checks if the 'Y' button was pressed.
+				    elif((event.code == "BTN_NORTH") and (event.state == 1)):
+				        self.manual_command.set("UP")
+				    # Checks if 'B' button was pressed.
+				    elif((event.code == "BTN_EAST") and (event.state == 1)):
+				        self.callback_craft_anchor()
+				    # Checks if Right Trigger was pressed.
+				    elif((event.code == "BTN_TR") and (event.state == 1)):
+				        self.increment_throttle()
+				    # Checks if Left Trigger was pressed.
+				    elif((event.code == "BTN_TL") and (event.state == 1)):
+				        self.decrement_throttle()
+				    else:
+				    	# Debug.
+				    	print(event.code, event.state)
+				    
+			else:
 				pass
+		except Exception as e:
+			print("Xbox Input Monitor Issue.")
+			print("Exception: " + str(e))
+
+	def increment_throttle(self):
+		""" 
+		Responsible for incrementing the throttle variable by 1% for each call.
+
+		@param self - Instance of the class.
+		"""
+
+		temp = int(self.target_throttle.get())
+		temp += 1
+		self.target_throttle.set(str(temp))
+
+	def decrement_throttle(self):
+		"""
+		Responsible for decrementing the throttle variable by 1% for each call.
+
+		@param self - Instance of the class.
+		"""
+
+		temp = int(self.target_throttle.get())
+		temp -= 1
+		self.target_throttle.set(str(temp))
+
+	def embed_cmd(self):
+		"""
+		Creates a inner frame object and links it to the os's command line.
+
+		@param self - Instance of the class.
+		"""
+
+		# Creation of frame to house the command line / terminal.
+		cmd = Frame(self.mc_frame)
+		cmd.grid(row=5, column=6, columnspan=12, rowspan=6, stick='we')
+		wid = cmd.winfo_id()
+		os.system('xterm -into %d -geometry 40x20 -sb &' % wid)
 
 	def callback_update_mc_node_status(self, *args):
 		""" 
@@ -387,7 +467,6 @@ class MC_Tab():
 		elif self.node_eagle_eye.get() in "2.00":
 			self.label_ee_node.configure(background='yellow')
 
-
 	def callback_update_relay_node_status(self, *args):
 		""" 
 		Upon serial data notification that the relay_node's network status has been
@@ -405,7 +484,6 @@ class MC_Tab():
 			self.label_relay_node.configure(background='green')
 		elif self.node_relay.get() in "2.00":
 			self.label_relay_node.configure(background='yellow')
-
 
 	def callback_update_gui(self, *args):
 		"""
@@ -495,7 +573,7 @@ class MC_Tab():
 				temp_packet += ","
 				temp_packet += str(self.authority_mode.get())
 				temp_packet += ","
-				temp_packet += "direction_placeholder"  # str(self.convert_direction())
+				temp_packet += str(self.manual_command.get())
 				temp_packet += ","
 				temp_packet += str(self.craft_anchor.get())
 				temp_packet += ","
@@ -660,7 +738,7 @@ class MC_Tab():
 				new_packet += ","
 				new_packet += str(self.convert_authority())
 				new_packet += ","
-				new_packet += "direction"  # str(self.convert_direction())
+				new_packet += str(self.convert_direction())
 				new_packet += ","
 				new_packet += str(self.convert_anchor())
 				new_packet += ","
@@ -678,6 +756,23 @@ class MC_Tab():
 			print("Unable to convert commands.")
 			print("Exception: " + str(e))
 
+	def convert_direction(self):
+		"""
+		Converts to correct integer value.
+
+		@param self - Instance of the class.
+		"""
+
+		if self.manual_command.get() == "NONE":
+			return float(0)
+		elif self.manual_command.get() == "FORWARD":
+			return float(1)
+		elif self.manual_command.get() == "LEFT":
+			return float(2)
+		elif self.manual_command.get() == "RIGHT":
+			return float(3)
+		elif self.manual_command.get() == "UP":
+			return float(4)
 
 	def convert_authority(self):
 		"""

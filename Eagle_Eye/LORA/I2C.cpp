@@ -81,10 +81,14 @@ void I2C::create_mega_packet()
     temp += ',';
     temp += Data.Local.current_speed;
     temp += ',';
-    temp += Data.Local.current_gps_time;
+    temp += Radio.Network.authority_mode;
+    temp += ',';
+    temp += Radio.Network.manual_direction;
+    temp += ',';
+    temp += Radio.Network.craft_anchor;
     temp += ',';
     temp += '$';
-    // Copies over values Offical string.
+    // Copies over values to the real string packet.
     i2c_packet = temp;
 }
 

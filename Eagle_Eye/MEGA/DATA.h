@@ -53,8 +53,14 @@ class DATA
     // Reads in the speed via i2c.
     float get_i2c_current_speed();
 
-    // Reads in the time of the LoRa via i2c.
-    void set_i2c_current_timestamp();
+    // Reads in the flight mode of the craft.
+    float get_i2c_authority_mode();
+
+    // Reads in the manual flight mode's directional flight command.
+    float get_i2c_manual_command();
+
+    // Reads in the craft's anchor state.
+    float get_i2c_craft_anchor();
 
     // Runs initialzation script for the barometer.
     void initialize();
@@ -77,7 +83,25 @@ class DATA
     // being passed between crafts (nodes).
     struct Flight_Data
     {
-        // mega information
+
+        /*----------------------Network Information----------------------*/
+
+        // Automatic or Manual control of craft. 
+        // 0 - Manual
+        // 1 - Auto
+        float authority_mode = 0.0;
+
+
+        /*------------------------Craft Information------------------------*/
+
+        // Directional command for when craft is manual state.
+        float craft_manual_direction = 0.0;
+
+        // Anchor status of the craft. (Works as an E Brake)
+        float craft_anchor_status = 0.0;
+        
+
+        /*------------------------Mega Information------------------------*/
 
         // Altitude of the craft.
         float mega_altitude = 0.0;
@@ -97,7 +121,8 @@ class DATA
         // External temperature of craft.
         float mega_external_temperature = 0.0;
 
-        // lora information
+
+        /*------------------------LoRa Information------------------------*/
 
         // Altitude of the craft. (Brought over from LoRa)
         float lora_current_altitude = 0.0;
@@ -128,9 +153,6 @@ class DATA
 
         // Speed in meters per second. (Brought over from LoRa)
         float lora_current_speed = 0.0;
-
-        // Time of flight. (Brought over from LoRa)
-        char lora_current_timestamp[10];
     };
     struct Flight_Data Local;
 };

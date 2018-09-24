@@ -24,8 +24,4 @@ mc_class_reference = None
 timer_mc_lora = None
 timer_craft_lora = None
 timer_craft_mega = None
-
-# Flags to stop the threaded timers.
-stop_mc_lora_flag = False
-stop_craft_lora_flag = False
-stop_craft_mega_flag = False
+timer_xbox_controller = None

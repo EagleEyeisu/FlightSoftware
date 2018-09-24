@@ -47,46 +47,43 @@ float DATA::Parse(char message[], int objective)
 	int i = 0;
 	// This iterator is used to pull the wanted part of the 'message' from the entire array.
 	// Used to gather information such as how long the new parsed section is.
-	int tempIter = 0;
+	int temp_iter = 0;
 	// Counts the commas as the character array is iterated over.
-	int commaCounter = 0;
-	// This turns true when the correct number of commas has been achieved, which signals that the following 
-	// section is the part that the program wants to parse from the entire sentence.
-	bool Goal = false;
+	int comma_counter = 0;
 	// Temporary string used to hold the newly parsed array.
-	char tempArr[20];
+	char temp_array[20];
 	// Iterators over the entire array.
-	for(i=0;i<150;i++)
+	for(i=0; i<150; i++)
 	{
 		// Checks to see if the current iterator's position is a comma. 
 		if(message[i] == ',')
 		{
 			// If so, it iterators the comma counter by 1.
-			commaCounter++;
+			comma_counter++;
 		}
 		// Checks to see if the desired amount of commas has been passed. 
-		else if(commaCounter == objective)
+		else if(comma_counter == objective)
 		{
 			// Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
 			if(message[i] != ',')
 			{
 				// Copies the message's character to the temporary array.
-				tempArr[tempIter] = message[i];
+				temp_array[temp_iter] = message[i];
 				// Iterator used to tell how long the temporary array is.
-				tempIter++;
+				temp_iter++;
 			}
 		}
 	}
 	// Charater array used with a fitted length of the parsed section.
-	char arr[tempIter];
+	char parsed_section[temp_iter];
 	// Iterates through the temporary array copying over the info to the variable which will be returned.
-	for(i=0;i<tempIter;i++)
+	for(i=0; i<temp_iter; i++)
 	{
 		// Copying of the information between arrays.
-		arr[i]=tempArr[i];
+		parsed_section[i] = temp_array[i];
 	}
 	// Converts the final array to a float.
-	float temp = atof(arr);
+	float temp = atof(parsed_section);
 	// Returns the desired parsed section in number (float) form.
 	return temp;
 }

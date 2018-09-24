@@ -199,9 +199,9 @@ def generic_receive(ser):
 
 def mc_lora_receive():
 	""" Responsible for reading in data on the given serial port. """
+
 	g.timer_mc_lora = threading.Timer(0.6, mc_lora_receive)
 	g.timer_mc_lora.start()
-
 	# Pulls mission_control's serial port object down to a local instanced variable.
 	ser = g.PORT_MC_LORA.get_port()
 	try:
@@ -230,7 +230,6 @@ def craft_lora_receive():
 	timer.start()
 	# Pulls the serial data from the craft LoRa port object down to a local instanced variable.
 	ser = g.PORT_CRAFT_LORA.get_port()
-
 	try:
 		# Checks for a incoming data.
 		if(ser.in_waiting != 0):
@@ -255,7 +254,6 @@ def craft_mega_receive():
 	timer.start()
 	# Pulls the serial data from the craft MEGA port object down to a local instanced variable.
 	ser = g.PORT_MEGA_LORA.get_port()
-
 	try:
 		# Checks for a incoming data.
 		if(ser.in_waiting != 0):

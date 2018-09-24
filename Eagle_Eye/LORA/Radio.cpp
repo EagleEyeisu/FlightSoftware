@@ -55,6 +55,17 @@ float RADIO::get_radio_craft_event(char buf[])
 
 
 /**
+ * Parses and returns the radio transmission's Time Stamp (ms).
+ *    LoRa  -> 0
+ *    MC    -> 5
+ */
+float RADIO::get_radio_timestamp(char buf[], int selector)
+{
+    return (Data.Parse(buf, selector));
+}
+
+
+/**
  * Parses and returns the radio transmission's anchor variable.
  * 0.0 -> pause
  * 1.0 -> running
@@ -66,22 +77,11 @@ float RADIO::get_radio_craft_anchor(char buf[])
 
 
 /**
- * Parses and returns the radio transmission's Craft ID.
+ * Parses and returns the radio transmission's target throttle variable.
  */
-float RADIO::get_radio_craft_id(char buf[])
+float RADIO::get_radio_target_throttle(char buf[])
 {
-    return (Data.Parse(buf,10));
-}
-
-
-/**
- * Parses and returns the radio transmission's Time Stamp (ms).
- *    LoRa  -> 0
- *    MC    -> 5
- */
-float RADIO::get_radio_timestamp(char buf[], int selector)
-{
-    return (Data.Parse(buf, selector));
+    return (Data.Parse(buf,7));
 }
 
 
@@ -104,11 +104,20 @@ float RADIO::get_radio_target_longitude(char buf[])
 
 
 /**
- * Parses and returns the radio transmission's target throttle variable.
+ * Parses and returns the radio transmission's Craft ID.
  */
-float RADIO::get_radio_target_throttle(char buf[])
+float RADIO::get_radio_craft_id(char buf[])
 {
-    return (Data.Parse(buf,7));
+    return (Data.Parse(buf,10));
+}
+
+
+/**
+ * Parses and returns the radio transmission's manual direction command.
+ */
+float RADIO::get_radio_manual_direction(char buf[])
+{
+    return (Data.Parse(buf,11));
 }
 
 
@@ -239,6 +248,7 @@ void RADIO::radio_receive()
                 Network.target_latitude = Radio.get_radio_target_latitude(to_parse);
                 Network.target_longitude = Radio.get_radio_target_longitude(to_parse);
                 Network.target_throttle = Radio.get_radio_target_throttle(to_parse);
+                Network.manual_direction = Radio.get_radio_manual_direction(toParse);
             }
             // Reads in Craft ID to see where signal came from. 
             received_id = Radio.get_radio_craft_id(to_parse);
@@ -302,6 +312,8 @@ void RADIO::broadcast()
     temp += Network.target_throttle;
     temp += ",";
     temp += Network.craft_id;
+    temp += ",";
+    temp += Network.manual_direction;
     // Copy contents. 
     radio_output = temp;
     // Converts from String to char array. 

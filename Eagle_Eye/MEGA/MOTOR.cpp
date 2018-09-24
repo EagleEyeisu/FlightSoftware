@@ -29,7 +29,7 @@ void MOTOR::manager()
     // The craft_state variable (left, right, etc..) is the action that the craft it currently preforming. 
 
     // Checks for a positive anchor status. (E BREAK)
-    if(Data.Local.lora_anchor == true)
+    if(Data.Local.craft_anchor_status == true)
     {
         // Pulls the PDM Waveform below its cutoff to shut the motors off.
         // This is to prevent any extra force on the servo to Turbofan housing.
@@ -61,14 +61,14 @@ void MOTOR::manager()
  */
 void MOTOR::manual_flight()
 {   
-    int command = Data.Local.lora_direction;
+    int command = Data.Local.craft_manual_command;
 
     // The following are the commands and their representative integers.
     // 0 - No Movement.
     // 1 - Forward.
     // 2 - Left.
     // 3 - Right.
-    // 5 - Up.
+    // 4 - Up.
 
     // First series of conditionals are focused on orienting the craft. Not propelling it.
     // Second series are focused on movement.

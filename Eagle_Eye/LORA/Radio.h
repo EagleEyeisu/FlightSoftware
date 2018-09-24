@@ -44,6 +44,9 @@ class RADIO
     // Returns the transmission's time stamp.
     float get_radio_timestamp(char buf[], int selector);
 
+    // Returns the craft's anchor status.
+    float get_radio_manual_direction(char buf[]);
+
     // Runs initialzation script for the Radio.
     void initialize();
 
@@ -104,15 +107,15 @@ class RADIO
 	// Stores all information related to the network of the Eagle Eye program.
 	// This struct reads specific indexes and than rebroadcasts the updated transmission to
 	// the other nodes in the network. 
-	struct Network_Data 
+	struct Network_Data
     {
-		 /**
+		/**
          * These variables are modified by the network admin operating the mission_control node. 
          */
 
         // Automatic or Manual control of craft. 
         // 0 - Manual
-        // 1 - Authority
+        // 1 - Auto
         float authority_mode = 0.0;
 
 
@@ -154,12 +157,10 @@ class RADIO
         // Movement of craft dicated by the driver while in manual mode. Independent of throttle.
         // 0 - Stopped
         // 1 - Forward
-        // 2 - Right
-        // 3 - Backward
-        // 4 - Left
-        // 5 - Down
-        // 6 - Upward
-        float target_direction = 0.0;
+        // 2 - Left
+        // 3 - Right
+        // 4 - Up
+        float manual_direction = 0.0;
     	
     	/**
     	 * This varaible is updated by each craft right before the array is broadcasted.

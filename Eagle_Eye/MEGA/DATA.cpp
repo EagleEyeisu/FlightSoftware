@@ -28,7 +28,7 @@ DATA::DATA()
  */
 float DATA::get_i2c_current_altitude()
 {
- 	return Data.Parse(Comm.NDP,1);
+ 	return Data.Parse(Comm.i2c_packet,1);
 }
 
 
@@ -37,7 +37,7 @@ float DATA::get_i2c_current_altitude()
  */
 float DATA::get_i2c_current_latitude()
 {
- 	return Data.Parse(Comm.NDP,2);
+ 	return Data.Parse(Comm.i2c_packet,2);
 }
 
 
@@ -46,7 +46,7 @@ float DATA::get_i2c_current_latitude()
  */
 float DATA::get_i2c_current_longitude()
 {
- 	return Data.Parse(Comm.NDP,3);
+ 	return Data.Parse(Comm.i2c_packet,3);
 }
 
 
@@ -55,7 +55,7 @@ float DATA::get_i2c_current_longitude()
  */
 float DATA::get_i2c_destination_distance()
 {
- 	return Data.Parse(Comm.NDP,7);
+ 	return Data.Parse(Comm.i2c_packet,7);
 }
 
 
@@ -64,7 +64,7 @@ float DATA::get_i2c_destination_distance()
  */
 float DATA::get_i2c_destination_altitude()
 {
- 	return Data.Parse(Comm.NDP,4);
+ 	return Data.Parse(Comm.i2c_packet,4);
 }
 
 
@@ -73,7 +73,7 @@ float DATA::get_i2c_destination_altitude()
  */
 float DATA::get_i2c_destination_latitude()
 {
- 	return Data.Parse(Comm.NDP,5);
+ 	return Data.Parse(Comm.i2c_packet,5);
 }
 
 
@@ -82,7 +82,7 @@ float DATA::get_i2c_destination_latitude()
  */
 float DATA::get_i2c_destination_longitude()
 {
- 	return Data.Parse(Comm.NDP,6);
+ 	return Data.Parse(Comm.i2c_packet,6);
 }
 
 
@@ -91,18 +91,34 @@ float DATA::get_i2c_destination_longitude()
  */ 
 float DATA::get_i2c_current_speed()
 {
- 	return Data.Parse(Comm.NDP,8);
+ 	return Data.Parse(Comm.i2c_packet,8);
 }
 
 
 /**
- * Updates the MEGA's copy of the time stamp onbaord the LoRa. (From GPS device)
+ * Retrieves the flight mode of the craft. (Manual or autopilot)
  */ 
-void DATA::set_i2c_current_timestamp()
+void DATA::get_i2c_authority_mode()
 {
-	// This is a junk variable. This method returns nothing, but must be called to update
-	// the time variable. Refer to the parse method in Data.cpp for more details.
-	float junk = Data.Parse(Comm.NDP,9);
+	return Data.Parse(Comm.i2c_packet,9);
+}
+
+
+/**
+ * Retrieves the flight mode of the craft. (Manual or autopilot)
+ */
+void DATA::get_i2c_manual_command()
+{
+	return Data.Parse(Comm.i2c_packet,10);
+}
+
+
+/**
+ * Retrieves the flight mode of the craft. (Manual or autopilot)
+ */
+void DATA::get_i2c_craft_anchor()
+{
+	return Data.Parse(Comm.i2c_packet,11);
 }
 
 
@@ -128,7 +144,10 @@ void DATA::update_data()
 	Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
 	Local.lora_destination_distance = Data.get_i2c_destination_distance();
 	Local.lora_current_timestamp = Data.get_i2c_current_speed();
-	Data.set_i2c_current_timestamp(); // Updates in the background.
+	// GENERAL CRAFT / NETWORK DATA
+	Local.authority_mode = Data.get_i2c_authority_mode(); 
+	Local.craft_manual_direction = Data.get_i2c_manual_command();
+	Local.craft_anchor_status = Data.get_i2c_craft_anchor();
 }
 
 
@@ -166,7 +185,7 @@ void DATA::to_screen()
 	    Serial.println("-----------------------------------------------------------------------------");
 	    Serial.println("|                                LORA DATA                                  |");
 	    Serial.println("|                                                                           |");
-	    Serial.print(  "|  Time:          "); Serial.print(Local.lora_current_timestamp);                           Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Flight Mode:   "); Serial.print(Local.authority_mode);                           Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Cur Altitude:  "); Serial.print(Local.lora_current_altitude,2);    Serial.print(" m");   Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Cur Latitude:  "); Serial.print(Local.lora_current_latitude,5);                          Serial.println("\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Cur Longitude: "); Serial.print(Local.lora_current_longitude,5);                         Serial.println("\t\t\t\t\t\t    |");
@@ -180,14 +199,14 @@ void DATA::to_screen()
 	    Serial.println("|                                                                           |");
 	    Serial.println("|                               MOTOR DATA                                  |");
 	    Serial.print(  "|  State:          "); Serial.print(Movement.get_movement_state());		Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Servo Angle:    "); Serial.print(Movement.servo_degree);       		Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Move Forward:   "); Serial.print(Imu.move_forward);    				Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Turn Right:     "); Serial.print(Imu.turn_right);      				Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Turn Left:      "); Serial.print(Imu.turn_left);       				Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Move Up:        "); Serial.print(Imu.move_up);         				Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Move Down:      "); Serial.print(Imu.move_down);       				Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Target Heading: "); Serial.print(Imu.target_heading);            	Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Servo Degree:   "); Serial.print(Movement.servo_degree);       		Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Forward:        "); Serial.print(Imu.move_forward);    				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Right:          "); Serial.print(Imu.turn_right);      				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Left:           "); Serial.print(Imu.turn_left);       				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Up:             "); Serial.print(Imu.move_up);         				Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Down:           "); Serial.print(Imu.move_down);       				Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Cur Heading:    "); Serial.print(Imu.current_bearing);        		Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Tar Heading:    "); Serial.print(Imu.target_heading);            	Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.println("|                                                                           |");
 	    Serial.println("-----------------------------------------------------------------------------");
   	}
@@ -226,7 +245,7 @@ float DATA::Parse(char message[], int objective)
 	// Temporary string used to hold the newly parsed array.
 	char temp_array[20];
   	// Iterators over the entire array.
-  	for(i=0; i<120; i++)
+  	for(i=0; i<150; i++)
   	{
     	// Checks to see if the current iterator's position is a comma. 
     	if(message[i] == ',')
@@ -248,46 +267,17 @@ float DATA::Parse(char message[], int objective)
 	    }
   	}
 	// Charater array used with a fitted length of the parsed section.
-	char time_filer[temp_iter];
+	char parsed_section[temp_iter];
 	// Iterates through the temporary array copying over the info to the variable which will be returned.
 	for(i=0; i<temp_iter; i++)
 	{
 		// Copying of the information between arrays.
-		time_filer[i] = temp_array[i];
+		parsed_section[i] = temp_array[i];
 	}
-	// Used below to detect the parsing of the time value.
-	bool time_detected = false;
-	// Cycles through to check for if the time value is being parsed.
-	// The time value is saved as a short char array, where as all
-	// other parsed values are converted to floats before being 
-	// returned.
-	for(i=0; i<temp_iter; i++)
-	{
-		// The time character array will have colons located in it.
-		// No other value being parsed should contain this character.
-		// Therefore, if colons are detected, time is present.
-		if(time_filer[i]==':')
-		{
-			time_detected = true;
-		}
-	}
-	// Time value has been detected.
-	if(time_detected)
-	{
-		// Resets the variable for redundancy.
-		time_detected = false;
-		// Copies over time_filer to time.
-		for(i=0; i<temp_iter; i++)
-		{
-			Data.Local.GPSTime[i] = time_filer[i];
-		}
-	}
-	// Time value is not detected. Converts to float and returns.
-	else
-	{	
-		// Converts the final array to a float and returns.
-		return atof(time_filer);
-	}
+	// Converts the final array to a float.
+	float temp = atof(parsed_section);
+	// Returns the desired parsed section in number (float) form.
+	return temp;
 }
 
 
