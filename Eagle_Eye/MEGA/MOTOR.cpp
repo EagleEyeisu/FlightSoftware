@@ -31,12 +31,18 @@ void MOTOR::manager()
     // Checks for a positive anchor status. (E BREAK)
     if(Data.Local.craft_anchor_status == true)
     {
-        // Pulls the PDM Waveform below its cutoff to shut the motors off.
-        // This is to prevent any extra force on the servo to Turbofan housing.
-        apply_break();
-        // Rotates all servos back to their original position so that all turbofans
-        // are providing forward thrust.
-        rotate_level(0);
+        // Checks if the break is already applied. If so, no need to apply it again.
+        if(craft_state != BREAK)
+        {
+            craft_state = BREAK;
+            // Pulls the PDM Waveform below its cutoff to shut the motors off.
+            // This is to prevent any extra force on the servo to Turbofan housing.
+            apply_break();
+            // Rotates all servos back to their original position so that all turbofans
+            // are providing forward thrust.
+            rotate_level(0);
+        }
+        
     }
     // Achor is not dropped. Craft is free to move.
     else
@@ -425,7 +431,7 @@ void MOTOR::spin_down()
  */
 String MOTOR::get_movement_state()
 {  
-    int temp_state = Movement.state;
+    int temp_state = Movement.craft_state;
 
     if(temp_state == 0)
     {
@@ -449,6 +455,6 @@ String MOTOR::get_movement_state()
     }
     else if(temp_state == 5)
     {
-        return "DOWN";
+        return "BREAK";
     }
 }

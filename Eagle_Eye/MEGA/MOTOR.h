@@ -96,7 +96,7 @@ class MOTOR
     // The degree of the servo from 0 to 180.
     int servo_degree = 0; 
 
-    enum Orientation {NONE,RIGHT,LEFT,FORWARD,UP};
+    enum Orientation {NONE,RIGHT,LEFT,FORWARD,UP,BREAK};
     enum Orientation craft_state = NONE;
 };
 
