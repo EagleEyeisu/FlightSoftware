@@ -56,6 +56,7 @@ class MC_Tab():
 		self.target_latitude_set = None
 		self.target_longitude = None
 		self.target_longitude_set = None
+		self.xbox_connection_status = None
 
 		# Misc variables.
 		self.modified_commands = None
@@ -179,6 +180,7 @@ class MC_Tab():
 		self.button_roll_call_stop = Button(self.mc_frame, text="RC Stop", command=self.callback_roll_call_stop)
 		self.button_start_network = Button(self.mc_frame, text="Network Start", command=self.callback_network_start)
 		self.button_anchor_set = Button(self.mc_frame, text="Drop Anchor!", command=self.callback_craft_anchor)
+		self.button_connect_controller = Button(self.mc_frame, text="Controller Status", command=self.callback_setup_controller)
 		self.button_target_throttle_set = Button(self.mc_frame, text="Set", command=self.callback_target_throttle)
 		self.button_target_altitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_altitude)
 		self.button_target_latitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_latitude)
@@ -198,6 +200,8 @@ class MC_Tab():
 		self.label_ee_node.configure(background='red')
 		self.label_relay_node = Label(self.mc_frame,  text="RELAY", relief='solid')
 		self.label_relay_node.configure(background='red')
+		self.label_xbox_controller_status= Label(self.mc_frame, relief='solid')
+		self.label_xbox_controller_status.configure(background='red')
 
 	def create_checkbox_objects(self):
 		""" 
@@ -234,7 +238,9 @@ class MC_Tab():
 		self.button_roll_call_start.grid(row=3, column=0, rowspan=2, sticky='nes')
 		self.button_roll_call_stop.grid(row=3, column=1, rowspan=2, sticky='ns')
 		self.button_start_network.grid(row=3, column=2, rowspan=2, sticky='nws')
-		self.button_anchor_set.grid(row=3, column=4, rowspan=2, sticky='nws')
+		self.button_anchor_set.grid(row=3, column=3, rowspan=2, sticky='nws')
+		self.button_connect_controller.grid(row=3, column=5, sticky='nswe')
+		self.label_xbox_controller_status.grid(row=4, column=5, sticky='nwse')
 
 		# Terminal divider. KEEP THIS AT THE BOTTOM OF THIS METHOD.
 		terminal_divider_one = Label(self.mc_frame, background="#F1BE48")
@@ -326,11 +332,9 @@ class MC_Tab():
 		# Configures serial environment.
 		setup_comms()
 		# Embeds command line into the gui.
-		#self.embed_cmd() # Work in progress for another day.
-		# Connects to the xbox controller.
-		self.setup_controller()
+		#self.embed_cmd() # Work in progress for another day.		
 
-	def setup_controller(self):
+	def callback_setup_controller(self):
 		"""
 		Responsible for connecting to and monitoring the controller for its input.
 		(STARTS XBOX CONTROLLER / CONNECTS / MONITORS USER'S INPUT)
@@ -338,10 +342,12 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		if g.PORT_MC_LORA is not None:
-			print("Starting connection process to xbox controller.")
-			g.timer_xbox_controller = threading.Timer(0.6, xbox_input_monitor)
-			g.timer_xbox_controller.start()
+		print("\nStarting connection process to xbox controller.")
+		g.timer_xbox_controller = threading.Timer(0.3, self.xbox_input_monitor)
+		g.timer_xbox_controller.start()
+		# Sets the visual indication
+		self.label_xbox_controller_status.configure(background='green')
+		print("\nWe might be connected. At least nothing went wrong.")
 
 	def xbox_input_monitor(self):
 		"""
@@ -351,16 +357,19 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		g.timer_xbox_controller = threading.Timer(0.6, xbox_input_monitor)
+		g.timer_xbox_controller = threading.Timer(0.3, self.xbox_input_monitor)
 		g.timer_xbox_controller.start()
 		try:
 			# Checks for a incoming data.
 			if self.authority_mode.get() is "MANUAL":
 				# Gathers the current information from the Xbox Controller.
-    			events = get_gamepad()
-				# Cycles through the objects data to check for desired 
+				events = get_gamepad()
+				print("Events: " + str(events))
+				# Cycles through the objects data to check for desired
 				# button presses. (1 button press = 1 event)
 				for event in events:
+					# Debug.
+				    print(event.code, event.state)
 					# Checks if the bottom gamepad arrow was pressed.
 				    if((event.code == "ABS_HAT0Y") and (event.state == 1)):
 				    	self.manual_command.set("NONE")
@@ -392,6 +401,7 @@ class MC_Tab():
 			else:
 				pass
 		except Exception as e:
+			self.label_xbox_controller_status.configure(background='yellow')
 			print("Xbox Input Monitor Issue.")
 			print("Exception: " + str(e))
 
