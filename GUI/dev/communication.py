@@ -216,18 +216,17 @@ def mc_lora_receive():
 		return
 	# Prints exception handler.
 	except Exception as e:
+		g.timer_mc_lora.cancel()
 		print("Exception: " + str(e))
 		g.PORT_MC_LORA.set_input("Serial Error")
 		return
-
-	
 
 
 def craft_lora_receive():
 	""" Responsible for reading in data on the given serial port. """
 
-	timer = threading.Timer(0.6, mc_lora_receive)
-	timer.start()
+	g.timer_craft_lora = threading.Timer(0.6, mc_lora_receive)
+	g.timer_craft_lora.start()
 	# Pulls the serial data from the craft LoRa port object down to a local instanced variable.
 	ser = g.PORT_CRAFT_LORA.get_port()
 	try:
@@ -242,6 +241,7 @@ def craft_lora_receive():
 		return
 	# Print exception handler.
 	except Exception as e:
+		g.timer_craft_lora.cancel()
 		print("Exception: " + str(e))
 		g.PORT_CRAFT_LORA.set_input("Serial Error")
 		return
@@ -250,8 +250,8 @@ def craft_lora_receive():
 def craft_mega_receive():
 	""" Responsible for reading in data on the given serial port. """
 
-	timer = threading.Timer(0.6, mc_lora_receive)
-	timer.start()
+	g.timer_craft_mega = threading.Timer(0.6, mc_lora_receive)
+	g.timer_craft_mega.start()
 	# Pulls the serial data from the craft MEGA port object down to a local instanced variable.
 	ser = g.PORT_MEGA_LORA.get_port()
 	try:
@@ -266,6 +266,7 @@ def craft_mega_receive():
 		return
 	# Print exception handler.
 	except Exception as e:
+		g.timer_craft_mega.cancel()
 		print("Exception: " + str(e))
 		g.PORT_MEGA_LORA.set_input("Serial Error")
 		return

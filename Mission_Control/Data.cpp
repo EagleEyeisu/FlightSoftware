@@ -119,6 +119,7 @@ void DATA::update_gui()
 			temp_packet += Radio.relay_node.node_status;
 			temp_packet += ",";
 			temp_packet += "$";
+     temp_packet += "$"; // Weird serial issue where it only sends one of the '$'. To be looked into.
 		}
 		// Normal GUI <-> mission_control Config.
 		else if((Radio.operation_mode == Radio.NORMAL) || (Radio.operation_mode == Radio.STANDBY) || (Radio.operation_mode == Radio.NONE))

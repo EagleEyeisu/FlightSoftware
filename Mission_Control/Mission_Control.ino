@@ -88,7 +88,7 @@ void serial_input()
             if(toParse[2]=='0')
             {
                 Radio.Network.authority_mode = Data.get_serial_authority_mode(toParse);
-                Radio.Network.target_direction = Data.get_serial_direction(toParse);
+                Radio.Network.manual_direction = Data.get_serial_direction(toParse);
                 Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
                 Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
                 // Directly sets variables due to operation_mode being an enum state.

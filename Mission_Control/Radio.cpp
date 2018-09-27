@@ -246,6 +246,7 @@ void RADIO::broadcast()
     temp.toCharArray(transmission, temp.length());
     // Blinks LED onboard of LoRa to signal broadcast
     blink_led();
+    delay(100);
     blink_led();
     // Sends message passed in as paramter via antenna.
     rf95.send(transmission, sizeof(transmission));
@@ -277,7 +278,7 @@ void RADIO::node_check_in()
                 // Adds the node to the network. (Known node id's list)
                 node_list[i] = received_id;
                 // Checks for craft's node id.
-                if(received_id == 2.0)
+                if(1.9 < received_id && received_id < 2.1)
                 {
                     // Sets Eagle Eye's network status as connected. (Used by GUI.)
                     Radio.ee_node.node_status = 1.0;

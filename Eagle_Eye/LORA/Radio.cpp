@@ -170,8 +170,8 @@ void RADIO::manager()
 	Radio.radio_receive();
     
     Serial.println("After received.");
-	// Checks for a specific Craft ID. '999.9' signals the start of operation.
-	if(received_id == 999.0 && !Radio.checked_in)
+	// Checks for a specific Craft ID. '999.0' signals the start of operation.
+	if((998.0 < received_id && received_id < 999.9) && !Radio.checked_in)
     {   
         Serial.println("Roll Call started.");
         // Updates crafts state.
@@ -188,7 +188,7 @@ void RADIO::manager()
 	// EE - delays 5 seconds
 	else if(operation_mode == Radio.STANDBY)
     {
-        if(received_id == 555.0)
+        if(554.0 < received_id && received_id < 556.0)
         {
             // Delays 5 seconds to offset this node from the main mission_control node.
             delay(5000);
@@ -229,6 +229,11 @@ void RADIO::radio_receive()
             str.toCharArray(to_parse,str.length());
             // Used to display the received data in the GUI.
             radio_input = buf;
+            //blink_led();
+            //delay(100);
+            //blink_led();
+            Serial.print("Radio In: ");
+            Serial.println(radio_input);
             
             // This whole section is comparing the currently held varaibles from the last radio update
             // to that of the newly received signal. Updates the craft's owned variables and copies
@@ -248,7 +253,7 @@ void RADIO::radio_receive()
                 Network.target_latitude = Radio.get_radio_target_latitude(to_parse);
                 Network.target_longitude = Radio.get_radio_target_longitude(to_parse);
                 Network.target_throttle = Radio.get_radio_target_throttle(to_parse);
-                Network.manual_direction = Radio.get_radio_manual_direction(toParse);
+                Network.manual_direction = Radio.get_radio_manual_direction(to_parse);
             }
             // Reads in Craft ID to see where signal came from. 
             received_id = Radio.get_radio_craft_id(to_parse);
