@@ -6,6 +6,7 @@
 #include "Globals.h"
 #include "MOTOR.h"
 #include "IMU.h"
+#include "DATA.h"
 #include <Arduino.h>
 #include <Servo.h> 
  
@@ -38,11 +39,8 @@ void MOTOR::manager()
             // Pulls the PDM Waveform below its cutoff to shut the motors off.
             // This is to prevent any extra force on the servo to Turbofan housing.
             apply_break();
-            // Rotates all servos back to their original position so that all turbofans
-            // are providing forward thrust.
-            rotate_level(0);
+            delay(100);
         }
-        
     }
     // Achor is not dropped. Craft is free to move.
     else
@@ -100,7 +98,10 @@ void MOTOR::manual_flight()
         }
         else if(craft_state == FORWARD)
         {
-            spin_up();
+        	if (Data.Local.craft_anchor_status == false)
+        	{
+        		spin_up();
+        	}
         }
     }
     // Turn Left.
@@ -115,7 +116,10 @@ void MOTOR::manual_flight()
         }
         else if(craft_state == LEFT)
         {
-            spin_up();
+            if (Data.Local.craft_anchor_status == false)
+        	{
+        		spin_up();
+        	}
         }
     }
     // Turn Right.
@@ -130,7 +134,10 @@ void MOTOR::manual_flight()
         }
         else if(craft_state == RIGHT)
         {
-            spin_up();
+            if (Data.Local.craft_anchor_status == false)
+        	{
+        		spin_up();
+        	}
         }
     }
     // Turn Right.
@@ -146,7 +153,10 @@ void MOTOR::manual_flight()
         else if(craft_state == UP)
         {
             // I hope this works. This is probably where we break the craft.
-            beam_me_up_scotty();
+            if (Data.Local.craft_anchor_status == false)
+        	{
+        		spin_up();
+        	}
         }
     }
 }
