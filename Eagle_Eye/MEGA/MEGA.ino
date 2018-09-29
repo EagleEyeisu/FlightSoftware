@@ -20,7 +20,7 @@ THERMO Thermo;
 MOTOR Movement;
 
 // Object used to pull and store the Thermocouple's information.
-Adafruit_MAX31855 thermocouple(31, 30, 32);
+Adafruit_MAX31855 thermocouple(5, 4, 3);
 
 // Object used to pull and store information from the IMU.
 // Use I2C, ID #1000
@@ -38,18 +38,26 @@ void setup()
     // Creates a serial communication line between the arduino and the serial port 
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
-
+    
     // Initializes the Pressure Sensor.
     Data.initialize();
+
+    Serial.println("After Data.");
 
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
     Comm.initialize();
 
-    // Initializes the Interial Measurement Unit (IMU).
+    Serial.println("After comm.");
+
+    // Initializes the Inertial Measurement Unit (IMU).
     Imu.initialize();
+
+    Serial.println("After imu.");
 
     // Initializes all ESC's, TurboFans, & Servos.
     Movement.initialize();
+
+    Serial.println("Initialization Process Complete.------------");
 }
 
 
@@ -59,7 +67,7 @@ void setup()
 void loop()
 {
   // Reads in all needed values from periphals.
-  Data.updateData();
+  Data.update_data();
   
   // Watches for LoRa to ask for permission to drop.
   Imu.manager();
@@ -69,7 +77,7 @@ void loop()
 
   // Print data of the current cycle to the screen. Only prints when new
   // information is collected. 
-  Data.toScreen();
+  Data.to_screen();
   
   // Resets the new_data state to false.
   Data.new_data = Data.NO;

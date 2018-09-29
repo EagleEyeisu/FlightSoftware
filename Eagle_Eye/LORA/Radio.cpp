@@ -229,9 +229,9 @@ void RADIO::radio_receive()
             str.toCharArray(to_parse,str.length());
             // Used to display the received data in the GUI.
             radio_input = buf;
-            //blink_led();
-            //delay(100);
-            //blink_led();
+            blink_led();
+            delay(100);
+            blink_led();
             Serial.print("Radio In: ");
             Serial.println(radio_input);
             

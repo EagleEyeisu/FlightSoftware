@@ -15,7 +15,7 @@ class DATA
     DATA();
 
     // Parses passed in message by using commas as the identifiers.
-    float Parse(char message[], int objective);
+    float Parse(String message, int objective);
 
     // Responsible for pulling current sensor data from peripherals.
     void update_data();
@@ -24,7 +24,7 @@ class DATA
     void to_screen();
 
     // Reads in external pressure and calculates altitude.
-    float calculate_barometer_altitude(float input_pressure);
+    float calculate_barometer_altitude();
 
     // Captures a barometric pressure sample and sets the pressure variable.
     void set_pressure();
@@ -39,13 +39,13 @@ class DATA
     float get_i2c_current_longitude();
 
     // Reads in the taret altitude via i2c.
-    float get_i2c_destination_altitude();
+    float get_i2c_target_altitude();
 
     // Reads in the target latitude via i2c.
-    float get_i2c_destination_latitude();
+    float get_i2c_target_latitude();
 
     // Reads in the taret longitude via i2c.
-    float get_i2c_destination_longitude();
+    float get_i2c_target_longitude();
 
     // Reads in the taret distance via i2c.
     float get_i2c_destination_distance();
@@ -158,4 +158,3 @@ class DATA
 };
 
 #endif
-

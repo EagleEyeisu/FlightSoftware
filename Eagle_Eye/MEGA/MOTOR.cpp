@@ -46,12 +46,12 @@ void MOTOR::manager()
     else
     {
         // Checks for flight mode "manual".
-        if(Data.Local.authority_mode == "MANUAL")
+        if(Data.Local.authority_mode == 0.0)
         {
             manual_flight();
         }
         // Checks for flight mode "auto".
-        else if(Data.Local.authority_mode == "AUTO")
+        else if(Data.Local.authority_mode == 1.0)
         {
             auto_pilot();
         }
@@ -65,7 +65,7 @@ void MOTOR::manager()
  */
 void MOTOR::manual_flight()
 {   
-    int command = Data.Local.craft_manual_command;
+    int command = Data.Local.craft_manual_direction;
 
     // The following are the commands and their representative integers.
     // 0 - No Movement.
@@ -177,7 +177,7 @@ void MOTOR::auto_pilot()
     //   ---------------        ---------------        ---------------       ---------------
 
     // Checks for the need for Yaw Correction.
-    if(Imu.turnRight || Imu.turnLeft)
+    if(Imu.turn_right || Imu.turn_left)
     {
         // Checks for the need to rotate Right.
         if(Imu.turn_right)
@@ -264,11 +264,11 @@ void MOTOR::auto_pilot()
 void MOTOR::initialize()
 {
     // Initializes the crafts state to reflect its non moving state.
-    state = NONE;
+    craft_state = NONE;
     // Digitially connects the ESCs to their respective pins.
-    motor.attach(MOTOR_PIN);  
+    motor.attach(MOTOR_PIN);
     // Begins program by sending a PDM waveform that is below its cutoff value. So 0% targetThrottle.
-    motor.writeMicroseconds(900); 
+    motor.writeMicroseconds(900);
     // Digitally connects the servos to their respective pins.
     servo_left.attach(SERVO_PIN_LEFT);
     servo_right.attach(SERVO_PIN_RIGHT);
@@ -284,8 +284,6 @@ void MOTOR::initialize()
  */
 void MOTOR::rotate_right()
 {
-    // Updates the state machine to reflect the current movement.
-    state = RIGHT;
     // Serial.println("Turning Right: ");
     // Serial.println(state);
     // Applies those values to the servo. Rotates each side counter to each other.
@@ -304,8 +302,6 @@ void MOTOR::rotate_right()
  */
 void MOTOR::rotate_left()
 {
-    // Updates the state machine to reflect the current movement.
-    state = LEFT;
     // Serial.println("Turning Left: ");
     // Serial.println(state); 
     // Applies values to the servo. Rotates each side counter to each other.
@@ -419,7 +415,7 @@ void MOTOR::beam_me_up_scotty()
  */
 void MOTOR::spin_down()
 {
-    max_throttle = 900;
+    float max_throttle = 900.00;
     while(current_throttle >= max_throttle)
     {
         current_throttle = current_throttle - INCREMENT_AMOUNT * 2;

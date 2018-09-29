@@ -57,7 +57,7 @@ void IMU::manager()
 
 
     // Calculates the angle between the crafts current heading and the target.
-    calculate_target_angle();
+    calculate_target_heading();
     // Checks the difference between where we want to be and where we actual are in terms of altitude.
     check_altitude_tolerance();
     // Calculates the distance in meters from the craft to the target location.
@@ -129,36 +129,36 @@ void IMU::calculate_target_heading()
 
     float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
     float y = sin(lon2-lon1) * cos(lat2); 
-    bearing = atan2(y, x);
+    current_heading = atan2(y, x);
     // Normalize to 0-360
-    bearing = fmod((bearing + 360.0),360.0);
+    current_heading = fmod((current_heading + 360.0),360.0);
 
-    float angle = bearing - Imu.get_yaw();
-    if(angle > 180)
+    float target_heading = current_heading - Imu.get_yaw();
+    if(target_heading > 180)
     {
-        angle -= 360;
+        target_heading -= 360;
     }
-    else if(angle < -180)
+    else if(target_heading < -180)
     {
-        angle += 360;
+        target_heading += 360;
     }
 
-    if(angle < -angleTolerance)
+    if(target_heading < -target_heading_tolerance)
     {
-        turnRight = false;
-        turnLeft = true;
+        turn_right = false;
+        turn_left = true;
     }
-    else if(angle > angleTolerance)
+    else if(target_heading > target_heading_tolerance)
     {
-        turnLeft = false;
-        turnRight = true;
+        turn_left = false;
+        turn_right = true;
     }
     else
     {
-        turnRight = false;
-        turnLeft = false;
+        turn_right = false;
+        turn_left = false;
     }
-    target_heading = angle;
+    target_heading = target_heading;
 }
 
 /**
@@ -166,7 +166,7 @@ void IMU::calculate_target_heading()
  */
 void IMU::check_altitude_tolerance()
 {
-    float altitude_difference = Data.Local.lora_target_altiude - Data.Local.lora_current_altitude;
+    float altitude_difference = Data.Local.lora_target_altitude - Data.Local.lora_current_altitude;
 
     if(altitude_difference > target_altitude_tolerance)
     {

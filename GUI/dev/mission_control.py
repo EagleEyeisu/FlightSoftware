@@ -182,6 +182,13 @@ class MC_Tab():
 		self.button_start_network = Button(self.mc_frame, text="Network Start", command=self.callback_network_start)
 		self.button_anchor_set = Button(self.mc_frame, text="Drop Anchor!", command=self.callback_craft_anchor)
 		self.button_connect_controller = Button(self.mc_frame, text="Controller Status", command=self.callback_setup_controller)
+		self.button_manual_forward = Button(self.mc_frame, text="FORWARD", command=self.callback_manual_forward)
+		self.button_manual_left = Button(self.mc_frame, text="LEFT", command=self.callback_manual_left)
+		self.button_manual_right = Button(self.mc_frame, text="RIGHT", command=self.callback_manual_right)
+		self.button_manual_up = Button(self.mc_frame, text="UP", command=self.callback_manual_up)
+		self.button_manual_none = Button(self.mc_frame, text="NONE", command=self.callback_manual_none)
+		self.button_manual_throttle_up = Button(self.mc_frame, text="^\n|", command=self.increment_throttle)
+		self.button_manual_throttle_down = Button(self.mc_frame, text="|\nv", command=self.decrement_throttle)
 		self.button_target_throttle_set = Button(self.mc_frame, text="Set", command=self.callback_target_throttle)
 		self.button_target_altitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_altitude)
 		self.button_target_latitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_latitude)
@@ -257,10 +264,17 @@ class MC_Tab():
 
 		# Above divider.
 		self.create_label_center(6, 1, self.mc_frame, "CRAFT")
+		self.button_manual_forward.grid(row=6, column=6)
+		self.button_manual_throttle_up.grid(row=6, column=9, rowspan=2)
 		self.create_label_center(7, 0, self.mc_frame, "Craft Up Time (s) ")
 		self.entry_craft_time.grid(row=7, column=1, sticky='we')
+		self.button_manual_left.grid(row=7, column=5)
+		self.button_manual_right.grid(row=7, column=7)
 		self.create_label_center(8, 0, self.mc_frame, "Craft Altitude (m) ")
 		self.entry_craft_altitude.grid(row=8, column=1, sticky='we')
+		self.button_manual_none.grid(row=8, column=6)
+		self.button_manual_up.grid(row=8, column=5)
+		self.button_manual_throttle_down.grid(row=8, column=9, rowspan=2)
 		self.create_label_center(9, 0, self.mc_frame, "Craft Latitude       ")
 		self.entry_craft_latitude.grid(row=9, column=1, sticky='we')
 		self.create_label_center(10, 0, self.mc_frame, "Craft Longitude   ")
@@ -349,6 +363,21 @@ class MC_Tab():
 		# Sets the visual indication
 		self.label_xbox_controller_status.configure(background='green')
 		print("\nFinished setup process.--------------------------------")
+
+	def callback_manual_none(self):
+		self.manual_command.set("NONE")
+
+	def callback_manual_forward(self):
+		self.manual_command.set("FORWARD")
+
+	def callback_manual_left(self):
+		self.manual_command.set("LEFT")
+
+	def callback_manual_right(self):
+		self.manual_command.set("RIGHT")
+
+	def callback_manual_up(self):
+		self.manual_command.set("UP")
 
 	def xbox_input_monitor(self):
 		"""
@@ -784,7 +813,7 @@ class MC_Tab():
 				new_packet += ","
 				new_packet += str(self.convert_anchor())
 				new_packet += ","
-				new_packet += str(self.target_throttle.get())
+				new_packet += str(float(self.target_throttle.get()))
 				new_packet += ","
 				new_packet += str(self.convert_op_mode())
 				new_packet += ","
@@ -806,15 +835,15 @@ class MC_Tab():
 		"""
 
 		if self.manual_command.get() == "NONE":
-			return float(0)
+			return "0.00"
 		elif self.manual_command.get() == "FORWARD":
-			return float(1)
+			return "1.00"
 		elif self.manual_command.get() == "LEFT":
-			return float(2)
+			return "2.00"
 		elif self.manual_command.get() == "RIGHT":
-			return float(3)
+			return "3.00"
 		elif self.manual_command.get() == "UP":
-			return float(4)
+			return "4.00"
 
 	def convert_authority(self):
 		"""
@@ -824,9 +853,9 @@ class MC_Tab():
 		"""
 
 		if self.authority_mode.get() == "MANUAL":
-			return float(0)
+			return "0.00"
 		elif self.authority_mode.get() == "AUTO":
-			return float(1)
+			return "1.00"
 
 	def convert_op_mode(self):
 		"""
@@ -836,13 +865,13 @@ class MC_Tab():
 		"""
 
 		if self.operational_mode.get() == "NOT STARTED":
-			return float(0)
+			return "0.00"
 		elif self.operational_mode.get() == "ROLLCALL":
-			return float(1)
+			return "1.00"
 		elif self.operational_mode.get() == "STANDBY":
-			return float(2)
+			return "2.00"
 		elif self.operational_mode.get() == "NORMAL":
-			return float(3)
+			return "3.00"
 
 	def convert_anchor(self):
 		"""
@@ -852,9 +881,9 @@ class MC_Tab():
 		"""
 
 		if self.craft_anchor.get() == "DROPPED":
-			return float(0)
+			return "0.00"
 		elif self.craft_anchor.get() == "HOISTED":
-			return float(1)
+			return "1.00"
 
 	def create_label_east(self, r, c, frame, title):
 		"""

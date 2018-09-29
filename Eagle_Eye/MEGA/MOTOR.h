@@ -52,6 +52,12 @@ class MOTOR
     // purposes. 
     String get_movement_state();
 
+    // Manual flight mode directed from ground station.
+    void manual_flight();
+
+    // Autonomous flight mode.
+    void auto_pilot();
+
     /*-----------------------------------------------------------------------------*/ 
 
     // Connection pins from Arduino MEGA to their respective ESC's.
@@ -101,4 +107,3 @@ class MOTOR
 };
 
 #endif
-
