@@ -49,10 +49,10 @@ void receiveEvent(int howmany)
     {
         Serial.print("Packet: ");
         Serial.println(Comm.i2c_packet);
-        Comm.i2c_packet = NULL;
         Comm.first_32 = false;
         Comm.second_32 = false;
         Comm.third_32 = false;
+        Comm.i2c_packet[0] = '0';
     }
 
     int character_iterator = 0;
@@ -61,6 +61,7 @@ void receiveEvent(int howmany)
     // They are all acting as flags and are reset upon the start of the next packet.
     if(!Comm.first_32)
     {
+    	Comm.complete_packet_flag = false;
         Comm.first_32 = true;
         character_iterator = 0;
     }
@@ -73,6 +74,7 @@ void receiveEvent(int howmany)
     {
         Comm.third_32 = true;
         character_iterator = 64;
+        Comm.complete_packet_flag = true;
     }
 
     // Checks for data on the wire.
