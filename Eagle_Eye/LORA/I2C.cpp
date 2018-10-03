@@ -105,7 +105,7 @@ void I2C::send_mega_packet()
 	// Assigns address of the receiving board.
 	Wire.beginTransmission(1);
 	// Sends the message.
-	while(character_iterator<32)
+	while(character_iterator < i2c_packet.length())
     {
         Wire.write(i2c_packet[character_iterator]);
         character_iterator++;
@@ -113,7 +113,8 @@ void I2C::send_mega_packet()
 	// Closes the transmission.
 	Wire.endTransmission();
     delay(100);
-  
+  	
+  	/*
     // Sends the second installment of 32 characters to the Mega. (32-64)
     // Assigns address of the receiving board.
     Wire.beginTransmission(1);
@@ -138,4 +139,5 @@ void I2C::send_mega_packet()
     }
     // Closes the transmission.
     Wire.endTransmission();
+    */
 }
