@@ -135,6 +135,8 @@ void DATA::update_data()
 	Local.mega_pitch = Imu.get_pitch();
 	Local.mega_yaw = Imu.get_yaw();
 	
+	Comm.i2c_receive()
+	
 	// LORA DATA
 	if(Comm.complete_packet_flag)
 	{

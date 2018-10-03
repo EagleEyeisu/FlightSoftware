@@ -16,7 +16,7 @@ class I2C
     I2C();
 
     // Reads in a individual byte from the I2C port.
-    void receiveEvent(int howmany); 
+    void i2c_receive(); 
 
     // Runs initialzation script for the I2C protocol.
     void initialize();
