@@ -45,12 +45,16 @@ void receiveEvent(int howmany)
     // New info is being read in. 
     Data.new_data = Data.YES;
 
-    if(Comm.first_32 && Comm.second_32 && Comm.third_32)
+    if(Comm.complete_packet_flag)
     {
+    	Comm.to_parse[Comm.i2c_packet.length()];
+        Comm.i2c_packet.toCharArray(Comm.to_parse,Comm.i2c_packet.length());
+        Serial.print("I2C Packet: ");
+        Serial.println(Comm.i2c_packet);
         Comm.first_32 = false;
         Comm.second_32 = false;
         Comm.third_32 = false;
-        Comm.i2c_packet[0] = '\0';
+        Comm.i2c_packet = "";
     }
 
     // This series of conditional checks will make sure that the 3 seperate

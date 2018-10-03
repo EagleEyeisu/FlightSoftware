@@ -24,7 +24,10 @@ class I2C
     /*-----------------------------------------------------------------------------*/
 
     // Inter-Intergrated Circuit (I^2C) packet.
-    char i2c_packet[];
+    String i2c_packet[];
+
+    // Converted char array
+    char to_parse[];
 
     // Status for reception of the first 32 bits via I2C protocol.
     bool first_32 = false;
