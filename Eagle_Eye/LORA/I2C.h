@@ -28,6 +28,9 @@ class I2C
 
   	// Inter-Intergrated Circuit (I^2C) packet.
   	String i2c_packet = "";
+
+  	// Timer.
+  	unsigned long i2c_timer = 0;
   
 };
 #endif
