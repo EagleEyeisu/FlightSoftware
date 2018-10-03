@@ -1,12 +1,14 @@
 /****LIBRARIES****/
 #include <RH_RF95.h>
 #include <TinyGPSPlus.h>
+#include <Wire.h>
 
 #include "Globals.h"
 #include "DATA.h"
 #include "GPS.h"
 #include "I2C.h"
 #include "RADIO.h"
+
 
 
 /*****CONSTRUCTORS*****/ //(Objects that can reference their respective functions & variables)
@@ -31,6 +33,9 @@ void setup()
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
 
+    Wire.begin(8);
+    Wire.onRequest(requestEvent);
+
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
     Comm.initialize();
 
@@ -38,6 +43,10 @@ void setup()
     Radio.initialize();
 }
 
+void requestEvent()
+{
+  Comm.manager();
+}
 
 /**
  * MAIN PROGRAM CODE.

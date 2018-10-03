@@ -29,10 +29,12 @@ I2C::I2C()
 void I2C::initialize()
 {
 	// Sets the address for the current micro controller.
-	// Mega - 1
-	// LoRa - 0
-	Wire.begin();
+	// Mega - 0
+	// LoRa - 8
+	
 }
+
+
 
 
 /**
@@ -113,11 +115,9 @@ void I2C::send_mega_packet()
 		// Sends the message.
 		while(character_iterator < i2c_packet.length())
 	    {
-        Serial.print(i2c_packet[character_iterator]);
 	        Wire.write(i2c_packet[character_iterator]);
 	        character_iterator++;
 		}
-   Serial.println();
 		// Closes the transmission.
 		Wire.endTransmission();
 	    delay(100);

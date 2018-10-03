@@ -26,12 +26,9 @@ I2C::I2C()
 void I2C::initialize()
 {
 	// Sets the address for the current micro controller.
-	// Mega - 1
-	// LoRa - 0
-	Wire.begin(1);
-    // Registers recieveEvent as a interrupt.
-    Wire.onReceive(receiveEvent);
-	Serial.println("Comms Address Set.");
+	// Mega - 0
+	// LoRa - 8
+	Wire.begin();
 }
 
 
@@ -40,18 +37,19 @@ void I2C::initialize()
  */
 void I2C::i2c_receive()
 {
-    int packet_length = 0;
     Comm.i2c_packet = "";
+    
+    Wire.requestFrom(8, 30);
+    
     while(Wire.available())
     {
     	char temp = Wire.read();
         // Concatenates character to large string.
         Comm.i2c_packet += temp;
-        packet_length++;
     }
 
     // Checks for proper formatting.
-    if(Comm.i2c_packet[0] == '$' && packet_length >= 18)
+    if(Comm.i2c_packet[0] == '$')
     {
         // New info is being read in. 
         Data.new_data = Data.YES;
