@@ -63,7 +63,7 @@ void I2C::create_mega_packet()
 
     // Creates a temporary string to hold all need information.
     String temp = "";
-    i2c_packet = ""
+    i2c_packet = "";
     // Each line below appends a certain divider or value to the string.
     temp += '$'; 
     temp += ',';
@@ -100,11 +100,11 @@ void I2C::create_mega_packet()
  */
 void I2C::send_mega_packet()
 {
-	// Every 1 second, the lora is aloud to send i2c data.
-	if(millis() - broadcast_timer > 1000)
+	// Every 1 second, the lora is allowed to send i2c data.
+	if(millis() - i2c_timer > 1000)
 	{
 		// Resets timer.
-		broadcast_timer = millis();
+		i2c_timer = millis();
 		// Iterator
 	    int character_iterator = 0;
 	    // Sends the first installment of 32 characters to the Mega. (0-32)
@@ -113,9 +113,11 @@ void I2C::send_mega_packet()
 		// Sends the message.
 		while(character_iterator < i2c_packet.length())
 	    {
+        Serial.print(i2c_packet[character_iterator]);
 	        Wire.write(i2c_packet[character_iterator]);
 	        character_iterator++;
 		}
+   Serial.println();
 		// Closes the transmission.
 		Wire.endTransmission();
 	    delay(100);

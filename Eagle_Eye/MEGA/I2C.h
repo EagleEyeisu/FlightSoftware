@@ -24,7 +24,7 @@ class I2C
     /*-----------------------------------------------------------------------------*/
 
     // Inter-Intergrated Circuit (I^2C) packet.
-    String i2c_packet[];
+    String i2c_packet;
 
     // Converted char array
     char to_parse[];

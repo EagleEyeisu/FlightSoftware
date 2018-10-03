@@ -85,20 +85,25 @@ void receiveEvent(int howmany)
     }
     */
 
-    int length = 0;
+    int packet_length = 0;
+    Comm.i2c_packet = "";
     while(Wire.available())
     {
     	char temp = Wire.read();
+      Serial.print(temp);
         // Concatenates character to large string.
         Comm.i2c_packet += temp;
-        length++;
+        packet_length++;
     }
+    Serial.println();
 
     // Checks for proper formatting.
-    if(Comm.i2c_packet[0] == '$' && Comm.i2c_packet[length] == '$')
+    if(Comm.i2c_packet[0] == '$' && Comm.i2c_packet[packet_length-1] == '$')
     {
-        Comm.complete_packet_flag = true;
+      Comm.complete_packet_flag = true;
     	Comm.to_parse[Comm.i2c_packet.length()];
+      Serial.print("Packet Length: ");
+      Serial.println(packet_length);
     	Comm.i2c_packet.toCharArray(Comm.to_parse,Comm.i2c_packet.length());
     	Serial.print("I2C Packet: ");
     	Serial.println(Comm.i2c_packet);
