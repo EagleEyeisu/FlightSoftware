@@ -29,8 +29,8 @@ I2C::I2C()
 void I2C::initialize()
 {
 	// Sets the address for the current micro controller.
-	// Mega - 0
-	// LoRa - 1
+	// Mega - 1
+	// LoRa - 0
 	Wire.begin();
 }
 
@@ -103,7 +103,7 @@ void I2C::send_mega_packet()
     int character_iterator = 0;
     // Sends the first installment of 32 characters to the Mega. (0-32)
 	// Assigns address of the receiving board.
-	Wire.beginTransmission(8);
+	Wire.beginTransmission(1);
 	// Sends the message.
 	while(character_iterator<32)
     {
@@ -116,7 +116,7 @@ void I2C::send_mega_packet()
   
     // Sends the second installment of 32 characters to the Mega. (32-64)
     // Assigns address of the receiving board.
-    Wire.beginTransmission(8);
+    Wire.beginTransmission(1);
     // Sends the message.
     while(character_iterator<64)
     {
@@ -129,7 +129,7 @@ void I2C::send_mega_packet()
 
     // Sends the third installment of 32 characters to the Mega. (64-96)
     // Assigns address of the receiving board.
-    Wire.beginTransmission(8);
+    Wire.beginTransmission(1);
     // Sends the message.
     while(character_iterator<96)
     {

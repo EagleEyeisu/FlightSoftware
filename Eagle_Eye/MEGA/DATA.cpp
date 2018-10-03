@@ -339,6 +339,9 @@ void DATA::initialize()
 	if(!bmp.begin())
  	{
 		Serial.println("PROBLEM WITH PRESSURE SENSOR.");
+
+    while(1);
+    
 	}
 	//Valid connection, program proceeds as planned.
 	else

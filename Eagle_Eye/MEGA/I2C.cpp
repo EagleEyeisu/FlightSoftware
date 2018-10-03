@@ -28,9 +28,9 @@ void I2C::initialize()
     // Predeclaration of method that will be set as a interrupt.
     void receiveEvent(int howMany);
 	// Sets the address for the current micro controller.
-	// Mega - 0
-	// LoRa - 1
-	Wire.begin(8);
+	// Mega - 1
+	// LoRa - 0
+	Wire.begin(1);
     // Registers recieveEvent as a interrupt.
     Wire.onReceive(receiveEvent);
 	Serial.println("Comms Address Set.");
@@ -47,8 +47,10 @@ void receiveEvent(int howmany)
 
     if(Comm.first_32 && Comm.second_32 && Comm.third_32)
     {
-        Comm.to_parse[i2c_packet.length()];
-        Comm.i2c_packet.toCharArray(to_parse,i2c_packet.length());
+        Comm.to_parse[Comm.i2c_packet.length()];
+        Comm.i2c_packet.toCharArray(Comm.to_parse,Comm.i2c_packet.length());
+        Serial.print("Packet: ");
+        Serial.println(Comm.i2c_packet);
         Comm.i2c_packet = "";
         Comm.first_32 = false;
         Comm.second_32 = false;
