@@ -15,7 +15,7 @@ class DATA
     DATA();
 
     // Parses passed in message by using commas as the identifiers.
-    float Parse(String message, int objective);
+    float Parse(char message[], int objective);
 
     // Responsible for pulling current sensor data from peripherals.
     void update_data();

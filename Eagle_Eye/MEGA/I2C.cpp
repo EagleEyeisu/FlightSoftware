@@ -47,6 +47,8 @@ void receiveEvent(int howmany)
 
     if(Comm.first_32 && Comm.second_32 && Comm.third_32)
     {
+        Comm.to_parse[i2c_packet.length()];
+        Comm.i2c_packet.toCharArray(to_parse,i2c_packet.length());
         Comm.i2c_packet = "";
         Comm.first_32 = false;
         Comm.second_32 = false;
