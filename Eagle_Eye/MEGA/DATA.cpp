@@ -28,7 +28,7 @@ DATA::DATA()
  */
 float DATA::get_i2c_current_altitude()
 {
- 	return Data.Parse(Comm.i2c_packet,1);
+ 	return Data.Parse(Comm.to_parse,1);
 }
 
 
@@ -37,7 +37,7 @@ float DATA::get_i2c_current_altitude()
  */
 float DATA::get_i2c_current_latitude()
 {
- 	return Data.Parse(Comm.i2c_packet,2);
+ 	return Data.Parse(Comm.to_parse,2);
 }
 
 
@@ -46,7 +46,7 @@ float DATA::get_i2c_current_latitude()
  */
 float DATA::get_i2c_current_longitude()
 {
- 	return Data.Parse(Comm.i2c_packet,3);
+ 	return Data.Parse(Comm.to_parse,3);
 }
 
 
@@ -55,7 +55,7 @@ float DATA::get_i2c_current_longitude()
  */
 float DATA::get_i2c_destination_distance()
 {
- 	return Data.Parse(Comm.i2c_packet,7);
+ 	return Data.Parse(Comm.to_parse,7);
 }
 
 
@@ -64,7 +64,7 @@ float DATA::get_i2c_destination_distance()
  */
 float DATA::get_i2c_target_altitude()
 {
- 	return Data.Parse(Comm.i2c_packet,4);
+ 	return Data.Parse(Comm.to_parse,4);
 }
 
 
@@ -73,7 +73,7 @@ float DATA::get_i2c_target_altitude()
  */
 float DATA::get_i2c_target_latitude()
 {
- 	return Data.Parse(Comm.i2c_packet,5);
+ 	return Data.Parse(Comm.to_parse,5);
 }
 
 
@@ -82,7 +82,7 @@ float DATA::get_i2c_target_latitude()
  */
 float DATA::get_i2c_target_longitude()
 {
- 	return Data.Parse(Comm.i2c_packet,6);
+ 	return Data.Parse(Comm.to_parse,6);
 }
 
 
@@ -91,7 +91,7 @@ float DATA::get_i2c_target_longitude()
  */ 
 float DATA::get_i2c_current_speed()
 {
- 	return Data.Parse(Comm.i2c_packet,8);
+ 	return Data.Parse(Comm.to_parse,8);
 }
 
 
@@ -100,7 +100,7 @@ float DATA::get_i2c_current_speed()
  */ 
 float DATA::get_i2c_authority_mode()
 {
-	return Data.Parse(Comm.i2c_packet,9);
+	return Data.Parse(Comm.to_parse,9);
 }
 
 
@@ -109,7 +109,7 @@ float DATA::get_i2c_authority_mode()
  */
 float DATA::get_i2c_manual_command()
 {
-	return Data.Parse(Comm.i2c_packet,10);
+	return Data.Parse(Comm.to_parse,10);
 }
 
 
@@ -118,7 +118,7 @@ float DATA::get_i2c_manual_command()
  */
 float DATA::get_i2c_craft_anchor()
 {
-	return Data.Parse(Comm.i2c_packet,11);
+	return Data.Parse(Comm.to_parse,11);
 }
 
 
