@@ -52,7 +52,7 @@ void receiveEvent(int howmany)
         Comm.first_32 = false;
         Comm.second_32 = false;
         Comm.third_32 = false;
-        Comm.i2c_packet[0] = '0';
+        Comm.i2c_packet[0] = '\0';
     }
 
     int character_iterator = 0;
@@ -63,6 +63,7 @@ void receiveEvent(int howmany)
     {
     	Comm.complete_packet_flag = false;
         Comm.first_32 = true;
+        Comm.i2c_packet = 
         character_iterator = 0;
     }
     else if(!Comm.second_32)
@@ -80,10 +81,8 @@ void receiveEvent(int howmany)
     // Checks for data on the wire.
     while(Wire.available())
     {
-        // Reads in single character from serial port.
-        char temp_character = Wire.read();
         // Concatenates character to large string.
-        Comm.i2c_packet[character_iterator] = temp_character;
+        Comm.i2c_packet[character_iterator] = Wire.read();
         character_iterator++;
     }
 }
