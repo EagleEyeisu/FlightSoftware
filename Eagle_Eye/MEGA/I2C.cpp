@@ -74,7 +74,8 @@ void receiveEvent(int howmany)
     // Checks for data on the wire.
     while(Wire.available())
     {
+    	char temp += Wire.read();
         // Concatenates character to large string.
-        Comm.i2c_packet += Wire.read();
+        Comm.i2c_packet += temp;
     }
 }
