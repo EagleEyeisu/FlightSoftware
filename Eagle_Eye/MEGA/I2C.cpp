@@ -45,6 +45,7 @@ void receiveEvent(int howmany)
     // New info is being read in. 
     Data.new_data = Data.YES;
 
+    /*
     if(Comm.complete_packet_flag)
     {
     	Comm.to_parse[Comm.i2c_packet.length()];
@@ -81,5 +82,29 @@ void receiveEvent(int howmany)
     	char temp = Wire.read();
         // Concatenates character to large string.
         Comm.i2c_packet += temp;
+    }
+    */
+
+    int length = 0;
+    while(Wire.available())
+    {
+    	char temp = Wire.read();
+        // Concatenates character to large string.
+        Comm.i2c_packet += temp;
+        length++;
+    }
+
+    // Checks for proper formatting.
+    if(Comm.i2c_packet[0] == '$' && Comm.i2c_packet[length] == '$')
+    {
+        Comm.complete_packet_flag = true;
+    	Comm.to_parse[Comm.i2c_packet.length()];
+    	Comm.i2c_packet.toCharArray(Comm.to_parse,Comm.i2c_packet.length());
+    	Serial.print("I2C Packet: ");
+    	Serial.println(Comm.i2c_packet);
+    }
+    else
+    {
+        Comm.complete_packet_flag = false;
     }
 }

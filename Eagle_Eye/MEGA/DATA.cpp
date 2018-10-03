@@ -100,7 +100,7 @@ float DATA::get_i2c_current_speed()
  */ 
 float DATA::get_i2c_authority_mode()
 {
-	return Data.Parse(Comm.to_parse,9);
+	return Data.Parse(Comm.to_parse,1); //Actual is 9
 }
 
 
@@ -109,7 +109,7 @@ float DATA::get_i2c_authority_mode()
  */
 float DATA::get_i2c_manual_command()
 {
-	return Data.Parse(Comm.to_parse,10);
+	return Data.Parse(Comm.to_parse,2); //Actual is 9
 }
 
 
@@ -118,7 +118,7 @@ float DATA::get_i2c_manual_command()
  */
 float DATA::get_i2c_craft_anchor()
 {
-	return Data.Parse(Comm.to_parse,11);
+	return Data.Parse(Comm.to_parse,3); //Actual is 9
 }
 
 
@@ -138,14 +138,14 @@ void DATA::update_data()
 	// LORA DATA
 	if(Comm.complete_packet_flag)
 	{
-		Local.lora_current_altitude = Data.get_i2c_current_altitude();
-		Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
-		Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
-		Local.lora_target_altitude = Data.get_i2c_target_altitude();
-		Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
-		Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
-		Local.lora_destination_distance = Data.get_i2c_destination_distance();
-		Local.lora_current_speed = Data.get_i2c_current_speed();
+		//Local.lora_current_altitude = Data.get_i2c_current_altitude();
+		//Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
+		//Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
+		//Local.lora_target_altitude = Data.get_i2c_target_altitude();
+		//Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
+		//Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
+		//Local.lora_destination_distance = Data.get_i2c_destination_distance();
+		//Local.lora_current_speed = Data.get_i2c_current_speed();
 		// GENERAL CRAFT / NETWORK DATA
 		Local.authority_mode = Data.get_i2c_authority_mode(); 
 		Local.craft_manual_direction = Data.get_i2c_manual_command();
