@@ -63,6 +63,7 @@ void I2C::create_mega_packet()
 
     // Creates a temporary string to hold all need information.
     String temp = "";
+    i2c_packet = ""
     // Each line below appends a certain divider or value to the string.
     temp += '$'; 
     temp += ',';
