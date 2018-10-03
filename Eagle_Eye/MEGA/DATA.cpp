@@ -28,7 +28,7 @@ DATA::DATA()
  */
 float DATA::get_i2c_current_altitude()
 {
- 	return Data.Parse(Comm.to_parse,1);
+ 	return Data.Parse(Comm.i2c_packet,1);
 }
 
 
@@ -37,7 +37,7 @@ float DATA::get_i2c_current_altitude()
  */
 float DATA::get_i2c_current_latitude()
 {
- 	return Data.Parse(Comm.to_parse,2);
+ 	return Data.Parse(Comm.i2c_packet,2);
 }
 
 
@@ -46,7 +46,7 @@ float DATA::get_i2c_current_latitude()
  */
 float DATA::get_i2c_current_longitude()
 {
- 	return Data.Parse(Comm.to_parse,3);
+ 	return Data.Parse(Comm.i2c_packet,3);
 }
 
 
@@ -55,7 +55,7 @@ float DATA::get_i2c_current_longitude()
  */
 float DATA::get_i2c_destination_distance()
 {
- 	return Data.Parse(Comm.to_parse,7);
+ 	return Data.Parse(Comm.i2c_packet,7);
 }
 
 
@@ -64,7 +64,7 @@ float DATA::get_i2c_destination_distance()
  */
 float DATA::get_i2c_target_altitude()
 {
- 	return Data.Parse(Comm.to_parse,4);
+ 	return Data.Parse(Comm.i2c_packet,4);
 }
 
 
@@ -73,7 +73,7 @@ float DATA::get_i2c_target_altitude()
  */
 float DATA::get_i2c_target_latitude()
 {
- 	return Data.Parse(Comm.to_parse,5);
+ 	return Data.Parse(Comm.i2c_packet,5);
 }
 
 
@@ -82,7 +82,7 @@ float DATA::get_i2c_target_latitude()
  */
 float DATA::get_i2c_target_longitude()
 {
- 	return Data.Parse(Comm.to_parse,6);
+ 	return Data.Parse(Comm.i2c_packet,6);
 }
 
 
@@ -91,7 +91,7 @@ float DATA::get_i2c_target_longitude()
  */ 
 float DATA::get_i2c_current_speed()
 {
- 	return Data.Parse(Comm.to_parse,8);
+ 	return Data.Parse(Comm.i2c_packet,8);
 }
 
 
@@ -100,7 +100,7 @@ float DATA::get_i2c_current_speed()
  */ 
 float DATA::get_i2c_authority_mode()
 {
-	return Data.Parse(Comm.to_parse,9);
+	return Data.Parse(Comm.i2c_packet,9);
 }
 
 
@@ -109,7 +109,7 @@ float DATA::get_i2c_authority_mode()
  */
 float DATA::get_i2c_manual_command()
 {
-	return Data.Parse(Comm.to_parse,10);
+	return Data.Parse(Comm.i2c_packet,10);
 }
 
 
@@ -118,7 +118,7 @@ float DATA::get_i2c_manual_command()
  */
 float DATA::get_i2c_craft_anchor()
 {
-	return Data.Parse(Comm.to_parse,11);
+	return Data.Parse(Comm.i2c_packet,11);
 }
 
 
@@ -134,19 +134,23 @@ void DATA::update_data()
 	Local.mega_roll = Imu.get_roll();
 	Local.mega_pitch = Imu.get_pitch();
 	Local.mega_yaw = Imu.get_yaw();
+	
 	// LORA DATA
-	Local.lora_current_altitude = Data.get_i2c_current_altitude();
-	Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
-	Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
-	Local.lora_target_altitude = Data.get_i2c_target_altitude();
-	Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
-	Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
-	Local.lora_destination_distance = Data.get_i2c_destination_distance();
-	Local.lora_current_speed = Data.get_i2c_current_speed();
-	// GENERAL CRAFT / NETWORK DATA
-	Local.authority_mode = Data.get_i2c_authority_mode(); 
-	Local.craft_manual_direction = Data.get_i2c_manual_command();
-	Local.craft_anchor_status = Data.get_i2c_craft_anchor();
+	if(Comm.complete_packet_flag)
+	{
+		Local.lora_current_altitude = Data.get_i2c_current_altitude();
+		Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
+		Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
+		Local.lora_target_altitude = Data.get_i2c_target_altitude();
+		Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
+		Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
+		Local.lora_destination_distance = Data.get_i2c_destination_distance();
+		Local.lora_current_speed = Data.get_i2c_current_speed();
+		// GENERAL CRAFT / NETWORK DATA
+		Local.authority_mode = Data.get_i2c_authority_mode(); 
+		Local.craft_manual_direction = Data.get_i2c_manual_command();
+		Local.craft_anchor_status = Data.get_i2c_craft_anchor();
+	}
 }
 
 
@@ -233,58 +237,49 @@ float DATA::Parse(char message[], int objective)
 	// $,GPSAltitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$
 	//        1           2         3          4          5          6            7           8      9 
 	//
-
-	if (Comm.complete_packet_flag)
-	{
-		// Used to iterate through the passed in character array.
-		int i = 0;
-		// This iterator is used to pull the wanted part of the 'message' from the entire array.
-		// Used to gather information such as how long the new parsed section is.
-		int temp_iter = 0;
-		// Counts the commas as the character array is iterated over.
-		int comma_counter = 0;
-		// Temporary string used to hold the newly parsed array.
-		char temp_array[20];
-	  	// Iterators over the entire array.
-	  	for(i=0; i<150; i++)
-	  	{
-	    	// Checks to see if the current iterator's position is a comma. 
-	    	if(message[i] == ',')
-	    	{
-	    		// If so, it iterators the comma counter by 1.
-	      		comma_counter++;
-	    	}
-	    	// Checks to see if the desired amount of commas has been passed. 
-		    else if(comma_counter == objective)
+	// Used to iterate through the passed in character array.
+	int i = 0;
+	// This iterator is used to pull the wanted part of the 'message' from the entire array.
+	// Used to gather information such as how long the new parsed section is.
+	int temp_iter = 0;
+	// Counts the commas as the character array is iterated over.
+	int comma_counter = 0;
+	// Temporary string used to hold the newly parsed array.
+	char temp_array[20];
+  	// Iterators over the entire array.
+  	for(i=0; i<150; i++)
+  	{
+    	// Checks to see if the current iterator's position is a comma. 
+    	if(message[i] == ',')
+    	{
+    		// If so, it iterators the comma counter by 1.
+      		comma_counter++;
+    	}
+    	// Checks to see if the desired amount of commas has been passed. 
+	    else if(comma_counter == objective)
+	    {
+		    // Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
+		    if(message[i] != ',')
 		    {
-			    // Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
-			    if(message[i] != ',')
-			    {
-			    	// Copies the message's character to the temporary array.
-			        temp_array[temp_iter] = message[i];
-			        // Iterator used to tell how long the temporary array is.
-			        temp_iter++;
-			    }
+		    	// Copies the message's character to the temporary array.
+		        temp_array[temp_iter] = message[i];
+		        // Iterator used to tell how long the temporary array is.
+		        temp_iter++;
 		    }
-	  	}
-		// Charater array used with a fitted length of the parsed section.
-		char parsed_section[temp_iter];
-		// Iterates through the temporary array copying over the info to the variable which will be returned.
-		for(i=0; i<temp_iter; i++)
-		{
-			// Copying of the information between arrays.
-			parsed_section[i] = temp_array[i];
-		}
-		// Converts the final array to a float.
-		float temp = atof(parsed_section);
-		// Returns the desired parsed section in number (float) form.
-		return temp;
-	}
-	else
+	    }
+  	}
+	// Charater array used with a fitted length of the parsed section.
+	char parsed_section[temp_iter];
+	// Iterates through the temporary array copying over the info to the variable which will be returned.
+	for(i=0; i<temp_iter; i++)
 	{
-		return 777.777;
+		// Copying of the information between arrays.
+		parsed_section[i] = temp_array[i];
 	}
-	
+	// Converts the final array to a float.
+	float temp = atof(parsed_section);
+	// Returns the desired parsed section in number (float) form.
+	return temp;
 }
 
 

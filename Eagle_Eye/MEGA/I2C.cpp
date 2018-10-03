@@ -47,15 +47,12 @@ void receiveEvent(int howmany)
 
     if(Comm.first_32 && Comm.second_32 && Comm.third_32)
     {
-        Serial.print("Packet: ");
-        Serial.println(Comm.i2c_packet);
         Comm.first_32 = false;
         Comm.second_32 = false;
         Comm.third_32 = false;
         Comm.i2c_packet[0] = '\0';
     }
 
-    int character_iterator = 0;
     // This series of conditional checks will make sure that the 3 seperate
     // i2c packets are read in (in order) before letting the mega use the data.
     // They are all acting as flags and are reset upon the start of the next packet.
@@ -63,18 +60,14 @@ void receiveEvent(int howmany)
     {
     	Comm.complete_packet_flag = false;
         Comm.first_32 = true;
-        Comm.i2c_packet = 
-        character_iterator = 0;
     }
     else if(!Comm.second_32)
     {
         Comm.second_32 = true;
-        character_iterator = 32;
     }
     else if(!Comm.third_32)
     {
         Comm.third_32 = true;
-        character_iterator = 64;
         Comm.complete_packet_flag = true;
     }
 
@@ -82,7 +75,6 @@ void receiveEvent(int howmany)
     while(Wire.available())
     {
         // Concatenates character to large string.
-        Comm.i2c_packet[character_iterator] = Wire.read();
-        character_iterator++;
+        Comm.i2c_packet += Wire.read();
     }
 }
