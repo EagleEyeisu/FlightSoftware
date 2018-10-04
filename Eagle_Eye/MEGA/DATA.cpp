@@ -134,12 +134,9 @@ void DATA::update_data()
 	Local.mega_roll = Imu.get_roll();
 	Local.mega_pitch = Imu.get_pitch();
 	Local.mega_yaw = Imu.get_yaw();
-	
-<<<<<<< HEAD
+
 	Comm.i2c_receive();
 	
-=======
->>>>>>> parent of b8a070a... Made the i2c_receive a usual method that is run prior to parsing. It is not longer an interrupt.
 	// LORA DATA
 	if(Comm.complete_packet_flag)
 	{
