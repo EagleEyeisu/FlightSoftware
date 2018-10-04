@@ -839,9 +839,9 @@ class MC_Tab():
 		elif self.manual_command.get() == "FORWARD":
 			return "1.00"
 		elif self.manual_command.get() == "LEFT":
-			return "2.00"
-		elif self.manual_command.get() == "RIGHT":
 			return "3.00"
+		elif self.manual_command.get() == "RIGHT":
+			return "2.00"
 		elif self.manual_command.get() == "UP":
 			return "4.00"
 

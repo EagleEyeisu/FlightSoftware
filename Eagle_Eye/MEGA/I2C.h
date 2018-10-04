@@ -21,9 +21,6 @@ class I2C
     // Runs initialzation script for the I2C protocol.
     void initialize();
 
-    // Validates packet on main loop cycle.
-    void validate_packet();
-
     /*-----------------------------------------------------------------------------*/
 
     // Inter-Intergrated Circuit (I^2C) packet.
@@ -43,6 +40,9 @@ class I2C
 
     // Turns true during validation. If true, throw away i2c input for that cycle.
     bool packet_validation = false;
+
+    // Forces the i2c parsing to alternate between direction and throttle.
+    int i2c_alternate = 0;
 };
 
 #endif

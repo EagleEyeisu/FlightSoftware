@@ -59,6 +59,29 @@ void MOTOR::manager()
 }
 
 
+int MOTOR::convert_throttle()
+{
+  int input = Data.Local.lora_target_throttle;
+  float throttle = 0.0;
+  double fraction = 0.0;
+  if(input < 1)
+  {
+    throttle = 750;
+  }
+  if(input < 5)
+  {
+    fraction = (input-1)/4.0;
+    throttle = 760.0+(fraction*(800.0-760.0));
+  }
+  if(input <= 50)
+  {
+    fraction = (input-5.0)/45.0;
+    throttle = 800.0+(fraction*(450.0));
+  }
+  return throttle;
+}
+
+
 /**
  * Handles manual flight. Slimmed down version of auto pilot that uses explicit direction commands
  * vs a lot of complicated math.
@@ -376,7 +399,8 @@ void MOTOR::apply_break()
  */
 void MOTOR::spin_up()
 {
-    float max_throttle = Data.Local.lora_target_throttle;
+    current_throttle = 900;
+    int max_throttle = convert_throttle();
     while(max_throttle > current_throttle)
     {
         current_throttle = current_throttle + INCREMENT_AMOUNT;
@@ -395,7 +419,8 @@ void MOTOR::spin_up()
  */
 void MOTOR::beam_me_up_scotty()
 {
-    float max_throttle = Data.Local.lora_target_throttle;
+    current_throttle = 900;
+    int max_throttle = convert_throttle();
     while(max_throttle > current_throttle)
     {
         current_throttle = current_throttle + INCREMENT_AMOUNT;

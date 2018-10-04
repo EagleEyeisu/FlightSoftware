@@ -58,6 +58,9 @@ class MOTOR
     // Autonomous flight mode.
     void auto_pilot();
 
+    // Converts throttle from 0-100% to 900+ value for ESC's.
+    int convert_throttle();
+
     /*-----------------------------------------------------------------------------*/ 
 
     // Connection pins from Arduino MEGA to their respective ESC's.
@@ -92,7 +95,7 @@ class MOTOR
     Servo servo_right;
 
     // Throttle value of the craft at any given point in time.
-    double current_throttle = 900;
+    int current_throttle = 900;
 
     // This variables it the desired throttle percentage value that 
     // takes in a "percentage (0-100)" and calculates the 

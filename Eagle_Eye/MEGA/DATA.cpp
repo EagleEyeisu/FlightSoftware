@@ -143,12 +143,10 @@ void DATA::update_data()
 	Local.mega_roll = Imu.get_roll();
 	Local.mega_pitch = Imu.get_pitch();
 	Local.mega_yaw = Imu.get_yaw();
-
-  //Comm.validate_packet();
   
 	// LORA DATA
-	//if(Comm.complete_packet_flag)
-	//{
+	if(Comm.complete_packet_flag)
+	{
 		//Local.lora_current_altitude = Data.get_i2c_current_altitude();
 		//Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
 		//Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
@@ -163,11 +161,15 @@ void DATA::update_data()
 		//Local.authority_mode = Data.get_i2c_authority_mode(); 
     //Serial.print("Direction: ");
 		//Local.craft_manual_direction = Data.get_i2c_manual_command();
-   //Serial.print("Anchor: ");
+    //Serial.print("Anchor: ");
 		//Local.craft_anchor_status = Data.get_i2c_craft_anchor();
-    //Serial.print("End of Parse: "); Serial.println(Comm.i2c_buffer);
-    //Serial.print("End of Parse: "); Serial.println(Comm.to_parse);
-	//}
+    char to_parse[Comm.i2c_buffer.length()];
+    Comm.i2c_buffer.toCharArray(to_parse,Comm.i2c_buffer.length()+1);
+    Serial.print("Direction: ");
+    Data.Local.craft_manual_direction = Data.get_i2c_manual_command(to_parse);
+    Serial.print("Target Throttle: ");
+    Data.Local.lora_target_throttle = Data.get_i2c_target_throttle(to_parse); 
+	}
 }
 
 
@@ -189,6 +191,14 @@ void DATA::to_screen()
 {
 	if(new_data == YES)
 	{
+      if(Comm.i2c_alternate == 0)
+      {
+        Comm.i2c_alternate = 1; 
+      }
+      else
+      {
+        Comm.i2c_alternate = 0;
+      }
 	    // Prints out data struct to the screen for debugging/following along purposes.
 	    Serial.println("-----------------------------------------------------------------------------");
 	    Serial.println("-----------------------------------------------------------------------------");
@@ -219,6 +229,7 @@ void DATA::to_screen()
 	    Serial.println("|                                                                           |");
 	    Serial.println("|                               MOTOR DATA                                  |");
 	    Serial.print(  "|  State:          "); Serial.print(Movement.get_movement_state());		Serial.println("\t\t\t\t\t\t\t    |");
+      Serial.print(  "|  Tar Throttle:   "); Serial.print(Data.Local.lora_target_throttle); Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Servo Degree:   "); Serial.print(Movement.servo_degree);       		Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Forward:        "); Serial.print(Imu.move_forward);    				    Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Right:          "); Serial.print(Imu.turn_right);      				    Serial.println("\t\t\t\t\t\t\t    |");
