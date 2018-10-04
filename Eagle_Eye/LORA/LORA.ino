@@ -1,7 +1,6 @@
 /****LIBRARIES****/
 #include <RH_RF95.h>
 #include <TinyGPSPlus.h>
-#include <Wire.h>
 
 #include "Globals.h"
 #include "DATA.h"

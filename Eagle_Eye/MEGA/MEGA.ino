@@ -81,4 +81,6 @@ void loop()
   
   // Resets the new_data state to false.
   Data.new_data = Data.NO;
+
+  delay(500);
 }

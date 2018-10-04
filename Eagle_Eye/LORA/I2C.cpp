@@ -31,7 +31,7 @@ void I2C::initialize()
 	// Sets the address for the current micro controller.
 	// Mega - 0
 	// LoRa - 8
-	Wire.begin(8);
+	Wire.begin();
 }
 
 
@@ -84,7 +84,9 @@ void I2C::create_mega_packet()
     //temp += ',';
     //temp += Data.Local.current_speed;
     //temp += ',';
-    i2c_packet += Radio.Network.authority_mode;
+    //i2c_packet += Radio.Network.authority_mode;
+    /*----------------------*/
+    i2c_packet += Radio.Network.target_throttle;
     i2c_packet += ',';
     i2c_packet += Radio.Network.manual_direction;
     i2c_packet += ',';
@@ -100,7 +102,7 @@ void I2C::create_mega_packet()
 void I2C::send_mega_packet()
 {
 	// Every 1 second, the lora is allowed to send i2c data.
-	if(millis() - i2c_timer > 100)
+	if(millis() - i2c_timer > 3000)
 	{
 		// Resets timer.
 		i2c_timer = millis();
@@ -115,6 +117,7 @@ void I2C::send_mega_packet()
 	        Wire.write(i2c_packet[character_iterator]);
 	        character_iterator++;
 		}
+   Serial.println(i2c_packet);
 		// Closes the transmission.
 		Wire.endTransmission();
 	    delay(100);

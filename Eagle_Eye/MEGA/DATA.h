@@ -30,37 +30,40 @@ class DATA
     void set_pressure();
 
     // Reads in the altitude via i2c.
-    float get_i2c_current_altitude();
+    float get_i2c_current_altitude(char buf[]);
 
     // Reads in the latitude via i2c.
-    float get_i2c_current_latitude();
+    float get_i2c_current_latitude(char buf[]);
 
     // Reads in the longitude via i2c.
-    float get_i2c_current_longitude();
+    float get_i2c_current_longitude(char buf[]);
 
     // Reads in the taret altitude via i2c.
-    float get_i2c_target_altitude();
+    float get_i2c_target_altitude(char buf[]);
 
     // Reads in the target latitude via i2c.
-    float get_i2c_target_latitude();
+    float get_i2c_target_latitude(char buf[]);
 
     // Reads in the taret longitude via i2c.
-    float get_i2c_target_longitude();
+    float get_i2c_target_longitude(char buf[]);
 
     // Reads in the taret distance via i2c.
-    float get_i2c_destination_distance();
+    float get_i2c_destination_distance(char buf[]);
 
     // Reads in the speed via i2c.
-    float get_i2c_current_speed();
+    float get_i2c_current_speed(char buf[]);
 
     // Reads in the flight mode of the craft.
-    float get_i2c_authority_mode();
+    float get_i2c_authority_mode(char buf[]);
 
     // Reads in the manual flight mode's directional flight command.
-    float get_i2c_manual_command();
+    float get_i2c_manual_command(char buf[]);
 
     // Reads in the craft's anchor state.
-    float get_i2c_craft_anchor();
+    float get_i2c_craft_anchor(char buf[]);
+
+    // Reads in the craft's throttle variable.
+    float get_i2c_target_throttle(char buf[]);
 
     // Runs initialzation script for the barometer.
     void initialize();

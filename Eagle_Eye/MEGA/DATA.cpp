@@ -26,99 +26,108 @@ DATA::DATA()
 /**
  *  Retrieves the current Altitude of the craft.
  */
-float DATA::get_i2c_current_altitude()
+float DATA::get_i2c_current_altitude(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,1);
+ 	return Data.Parse(buf,1);
 }
 
 
 /**
  *  Retrieves the current Latitude of the craft.
  */
-float DATA::get_i2c_current_latitude()
+float DATA::get_i2c_current_latitude(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,2);
+ 	return Data.Parse(buf,2);
 }
 
 
 /**
  *  Retrieves the current Longituede of the craft.
  */
-float DATA::get_i2c_current_longitude()
+float DATA::get_i2c_current_longitude(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,3);
+ 	return Data.Parse(buf,3);
 }
 
 
 /**
  *  Retrieves the distance to the target destination.
  */
-float DATA::get_i2c_destination_distance()
+float DATA::get_i2c_destination_distance(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,7);
+ 	return Data.Parse(buf,7);
 }
 
 
 /**
  *  Retrieves the Altitude of the target destination.
  */
-float DATA::get_i2c_target_altitude()
+float DATA::get_i2c_target_altitude(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,4);
+ 	return Data.Parse(buf,4);
 }
 
 
 /**
  *  Retrieves the Latitude of the target destination.
  */
-float DATA::get_i2c_target_latitude()
+float DATA::get_i2c_target_latitude(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,5);
+ 	return Data.Parse(buf,5);
 }
 
 
 /**
  *  Retrieves the Longitude of the target destination.
  */
-float DATA::get_i2c_target_longitude()
+float DATA::get_i2c_target_longitude(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,6);
+ 	return Data.Parse(buf,6);
 }
 
 
 /**
  *  Retrieves the speed (meters per second) of the craft.
  */ 
-float DATA::get_i2c_current_speed()
+float DATA::get_i2c_current_speed(char buf[])
 {
- 	return Data.Parse(Comm.to_parse,8);
+ 	return Data.Parse(buf,8);
 }
 
 
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */ 
-float DATA::get_i2c_authority_mode()
+float DATA::get_i2c_authority_mode(char buf[])
 {
-	return Data.Parse(Comm.to_parse,1); //Actual is 9
+	return Data.Parse(buf,1); //Actual is 9
 }
 
 
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */
-float DATA::get_i2c_manual_command()
+float DATA::get_i2c_manual_command(char buf[])
 {
-	return Data.Parse(Comm.to_parse,2); //Actual is 9
+	return Data.Parse(buf,2); //Actual is 9
 }
 
 
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */
-float DATA::get_i2c_craft_anchor()
+float DATA::get_i2c_craft_anchor(char buf[])
 {
-	return Data.Parse(Comm.to_parse,3); //Actual is 9
+	return Data.Parse(buf,3); //Actual is 9
+}
+
+
+/**
+ * Retrieves the flight mode of the craft. (Manual or autopilot)
+ */
+float DATA::get_i2c_target_throttle(char buf[])
+{
+  return Data.Parse(buf,1); //Actual is 9
 }
 
 
@@ -134,10 +143,12 @@ void DATA::update_data()
 	Local.mega_roll = Imu.get_roll();
 	Local.mega_pitch = Imu.get_pitch();
 	Local.mega_yaw = Imu.get_yaw();
-	
+
+  //Comm.validate_packet();
+  
 	// LORA DATA
-	if(Comm.complete_packet_flag)
-	{
+	//if(Comm.complete_packet_flag)
+	//{
 		//Local.lora_current_altitude = Data.get_i2c_current_altitude();
 		//Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
 		//Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
@@ -147,10 +158,16 @@ void DATA::update_data()
 		//Local.lora_destination_distance = Data.get_i2c_destination_distance();
 		//Local.lora_current_speed = Data.get_i2c_current_speed();
 		// GENERAL CRAFT / NETWORK DATA
-		Local.authority_mode = Data.get_i2c_authority_mode(); 
-		Local.craft_manual_direction = Data.get_i2c_manual_command();
-		Local.craft_anchor_status = Data.get_i2c_craft_anchor();
-	}
+    //Serial.print("Start of Parse: "); Serial.println(Comm.to_parse);
+    //Serial.print("Authority Mode: ");
+		//Local.authority_mode = Data.get_i2c_authority_mode(); 
+    //Serial.print("Direction: ");
+		//Local.craft_manual_direction = Data.get_i2c_manual_command();
+   //Serial.print("Anchor: ");
+		//Local.craft_anchor_status = Data.get_i2c_craft_anchor();
+    //Serial.print("End of Parse: "); Serial.println(Comm.i2c_buffer);
+    //Serial.print("End of Parse: "); Serial.println(Comm.to_parse);
+	//}
 }
 
 
@@ -278,6 +295,7 @@ float DATA::Parse(char message[], int objective)
 	}
 	// Converts the final array to a float.
 	float temp = atof(parsed_section);
+  Serial.println(temp);
 	// Returns the desired parsed section in number (float) form.
 	return temp;
 }
