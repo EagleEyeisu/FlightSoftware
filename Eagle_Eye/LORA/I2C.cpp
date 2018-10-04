@@ -31,7 +31,7 @@ void I2C::initialize()
 	// Sets the address for the current micro controller.
 	// Mega - 0
 	// LoRa - 8
-	
+	Wire.begin(8);
 }
 
 
@@ -64,11 +64,10 @@ void I2C::create_mega_packet()
     */
 
     // Creates a temporary string to hold all need information.
-    String temp = "";
     i2c_packet = "";
     // Each line below appends a certain divider or value to the string.
-    temp += '$'; 
-    temp += ',';
+    i2c_packet += '$'; 
+    i2c_packet += ',';
     //temp += Data.Local.current_altitude;
     //temp += ',';
     //temp += Data.Local.current_latitude * 10000.0;
@@ -85,15 +84,13 @@ void I2C::create_mega_packet()
     //temp += ',';
     //temp += Data.Local.current_speed;
     //temp += ',';
-    temp += Radio.Network.authority_mode;
-    temp += ',';
-    temp += Radio.Network.manual_direction;
-    temp += ',';
-    temp += Radio.Network.craft_anchor;
-    temp += ',';
-    temp += '$';
-    // Copies over values to the real string packet.
-    i2c_packet = temp;
+    i2c_packet += Radio.Network.authority_mode;
+    i2c_packet += ',';
+    i2c_packet += Radio.Network.manual_direction;
+    i2c_packet += ',';
+    i2c_packet += Radio.Network.craft_anchor;
+    i2c_packet += ',';
+    i2c_packet += '$';
 }
 
 

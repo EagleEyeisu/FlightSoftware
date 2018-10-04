@@ -33,20 +33,13 @@ void setup()
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
 
-    Wire.begin(8);
-    Wire.onRequest(requestEvent);
-
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
-    Comm.initialize();
+    Comm.initialize(); 
 
     // Initializes the Radio.
     Radio.initialize();
 }
 
-void requestEvent()
-{
-  Comm.manager();
-}
 
 /**
  * MAIN PROGRAM CODE.
