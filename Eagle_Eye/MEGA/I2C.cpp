@@ -31,13 +31,14 @@ void I2C::initialize()
 	// Mega - 0
 	// LoRa - 8
 	Wire.begin();
+ Wire.onReceive(receiveEvent);
 }
 
 
 /**
  * Recieves bytes over I2C Connection.
  */
-void I2C::i2c_receive()
+void receiveEvent(int howMany)
 {
     Comm.i2c_packet = "";
     
@@ -48,7 +49,6 @@ void I2C::i2c_receive()
         // Concatenates character to large string.
         Comm.i2c_packet += temp;
     }
-    Serial.println();
 
     // Checks for proper formatting.
     if(Comm.i2c_packet[0] == '$')
@@ -56,7 +56,7 @@ void I2C::i2c_receive()
         Comm.complete_packet_flag = true;
     	Comm.to_parse[Comm.i2c_packet.length()];
         Serial.print("Packet Length: ");
-        Serial.println(packet_length);
+        Serial.println(Comm.i2c_packet.length());
     	Comm.i2c_packet.toCharArray(Comm.to_parse,Comm.i2c_packet.length());
     	Serial.print("I2C Packet: ");
     	Serial.println(Comm.i2c_packet);

@@ -100,7 +100,7 @@ void I2C::create_mega_packet()
 void I2C::send_mega_packet()
 {
 	// Every 1 second, the lora is allowed to send i2c data.
-	if(millis() - i2c_timer > 1000)
+	if(millis() - i2c_timer > 100)
 	{
 		// Resets timer.
 		i2c_timer = millis();
@@ -108,7 +108,7 @@ void I2C::send_mega_packet()
 	    int character_iterator = 0;
 	    // Sends the first installment of 32 characters to the Mega. (0-32)
 		// Assigns address of the receiving board.
-		Wire.beginTransmission(1);
+		Wire.beginTransmission(8);
 		// Sends the message.
 		while(character_iterator < i2c_packet.length())
 	    {
