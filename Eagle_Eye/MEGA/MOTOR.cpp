@@ -62,22 +62,8 @@ void MOTOR::manager()
 int MOTOR::convert_throttle()
 {
   int input = Data.Local.lora_target_throttle;
-  float throttle = 0.0;
-  double fraction = 0.0;
-  if(input < 1)
-  {
-    throttle = 750;
-  }
-  if(input < 5)
-  {
-    fraction = (input-1)/4.0;
-    throttle = 760.0+(fraction*(800.0-760.0));
-  }
-  if(input <= 50)
-  {
-    fraction = (input-5.0)/45.0;
-    throttle = 800.0+(fraction*(450.0));
-  }
+  int throttle = input * 10;
+  throttle = throttle + 980;
   return throttle;
 }
 
@@ -118,13 +104,7 @@ void MOTOR::manual_flight()
             craft_state = FORWARD;
             apply_break();
             rotate_level(0);
-        }
-        else if(craft_state == FORWARD)
-        {
-        	if (Data.Local.craft_anchor_status == false)
-        	{
-        		spin_up();
-        	}
+            spin_up();
         }
     }
     // Turn Left.
@@ -136,13 +116,7 @@ void MOTOR::manual_flight()
             apply_break();
             rotate_left();
             delay(100);
-        }
-        else if(craft_state == LEFT)
-        {
-            if (Data.Local.craft_anchor_status == false)
-        	{
-        		spin_up();
-        	}
+            spin_up();
         }
     }
     // Turn Right.
@@ -154,14 +128,9 @@ void MOTOR::manual_flight()
             apply_break();
             rotate_right();
             delay(100);
+            spin_up();
         }
-        else if(craft_state == RIGHT)
-        {
-            if (Data.Local.craft_anchor_status == false)
-        	{
-        		spin_up();
-        	}
-        }
+
     }
     // Turn Right.
     else if(command == 4)
@@ -172,14 +141,8 @@ void MOTOR::manual_flight()
             apply_break();
             rotate_level(90);
             delay(100);
-        }
-        else if(craft_state == UP)
-        {
-            // I hope this works. This is probably where we break the craft.
-            if (Data.Local.craft_anchor_status == false)
-        	{
-        		spin_up();
-        	}
+
+            spin_up();
         }
     }
 }
@@ -215,6 +178,8 @@ void MOTOR::auto_pilot()
                 apply_break();
                 // Rotates the craft clockwise.
                 rotate_right();
+                delay(100);
+                spin_up();
             }
         }
         // Checks for the need to rotate Left.
@@ -230,6 +195,8 @@ void MOTOR::auto_pilot()
                 apply_break();
                 // Rotates the craft counter clockwise.
                 rotate_left();
+                delay(100);
+                spin_up();
             }
         }
     }
@@ -250,12 +217,13 @@ void MOTOR::auto_pilot()
                 // Rotates all servos back to their original position so that all turbofans
                 // are providing forward thrust.
                 rotate_level(0);
+                delay(100);
+                spin_up();
             }
             // Updates crafts current craft_state to reflect the change.
             craft_state = FORWARD;
         }
     }
-
     // Checks for the need to move up or down
     else if(Imu.move_up)
     {
@@ -401,6 +369,7 @@ void MOTOR::spin_up()
 {
     current_throttle = 900;
     int max_throttle = convert_throttle();
+    Serial.print("Cur throttle: "); Serial.println(max_throttle);
     while(max_throttle > current_throttle)
     {
         current_throttle = current_throttle + INCREMENT_AMOUNT;

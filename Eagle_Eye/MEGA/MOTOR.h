@@ -107,6 +107,8 @@ class MOTOR
 
     enum Orientation {NONE,RIGHT,LEFT,FORWARD,UP,BREAK};
     enum Orientation craft_state = NONE;
+
+    bool motor_on = false;
 };
 
 #endif
