@@ -10,7 +10,7 @@
 #include "MOTOR.h"
 #include "THERMO.h"
 #include "Globals.h"
-
+#include "VALVE.h"
 
 /*****CONSTRUCTORS*****/ //(Objects that can reference their respective functions & variables)
 DATA Data;
@@ -18,7 +18,8 @@ I2C Comm;
 IMU Imu;
 THERMO Thermo;
 MOTOR Movement;
-
+VALVE Valve;
+ 
 // Object used to pull and store the Thermocouple's information.
 Adafruit_MAX31855 thermocouple(5, 4, 3);
 
