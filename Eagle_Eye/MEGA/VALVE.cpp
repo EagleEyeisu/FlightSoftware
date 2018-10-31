@@ -13,3 +13,9 @@ VALVE::VALVE()
 {
  
 }
+
+
+VALVE::initialize()
+{
+  pinMode(VAVLE_CTRL,OUTPUT);
+}
