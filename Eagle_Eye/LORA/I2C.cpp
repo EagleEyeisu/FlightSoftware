@@ -57,41 +57,62 @@ void I2C::create_mega_packet()
 {
     /**
     *                EXAMPLE OF I2^C PACKET.
-    *            
+    *
     * $,Altitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$
     *      1          2         3          4          5          6            7           8      9
-    *             
+    *
     */
 
     // Creates a temporary string to hold all need information.
     i2c_packet = "";
     // Each line below appends a certain divider or value to the string.
-    i2c_packet += '$'; 
+    i2c_packet += '$';
     i2c_packet += ',';
-    //temp += Data.Local.current_altitude;
-    //temp += ',';
-    //temp += Data.Local.current_latitude * 10000.0;
-    //temp += ',';
-    //temp += Data.Local.current_longitude * 10000.0;
-    //temp += ',';
-    //temp += Data.Local.current_target_altitude;
-    //temp += ',';
-    //temp += Data.Local.current_target_latitude * 10000.0;
-    //temp += ',';
-    //temp += Data.Local.current_target_longitude * 10000.0;
-    //temp += ',';
-    //temp += Data.Local.current_target_distance;
-    //temp += ',';
-    //temp += Data.Local.current_speed;
-    //temp += ',';
-    //i2c_packet += Radio.Network.authority_mode;
-    /*----------------------*/
-    i2c_packet += Radio.Network.target_throttle;
-    i2c_packet += ',';
-    i2c_packet += Radio.Network.manual_direction;
-    i2c_packet += ',';
-    i2c_packet += Radio.Network.craft_anchor;
-    i2c_packet += ',';
+    if(i2c_selector == 1)
+    {
+    	i2c_selector = 2;
+    	i2c_packet += ',';
+    	i2c_packet += 'C';
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_altitude;
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_latitude * 10000.0;
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_longitude * 10000.0;
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_speed;
+    	i2c_packet += ',';
+    }
+    else if(i2c_selector == 2)
+    {
+    	i2c_selector = 3;
+    	i2c_packet += ',';
+    	i2c_packet += 'T';
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_target_altitude;
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_target_latitude * 10000.0;
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_target_longitude * 10000.0;
+    	i2c_packet += ',';
+    	i2c_packet += Data.Local.current_target_distance;
+    	i2c_packet += ',';
+    }
+    else if(i2c_selector == 3)
+    {
+    	i2c_selector = 1;
+    	i2c_packet += ',';
+    	i2c_packet += 'N';
+    	i2c_packet += ',';
+    	i2c_packet += Radio.Network.authority_mode;
+    	i2c_packet += ',';
+    	i2c_packet += Radio.Network.target_throttle;
+    	i2c_packet += ',';
+    	i2c_packet += Radio.Network.manual_direction;
+    	i2c_packet += ',';
+    	i2c_packet += Radio.Network.craft_anchor;
+    	i2c_packet += ',';
+    }
     i2c_packet += '$';
 }
 
@@ -102,7 +123,7 @@ void I2C::create_mega_packet()
 void I2C::send_mega_packet()
 {
 	// Every 1 second, the lora is allowed to send i2c data.
-	if(millis() - i2c_timer > 3000)
+	if(millis() - i2c_timer > 500 && i2c_send_permission)
 	{
 		// Resets timer.
 		i2c_timer = millis();
