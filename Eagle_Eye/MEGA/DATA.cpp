@@ -23,12 +23,14 @@ DATA::DATA()
 }
 
 
+/*--------------------I2C CURRENT PACKET (C)--------------------*/
+
 /**
  *  Retrieves the current Altitude of the craft.
  */
 float DATA::get_i2c_current_altitude(char buf[])
 {
- 	return Data.Parse(buf,1);
+ 	return Data.Parse(buf,2);
 }
 
 
@@ -37,7 +39,7 @@ float DATA::get_i2c_current_altitude(char buf[])
  */
 float DATA::get_i2c_current_latitude(char buf[])
 {
- 	return Data.Parse(buf,2);
+ 	return Data.Parse(buf,3);
 }
 
 
@@ -46,43 +48,7 @@ float DATA::get_i2c_current_latitude(char buf[])
  */
 float DATA::get_i2c_current_longitude(char buf[])
 {
- 	return Data.Parse(buf,3);
-}
-
-
-/**
- *  Retrieves the distance to the target destination.
- */
-float DATA::get_i2c_destination_distance(char buf[])
-{
- 	return Data.Parse(buf,7);
-}
-
-
-/**
- *  Retrieves the Altitude of the target destination.
- */
-float DATA::get_i2c_target_altitude(char buf[])
-{
  	return Data.Parse(buf,4);
-}
-
-
-/**
- *  Retrieves the Latitude of the target destination.
- */
-float DATA::get_i2c_target_latitude(char buf[])
-{
- 	return Data.Parse(buf,5);
-}
-
-
-/**
- *  Retrieves the Longitude of the target destination.
- */
-float DATA::get_i2c_target_longitude(char buf[])
-{
- 	return Data.Parse(buf,6);
 }
 
 
@@ -91,34 +57,56 @@ float DATA::get_i2c_target_longitude(char buf[])
  */ 
 float DATA::get_i2c_current_speed(char buf[])
 {
- 	return Data.Parse(buf,8);
+ 	return Data.Parse(buf,5);
 }
 
+
+/*--------------------I2C TARGET PACKET (T)--------------------*/
+
+/**
+ *  Retrieves the Altitude of the target destination.
+ */
+float DATA::get_i2c_target_altitude(char buf[])
+{
+ 	return Data.Parse(buf,2);
+}
+
+
+/**
+ *  Retrieves the Latitude of the target destination.
+ */
+float DATA::get_i2c_target_latitude(char buf[])
+{
+ 	return Data.Parse(buf,3);
+}
+
+
+/**
+ *  Retrieves the Longitude of the target destination.
+ */
+float DATA::get_i2c_target_longitude(char buf[])
+{
+ 	return Data.Parse(buf,4);
+}
+
+
+/**
+ *  Retrieves the distance to the target destination.
+ */
+float DATA::get_i2c_target_distance(char buf[])
+{
+ 	return Data.Parse(buf,5);
+}
+
+
+/*--------------------I2C NETWORK PACKET (T)--------------------*/
 
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */ 
 float DATA::get_i2c_authority_mode(char buf[])
 {
-	return Data.Parse(buf,1); //Actual is 9
-}
-
-
-/**
- * Retrieves the flight mode of the craft. (Manual or autopilot)
- */
-float DATA::get_i2c_manual_command(char buf[])
-{
-	return Data.Parse(buf,2); //Actual is 9
-}
-
-
-/**
- * Retrieves the flight mode of the craft. (Manual or autopilot)
- */
-float DATA::get_i2c_craft_anchor(char buf[])
-{
-	return Data.Parse(buf,3); //Actual is 9
+	return Data.Parse(buf,2);
 }
 
 
@@ -127,7 +115,25 @@ float DATA::get_i2c_craft_anchor(char buf[])
  */
 float DATA::get_i2c_target_throttle(char buf[])
 {
-  return Data.Parse(buf,1); //Actual is 9
+  return Data.Parse(buf,3);
+}
+
+
+/**
+ * Retrieves the flight mode of the craft. (Manual or autopilot)
+ */
+float DATA::get_i2c_manual_command(char buf[])
+{
+	return Data.Parse(buf,4);
+}
+
+
+/**
+ * Retrieves the flight mode of the craft. (Manual or autopilot)
+ */
+float DATA::get_i2c_craft_anchor(char buf[])
+{
+	return Data.Parse(buf,5);
 }
 
 
@@ -136,39 +142,50 @@ float DATA::get_i2c_target_throttle(char buf[])
  */
 void DATA::update_data()
 {
-	// MEGA DATA
+	// Data that is native to the MEGA microcontroller.
   	Data.set_pressure();
 	Local.mega_altitude = Data.calculate_barometer_altitude();
 	Local.mega_external_temperature = Thermo.get_external_temperature();
 	Local.mega_roll = Imu.get_roll();
 	Local.mega_pitch = Imu.get_pitch();
 	Local.mega_yaw = Imu.get_yaw();
-  
-	// LORA DATA
-	if(Comm.complete_packet_flag)
+  	
+	// Data that is coming into the MEGA via i2c. Checks for a complete
+	// packet flag. If true, the packet is valid and ready to be parsed.
+	if(Comm.flag_complete_packet)
 	{
-		//Local.lora_current_altitude = Data.get_i2c_current_altitude();
-		//Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
-		//Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
-		//Local.lora_target_altitude = Data.get_i2c_target_altitude();
-		//Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
-		//Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
-		//Local.lora_destination_distance = Data.get_i2c_destination_distance();
-		//Local.lora_current_speed = Data.get_i2c_current_speed();
-		// GENERAL CRAFT / NETWORK DATA
-    //Serial.print("Start of Parse: "); Serial.println(Comm.to_parse);
-    //Serial.print("Authority Mode: ");
-		//Local.authority_mode = Data.get_i2c_authority_mode(); 
-    //Serial.print("Direction: ");
-		//Local.craft_manual_direction = Data.get_i2c_manual_command();
-    //Serial.print("Anchor: ");
-		//Local.craft_anchor_status = Data.get_i2c_craft_anchor();
-    char to_parse[Comm.i2c_buffer.length()];
-    Comm.i2c_buffer.toCharArray(to_parse,Comm.i2c_buffer.length()+1);
-    Serial.print("Direction: ");
-    Data.Local.craft_manual_direction = Data.get_i2c_manual_command(to_parse);
-    Serial.print("Target Throttle: ");
-    Data.Local.lora_target_throttle = Data.get_i2c_target_throttle(to_parse); 
+		// Converts the string packet into a character array.
+		// (Makes it easier to work with).
+		char to_parse[Comm.i2c_buffer.length()];
+		// Indexed at 0 so we need to add 1 at the end of the length.
+    	Comm.i2c_buffer.toCharArray(to_parse,Comm.i2c_buffer.length()+1);
+    	// Checks for i2c packet type of Current data.
+		if(to_parse[2] == 'C')
+		{
+			// Methods located in Data.cpp. Parses appropriate values from packet.
+			Local.lora_current_altitude = Data.get_i2c_current_altitude();
+			Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
+			Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
+			Local.lora_current_speed = Data.get_i2c_current_speed();
+		}
+		// Checks for i2c packet type of Target data.
+		else if(to_parse[2] == 'T')
+		{
+			// Methods located in Data.cpp. Parses appropriate values from packet.
+			Local.lora_target_altitude = Data.get_i2c_target_altitude();
+			Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
+			Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
+			Local.lora_target_distance = Data.get_i2c_target_distance();
+		}
+		// Checks for i2c packet type of Network data.
+		else if(to_parse[2] == 'N')
+		{
+			// Methods located in Data.cpp. Parses appropriate values from packet.
+			Local.authority_mode = Data.get_i2c_authority_mode(); 
+			Data.Local.lora_target_throttle = Data.get_i2c_target_throttle(to_parse);
+			Data.Local.craft_manual_direction = Data.get_i2c_manual_command(to_parse);
+			Local.craft_anchor_status = Data.get_i2c_craft_anchor();
+		}
 	}
 }
 
@@ -191,14 +208,6 @@ void DATA::to_screen()
 {
 	if(new_data == YES)
 	{
-      if(Comm.i2c_alternate == 0)
-      {
-        Comm.i2c_alternate = 1; 
-      }
-      else
-      {
-        Comm.i2c_alternate = 0;
-      }
 	    // Prints out data struct to the screen for debugging/following along purposes.
 	    Serial.println("-----------------------------------------------------------------------------");
 	    Serial.println("-----------------------------------------------------------------------------");
@@ -223,13 +232,13 @@ void DATA::to_screen()
 	    Serial.print(  "|  Target Lat:    "); Serial.print(Local.lora_target_latitude,5);                           Serial.println("\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Target Lon:    "); Serial.print(Local.lora_target_longitude,5);                          Serial.println("\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Speed:         "); Serial.print(Local.lora_current_speed);         Serial.print(" mps"); Serial.println("\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Distance:      "); Serial.print(Local.lora_destination_distance);  Serial.print(" m");   Serial.println("\t\t\t\t\t\t\t    |");
+	    Serial.print(  "|  Distance:      "); Serial.print(Local.lora_target_distance);  Serial.print(" m");   Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.println("|                                                                           |");
 	    Serial.println("-----------------------------------------------------------------------------");
 	    Serial.println("|                                                                           |");
 	    Serial.println("|                               MOTOR DATA                                  |");
 	    Serial.print(  "|  State:          "); Serial.print(Movement.get_movement_state());		Serial.println("\t\t\t\t\t\t\t    |");
-      Serial.print(  "|  Tar Throttle:   "); Serial.print(Data.Local.lora_target_throttle); Serial.println("\t\t\t\t\t\t\t    |");
+      	Serial.print(  "|  Tar Throttle:   "); Serial.print(Data.Local.lora_target_throttle); Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Servo Degree:   "); Serial.print(Movement.servo_degree);       		Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Forward:        "); Serial.print(Imu.move_forward);    				    Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Right:          "); Serial.print(Imu.turn_right);      				    Serial.println("\t\t\t\t\t\t\t    |");
@@ -306,7 +315,6 @@ float DATA::Parse(char message[], int objective)
 	}
 	// Converts the final array to a float.
 	float temp = atof(parsed_section);
-  Serial.println(temp);
 	// Returns the desired parsed section in number (float) form.
 	return temp;
 }

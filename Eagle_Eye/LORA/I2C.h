@@ -37,7 +37,7 @@ class I2C
 
   	// Controls who has access to send over the i2c line.
   	bool i2c_send_permission = true;
-  
+  	
 };
 #endif
 

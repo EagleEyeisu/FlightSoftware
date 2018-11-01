@@ -11,11 +11,10 @@
 class THERMO
 {
   public:
-  
   // Constructor
   THERMO();
   
-  /*-----------------------------------------------------------------------------*/
+  /*---------------------------------Variables---------------------------------*/
   
   // Returns the external temp from the thermocouple.
   float get_external_temperature();

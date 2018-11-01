@@ -35,8 +35,6 @@ void I2C::initialize()
 }
 
 
-
-
 /**
  * Controls what message gets sent and where they go. 
  * Much like an old telephone switchboard operator.
@@ -55,12 +53,15 @@ void I2C::manager()
  */
 void I2C::create_mega_packet()
 {
-    /**
-    *                EXAMPLE OF I2^C PACKET.
+   /**
+    *                I2^C PACKETS   (LoRA -> MEGA)
     *
-    * $,Altitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$
-    *      1          2         3          4          5          6            7           8      9
-    *
+    * $,C,current_Altitude, current_Latitude, current_Longitude, current_Speed,$
+    *   1        2                 3                 4                5
+    * $,T,target_Altitude, target_Latitude, target_Longitude, target_distance,$
+    *   1       2                3                 4                 5
+    * $,N, authority_mode, target_throttle, manual_direction, craft_anchor,$
+    *   1        2                3                 5              5
     */
 
     // Creates a temporary string to hold all need information.
@@ -68,9 +69,15 @@ void I2C::create_mega_packet()
     // Each line below appends a certain divider or value to the string.
     i2c_packet += '$';
     i2c_packet += ',';
-    if(i2c_selector == 1)
+    // The three conditional statements alternate to send each of the three packets.
+    // 1 = C packet.
+    // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
+    // to send a i2c packet.
+    if(i2c_selector == 1 && i2c_send_permission)
     {
+    	// Updates the selector back to 2 to switch to the next packet.
     	i2c_selector = 2;
+    	// Appends the appropriate variables to fill out the packet.
     	i2c_packet += ',';
     	i2c_packet += 'C';
     	i2c_packet += ',';
@@ -83,9 +90,14 @@ void I2C::create_mega_packet()
     	i2c_packet += Data.Local.current_speed;
     	i2c_packet += ',';
     }
-    else if(i2c_selector == 2)
+    // 2 = T packet.
+    // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
+    // to send a i2c packet.
+    else if(i2c_selector == 2 && i2c_send_permission)
     {
+    	// Updates the selector back to 3 to switch to the next packet.
     	i2c_selector = 3;
+    	// Appends the appropriate variables to fill out the packet.
     	i2c_packet += ',';
     	i2c_packet += 'T';
     	i2c_packet += ',';
@@ -98,9 +110,14 @@ void I2C::create_mega_packet()
     	i2c_packet += Data.Local.current_target_distance;
     	i2c_packet += ',';
     }
-    else if(i2c_selector == 3)
+    // 2 = T packet.
+    // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
+    // to send a i2c packet.
+    else if(i2c_selector == 3 && i2c_send_permission)
     {
+    	// Updates the selector back to 1 to complete the cycle.
     	i2c_selector = 1;
+    	// Appends the appropriate variables to fill out the packet.
     	i2c_packet += ',';
     	i2c_packet += 'N';
     	i2c_packet += ',';
@@ -113,6 +130,7 @@ void I2C::create_mega_packet()
     	i2c_packet += Radio.Network.craft_anchor;
     	i2c_packet += ',';
     }
+    // Completes the packet.
     i2c_packet += '$';
 }
 

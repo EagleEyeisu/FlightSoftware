@@ -38,7 +38,6 @@ void IMU::initialize()
 	   Serial.print("PROBLEM WITH 9DOF");
 	   while(1);
     }
-
     // Sets specific calibration values. DO NOT CHANGE.
     lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
     lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
@@ -54,7 +53,6 @@ void IMU::manager()
 {
 
     // THIS IS WHERE I NEED TO IMPLEMENT CHECK FOR MANUAL OR AUTO.
-
 
     // Calculates the angle between the crafts current heading and the target.
     calculate_target_heading();
@@ -122,17 +120,18 @@ float IMU::get_yaw()
  */
 void IMU::calculate_target_heading()
 {
+    // Pulls in data to be used in calculations.
     float lat1 = Data.Local.lora_current_latitude;
     float lon1 = Data.Local.lora_current_longitude;
     float lat2 = Data.Local.lora_target_latitude;
     float lon2 = Data.Local.lora_target_longitude;
-
+    // Math. (Ask Christopher Johannsen if problem occurs)
     float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
     float y = sin(lon2-lon1) * cos(lat2); 
     current_heading = atan2(y, x);
-    // Normalize to 0-360
+    // Normalize to 0-360.
     current_heading = fmod((current_heading + 360.0),360.0);
-
+    // Calculates the target heading.
     float target_heading = current_heading - Imu.get_yaw();
     if(target_heading > 180)
     {
@@ -142,7 +141,6 @@ void IMU::calculate_target_heading()
     {
         target_heading += 360;
     }
-
     if(target_heading < -target_heading_tolerance)
     {
         turn_right = false;
@@ -167,7 +165,6 @@ void IMU::calculate_target_heading()
 void IMU::check_altitude_tolerance()
 {
     float altitude_difference = Data.Local.lora_target_altitude - Data.Local.lora_current_altitude;
-
     if(altitude_difference > target_altitude_tolerance)
     {
         move_up = true;

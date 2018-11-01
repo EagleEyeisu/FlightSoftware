@@ -26,8 +26,10 @@ MOTOR::MOTOR()
  */ 
 void MOTOR::manager()
 {
-    // The turn (right, left) variables are what the craft needs to do to correct its course. 
-    // The craft_state variable (left, right, etc..) is the action that the craft it currently preforming. 
+    /**
+     * The turn (right, left) variables are what the craft needs to do to correct its course. 
+     * The craft_state variable (left, right, etc..) is the action that the craft it currently preforming. 
+     */
 
     // Checks for a positive anchor status. (E BREAK)
     if(Data.Local.craft_anchor_status == true)
@@ -39,7 +41,6 @@ void MOTOR::manager()
             // Pulls the PDM Waveform below its cutoff to shut the motors off.
             // This is to prevent any extra force on the servo to Turbofan housing.
             apply_break();
-            delay(100);
         }
     }
     // Achor is not dropped. Craft is free to move.
@@ -58,7 +59,10 @@ void MOTOR::manager()
     }
 }
 
-
+/**
+ * Converts the inputted max throttle value to the apprpriate 
+ * microsecond value. 
+ */
 int MOTOR::convert_throttle()
 {
   int input = Data.Local.lora_target_throttle;
@@ -74,74 +78,107 @@ int MOTOR::convert_throttle()
  */
 void MOTOR::manual_flight()
 {   
-    int command = Data.Local.craft_manual_direction;
-
     // The following are the commands and their representative integers.
     // 0 - No Movement.
     // 1 - Forward.
     // 2 - Left.
     // 3 - Right.
     // 4 - Up.
+    int command = Data.Local.craft_manual_direction;
 
-    // First series of conditionals are focused on orienting the craft. Not propelling it.
-    // Second series are focused on movement.
+    /**
+     * Outer series of conditionals are focused on orienting the craft. Not propelling it.
+     * Inner series are focused on movement.
+     */ 
 
     // No Command / Stop Moving.
     if(command == 0)
     {
+        // Check if the craft already in the No Command state.
         if(craft_state != NONE)
         {
+            // Updates craft to none state.
             craft_state = NONE;
+            // Shuts down EDFs.
             apply_break();
+            // Rotates the servos to orient the EDFs upwards.
             rotate_level(90);
         }
     }
     // Move Forward.
     else if(command == 1)
     {
+        // Check if the craft already in the moving forward state.
         if(craft_state != FORWARD)
         {
+            // Updates the craft to the forward state.
             craft_state = FORWARD;
+            // Shuts down EDFs.
             apply_break();
+            // Rotates the servos to orient the EDFs
+            // to face toward the front of the craft.
             rotate_level(0);
+            // Throttles up the EDFs.
             spin_up();
         }
     }
     // Turn Left.
     else if(command == 2)
     {
+        // Check if the craft already in the turning left state.
         if(craft_state != LEFT)
         {
+            // Updates the craft to the left state.
             craft_state = LEFT;
+            // Shuts down EDFs.
             apply_break();
+            // Rotates the servos to orient the EDFs
+            // to turn the craft left. Zero point turn.
             rotate_left();
-            delay(100);
+            // Delays the spinning up to allow the servos
+            // to rotate to the correct position.
+            delay(50);
+            // Throttles up the EDFs.
             spin_up();
         }
     }
     // Turn Right.
     else if(command == 3)
     {
+        // Check if the craft already in the turning right state.
         if(craft_state != RIGHT)
         {
+            // Updates the craft to the right state.
             craft_state = RIGHT;
+            // Shuts down EDFs.
             apply_break();
+            // Rotates the servos to orient the EDFs
+            // to turn the craft right. Zero point turn.
             rotate_right();
-            delay(100);
+            // Delays the spinning up to allow the servos
+            // to rotate to the correct position.
+            delay(50);
+            // Throttles up the EDFs.
             spin_up();
         }
-
     }
     // Turn Right.
     else if(command == 4)
     {
+        // Check if the craft already in the turning up state.
         if(craft_state != UP)
         {
+            // Updates the craft to the up state.
             craft_state = UP;
+            // Shuts down EDFs.
             apply_break();
+            // Rotates the servos to orient the EDFs
+            // to turn the craft upwards. Zero point turn.
             rotate_level(90);
-            delay(100);
-
+            // Delays the spinning up to allow the servos
+            // to rotate to the correct position.
+            delay(50);
+            // Throttles up the EDFs.
             spin_up();
         }
     }
@@ -176,9 +213,13 @@ void MOTOR::auto_pilot()
                 // Pulls the PDM Waveform below its cutoff to shut the motors off.
                 // This is to prevent any extra force on the servo to Turbofan housing.
                 apply_break();
-                // Rotates the craft clockwise.
+                // Rotates the servos to orient the EDFs
+                // to turn the craft right. Zero point turn.
                 rotate_right();
-                delay(100);
+                // Delays the spinning up to allow the servos
+                // to rotate to the correct position.
+                delay(50);
+                // Throttles up the EDFs.
                 spin_up();
             }
         }
@@ -193,9 +234,13 @@ void MOTOR::auto_pilot()
                 // Pulls the PDM Waveform below its cutoff to shut the motors off.
                 // This is to prevent any extra force on the servo to Turbofan housing.
                 apply_break();
-                // Rotates the craft counter clockwise.
+                // Rotates the servos to orient the EDFs
+                // to turn the craft left. Zero point turn.
                 rotate_left();
-                delay(100);
+                // Delays the spinning up to allow the servos
+                // to rotate to the correct position.
+                delay(50);
+                // Throttles up the EDFs.
                 spin_up();
             }
         }
@@ -217,7 +262,10 @@ void MOTOR::auto_pilot()
                 // Rotates all servos back to their original position so that all turbofans
                 // are providing forward thrust.
                 rotate_level(0);
-                delay(100);
+                // Delays the spinning up to allow the servos
+                // to rotate to the correct position.
+                delay(50);
+                // Throttles up the EDFs.
                 spin_up();
             }
             // Updates crafts current craft_state to reflect the change.
@@ -240,6 +288,10 @@ void MOTOR::auto_pilot()
                 // Rotates all servos back to their original position so that all turbofans
                 // are pointing up.
                 rotate_level(90);
+                // Delays the spinning up to allow the servos
+                // to rotate to the correct position.
+                delay(50);
+                // Throttles up the EDFs.
                 spin_up();
                 // Updates craft's current craft_state to reflect the change
                 craft_state = UP;
@@ -263,7 +315,7 @@ void MOTOR::initialize()
     // Digitally connects the servos to their respective pins.
     servo_left.attach(SERVO_PIN_LEFT);
     servo_right.attach(SERVO_PIN_RIGHT);
-    // Initializes all EDF's to an upright position. 
+    // Initializes the servos/EDFs to an upright position. 
     servo_left.write(90);
     servo_right.write(90);
     servo_degree = 90;
@@ -375,7 +427,6 @@ void MOTOR::spin_up()
         current_throttle = current_throttle + INCREMENT_AMOUNT;
         Serial.println(current_throttle);
         motor.writeMicroseconds(current_throttle);
-
         Serial.println(max_throttle);
         delay(INCREMENT_DELAY);
     }
@@ -395,7 +446,6 @@ void MOTOR::beam_me_up_scotty()
         current_throttle = current_throttle + INCREMENT_AMOUNT;
         Serial.println(current_throttle);
         motor.writeMicroseconds(current_throttle);
-
         Serial.println(max_throttle);
         delay(INCREMENT_DELAY);
     }
@@ -415,7 +465,6 @@ void MOTOR::spin_down()
         current_throttle = current_throttle - INCREMENT_AMOUNT * 2;
         Serial.println(current_throttle);
         motor.writeMicroseconds(current_throttle);
-
         Serial.println(max_throttle);
         delay(INCREMENT_DELAY);
     }
@@ -432,7 +481,6 @@ void MOTOR::spin_down()
 String MOTOR::get_movement_state()
 {  
     int temp_state = Movement.craft_state;
-
     if(temp_state == 0)
     {
         return "NONE";

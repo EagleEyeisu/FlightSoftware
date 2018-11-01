@@ -40,16 +40,12 @@ void I2C::initialize()
  */
 void receiveEvent(int howMany)
 {
+    // Resets the input string to null.
     Comm.i2c_buffer = "";
+    // Resets formatting variables to false.
     bool start_flag = false;
     bool end_flag = false;
     bool junk_flag = false;
-    
-    /*-----------------------------------------*/
-    //
-    // INPUT MUST BE ->      $,#.##,#.##,#.##,$
-    //
-    /*-----------------------------------------*/
     Serial.println("In Interrupt");
     // Checks if there is available i2c input.
     if(Wire.available())
@@ -58,7 +54,7 @@ void receiveEvent(int howMany)
     	char temp = Wire.read();
     	// First char should be the dollar sign. 
     	// If so, continute. If not, junk it.
-    	if(temp == '$' && Comm.packet_validation == false)
+    	if(temp == '$')
     	{
     		// Appends character to string.
     		Comm.i2c_buffer += temp;
@@ -86,12 +82,12 @@ void receiveEvent(int howMany)
 		    		// Reads in i2c input and kills it.
 		    		char junk = temp;
 		    	}
-         // MIddle of the packet data. Add to buffer.
-         else
-         {
-           // Appends character to string.
-           Comm.i2c_buffer += temp;
-         }
+                // Middle of the packet data. Add to buffer.
+                else
+                {
+                    // Appends character to string.
+                    Comm.i2c_buffer += temp;
+                }
 		    }
     	}
     	// Not correct format. Read in it and throw it away.
@@ -110,11 +106,16 @@ void receiveEvent(int howMany)
     // prior to trying to parse the data.
     if(start_flag && end_flag)
     {
-      Data.new_data = Data.YES;
-      Comm.complete_packet_flag = true;
+        // Alerts the system that there is new data present.
+        Data.new_data = Data.YES;
+        // Updates packet flag to true.
+        Comm.flag_complete_packet = true;
     }
+    // Formatting was incorrect. Invalid packet.
     else
     {
-      Comm.complete_packet_flag = false;
+        // Packet is screwed up. Alerts the system not to try to pull data from
+        // this packet.
+        Comm.flag_complete_packet = false;
     }
 }
