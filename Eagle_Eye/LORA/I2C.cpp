@@ -43,8 +43,9 @@ void I2C::initialize()
  */
 void receiveEvent(int howMany)
 {
+	Comm.i2c_send_permission = true;
     // Resets the input string to null.
-    Comm.i2c_buffer = "";
+    Comm.i2c_input_buffer = "";
     // Resets formatting variables to false.
     bool start_flag = false;
     bool end_flag = false;
@@ -60,7 +61,7 @@ void receiveEvent(int howMany)
     	if(temp == '$')
     	{
     		// Appends character to string.
-    		Comm.i2c_buffer += temp;
+    		Comm.i2c_input_buffer += temp;
     		// Signals the format was correct in the beginning.
     		start_flag = true;
     		// Cycles until there is no input.
@@ -73,7 +74,7 @@ void receiveEvent(int howMany)
 		    	if(temp == '$' && junk_flag == false)
 		    	{
 		    		// Appends character to string.
-		    		Comm.i2c_buffer += temp;
+		    		Comm.i2c_input_buffer += temp;
 		    		// Ending format was correct.
 		    		end_flag = true;
 		    		// Signals to throw away the rest of the packet is there's more input.
@@ -89,7 +90,7 @@ void receiveEvent(int howMany)
                 else
                 {
                     // Appends character to string.
-                    Comm.i2c_buffer += temp;
+                    Comm.i2c_input_buffer += temp;
                 }
 		    }
     	}
@@ -131,16 +132,16 @@ void receiveEvent(int howMany)
 void I2C::manager()
 {
     // Clears and fills the network packet to be sent to the Mega.
-    create_mega_packet();
+    create_packet();
     // Uploads message to CAN to be delivered to Mega.
-    send_mega_packet();
+    send_packet();
 }
 
 
 /**
  * Builds the message to sent to the Mega via I2^C.
  */
-void I2C::create_mega_packet()
+void I2C::create_packet()
 {
    /**
     *                I2^C PACKETS   (LoRA -> MEGA)
@@ -225,12 +226,14 @@ void I2C::create_mega_packet()
 
 
 /**
- * Sends byte over I2C Connection. (Utilizing the Arduino's CAN)
+ * Sends byte over I2C Connection.
  */
-void I2C::send_mega_packet()
+void I2C::send_packet()
 {
+	// No longer my turn.
+	Comm.i2c_send_permission = false;
 	// Every 1 second, the lora is allowed to send i2c data.
-	if(millis() - i2c_timer > 500 && i2c_send_permission)
+	if(millis() - i2c_timer > 200 && i2c_send_permission)
 	{
 		// Resets timer.
 		i2c_timer = millis();
@@ -248,6 +251,5 @@ void I2C::send_mega_packet()
    		Serial.println(i2c_packet);
 		// Closes the transmission.
 		Wire.endTransmission();
-	    delay(100);
 	}
 }

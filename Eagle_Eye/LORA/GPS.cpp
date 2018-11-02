@@ -26,7 +26,6 @@ GPS::GPS()
  */
 void GPS::manager()
 {
-  
     // Directs the GPS serial port to focus on a specific pair of GPIO's onboard the micro controller.
     // RX = 10      TX = 11
     SoftwareSerial ss(11,10);

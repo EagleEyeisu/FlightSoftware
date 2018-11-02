@@ -99,7 +99,7 @@ float DATA::get_i2c_target_distance(char buf[])
 }
 
 
-/*--------------------I2C NETWORK PACKET (T)--------------------*/
+/*--------------------I2C NETWORK PACKET (N)--------------------*/
 
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
@@ -156,9 +156,9 @@ void DATA::update_data()
 	{
 		// Converts the string packet into a character array.
 		// (Makes it easier to work with).
-		char to_parse[Comm.i2c_buffer.length()];
+		char to_parse[Comm.i2c_input_buffer.length()];
 		// Indexed at 0 so we need to add 1 at the end of the length.
-    	Comm.i2c_buffer.toCharArray(to_parse,Comm.i2c_buffer.length()+1);
+    	Comm.i2c_input_buffer.toCharArray(to_parse,Comm.i2c_input_buffer.length()+1);
     	// Checks for i2c packet type of Current data.
 		if(to_parse[2] == 'C')
 		{

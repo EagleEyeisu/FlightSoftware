@@ -168,7 +168,6 @@ void RADIO::manager()
 { 
 	// Reads in radio transmission if available.
 	Radio.radio_receive();
-    
     Serial.println("After received.");
 	// Checks for a specific Craft ID. '999.0' signals the start of operation.
 	if((998.0 < received_id && received_id < 999.9) && !Radio.checked_in)

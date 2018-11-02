@@ -21,6 +21,59 @@ DATA::DATA()
 
 
 /**
+ * Updates the main struct for the craft. 
+ */
+void DATA::update_data()
+{
+	// Data that is native to the MEGA microcontroller.
+  	Data.set_pressure();
+	Local.mega_altitude = Data.calculate_barometer_altitude();
+	Local.mega_external_temperature = Thermo.get_external_temperature();
+	Local.mega_roll = Imu.get_roll();
+	Local.mega_pitch = Imu.get_pitch();
+	Local.mega_yaw = Imu.get_yaw();
+  	
+	// Data that is coming into the MEGA via i2c. Checks for a complete
+	// packet flag. If true, the packet is valid and ready to be parsed.
+	if(Comm.flag_complete_packet)
+	{
+		// Converts the string packet into a character array.
+		// (Makes it easier to work with).
+		char to_parse[Comm.i2c_input_buffer.length()];
+		// Indexed at 0 so we need to add 1 at the end of the length.
+    	Comm.i2c_input_buffer.toCharArray(to_parse,Comm.i2c_input_buffer.length()+1);
+    	// Checks for i2c packet type of Current data.
+		if(to_parse[2] == 'C')
+		{
+			// Methods located in Data.cpp. Parses appropriate values from packet.
+			Local.lora_current_altitude = Data.get_i2c_current_altitude();
+			Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
+			Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
+			Local.lora_current_speed = Data.get_i2c_current_speed();
+		}
+		// Checks for i2c packet type of Target data.
+		else if(to_parse[2] == 'T')
+		{
+			// Methods located in Data.cpp. Parses appropriate values from packet.
+			Local.lora_target_altitude = Data.get_i2c_target_altitude();
+			Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
+			Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
+			Local.lora_target_distance = Data.get_i2c_target_distance();
+		}
+		// Checks for i2c packet type of Network data.
+		else if(to_parse[2] == 'N')
+		{
+			// Methods located in Data.cpp. Parses appropriate values from packet.
+			Local.authority_mode = Data.get_i2c_authority_mode(); 
+			Data.Local.lora_target_throttle = Data.get_i2c_target_throttle(to_parse);
+			Data.Local.craft_manual_direction = Data.get_i2c_manual_command(to_parse);
+			Local.craft_anchor_status = Data.get_i2c_craft_anchor();
+		}
+	}
+}
+
+
+/**
  * Returns a parsed section of the read in parameter. The parameter 'objective' represents 
  * the comma's position from the beginning of the character array.
  */

@@ -45,7 +45,6 @@ void setup()
     Imu.initialize();
     // Initializes all ESC's, TurboFans, & Servos.
     Movement.initialize();
-    Serial.println("Initialization Process Complete.------------");
 }
 
 
@@ -54,16 +53,19 @@ void setup()
  */
 void loop()
 {
-  // Reads in all needed values from periphals.
-  Data.update_data();
-  // Watches for LoRa to ask for permission to drop.
-  Imu.manager();
-  // Dynamically updates the orientation & position of the craft. 
-  Movement.manager();
-  // Print data of the current cycle to the screen. Only prints when new
-  // information is collected. 
-  Data.to_screen();
-  // Resets the new_data state to false.
-  Data.new_data = Data.NO;
-  delay(500);
+    // Communicates with the Mega to check for certain events happening
+    // throughout the system.
+    Comm.manager();
+    // Reads in all needed values from periphals.
+    Data.update_data();
+    // Watches for LoRa to ask for permission to drop.
+    Imu.manager();
+    // Dynamically updates the orientation & position of the craft. 
+    Movement.manager();
+    // Print data of the current cycle to the screen. Only prints when new
+    // information is collected. 
+    Data.to_screen();
+    // Resets the new_data state to false.
+    Data.new_data = Data.NO;
+    delay(500);
 }
