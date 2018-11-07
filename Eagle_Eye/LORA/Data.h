@@ -18,7 +18,7 @@ class DATA
     void update_data();
 	
 	/*---------------------------------Variables---------------------------------*/
-  
+  	
 	// Stores all of Eagle Eye's current flight data.
 	// The difference between this struct and the one initalized in Radio.h is that this information
 	// is saves gathered/used/saved locally. The Radio.h struct holds all the network information

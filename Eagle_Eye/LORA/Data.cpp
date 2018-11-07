@@ -21,7 +21,7 @@ DATA::DATA()
 
 
 /**
- * Updates the main struct for the craft. 
+ * Updates the main struct for the craft.
  */
 void DATA::update_data()
 {

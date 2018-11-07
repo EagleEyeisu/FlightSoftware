@@ -3,7 +3,7 @@
 #	Property of Eagle Eye. 
 #
 #   Authors:
-#           Jared Danner
+#           Robert Zartman
 #
 #############################################################
 
