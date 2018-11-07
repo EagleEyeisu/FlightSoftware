@@ -45,6 +45,8 @@ void setup()
     Imu.initialize();
     // Initializes all ESC's, TurboFans, & Servos.
     Movement.initialize();
+    // Initializes the Valve.
+    Valve.initialize();
 }
 
 
@@ -62,6 +64,8 @@ void loop()
     Imu.manager();
     // Dynamically updates the orientation & position of the craft. 
     Movement.manager();
+   // Manages the logic for the Valve
+    Valve.manager();
     // Print data of the current cycle to the screen. Only prints when new
     // information is collected. 
     Data.to_screen();
