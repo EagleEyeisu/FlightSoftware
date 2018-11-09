@@ -14,12 +14,14 @@ class VALVE
   
   // Constructor
   VALVE();
+  // Initialization function for the value.
+  void initialize();
   // This Opens the Valve.
-  open_valve();
+  void open_valve();
   // This Closes the valve.
-  close_valve();
+  void close_valve();
   // Manages Valve Logic.
-  manager();
+  void manager();
   /*-----------------------------------------------------------------------------*/
   // Valve Control
   #define VALVE_CTRL 20

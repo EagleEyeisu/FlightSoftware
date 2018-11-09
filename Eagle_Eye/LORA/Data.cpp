@@ -7,6 +7,7 @@
 #include "Data.h"
 #include "Radio.h"
 #include "GPS.h"
+#include "I2C.h"
 #include <stdlib.h>
 #include "Globals.h"
 
@@ -20,19 +21,105 @@ DATA::DATA()
 }
 
 
+/*--------------------I2C NETWORK PACKET (W)--------------------*/
+
+/**
+ * Retrieves the MEGA's pressure value.
+ */
+float DATA::get_i2c_mega_pressure(char buf[])
+{
+ 	return Data.Parse(buf,2);
+}
+
+
+/**
+ * Retrieves the MEGA's altitude value (calculated by pressure).
+ */
+float DATA::get_i2c_mega_altitude(char buf[])
+{
+ 	return Data.Parse(buf,3);
+}
+
+
+/**
+ * Retrieves the MEGA's temperature value (external temp).
+ */
+float DATA::get_i2c_mega_temp(char buf[])
+{
+ 	return Data.Parse(buf,4);
+}
+
+
+/*--------------------I2C NETWORK PACKET (G)--------------------*/
+
+/**
+ * Retrieves the MEGA's roll value.
+ */
+float DATA::get_i2c_mega_roll(char buf[])
+{
+ 	return Data.Parse(buf,2);
+}
+
+
+/**
+ * Retrieves the MEGA's pitch value.
+ */
+float DATA::get_i2c_mega_pitch(char buf[])
+{
+ 	return Data.Parse(buf,3);
+}
+
+
+/**
+ * Retrieves the MEGA's yaw value.
+ */
+float DATA::get_i2c_mega_yaw(char buf[])
+{
+ 	return Data.Parse(buf,4);
+}
+
+
+/*--------------------I2C NETWORK PACKET (P)--------------------*/
+
+/**
+ * Retrieves the MEGA's target heading angle.
+ */
+float DATA::get_i2c_target_heading(char buf[])
+{
+ 	return Data.Parse(buf,2);
+}
+
+
+/**
+ * Retrieves the MEGA's current heading angle.
+ */
+float DATA::get_i2c_current_heading(char buf[])
+{
+ 	return Data.Parse(buf,3);
+}
+
+
+/**
+ * Retrieves the MEGA's craft state.
+ * Possible values:
+ * 0 : NONE
+ * 1 : RIGHT
+ * 2 : LEFT
+ * 3 : FORWARD
+ * 4 : UP
+ * 5 : BREAK
+ */
+float DATA::get_i2c_craft_state(char buf[])
+{
+ 	return Data.Parse(buf,4);
+}
+
+
 /**
  * Updates the main struct for the craft.
  */
 void DATA::update_data()
 {
-	// Data that is native to the MEGA microcontroller.
-  	Data.set_pressure();
-	Local.mega_altitude = Data.calculate_barometer_altitude();
-	Local.mega_external_temperature = Thermo.get_external_temperature();
-	Local.mega_roll = Imu.get_roll();
-	Local.mega_pitch = Imu.get_pitch();
-	Local.mega_yaw = Imu.get_yaw();
-  	
 	// Data that is coming into the MEGA via i2c. Checks for a complete
 	// packet flag. If true, the packet is valid and ready to be parsed.
 	if(Comm.flag_complete_packet)
@@ -42,32 +129,29 @@ void DATA::update_data()
 		char to_parse[Comm.i2c_input_buffer.length()];
 		// Indexed at 0 so we need to add 1 at the end of the length.
     	Comm.i2c_input_buffer.toCharArray(to_parse,Comm.i2c_input_buffer.length()+1);
-    	// Checks for i2c packet type of Current data.
-		if(to_parse[2] == 'C')
+    	// Checks for i2c packet type of Weather data.
+		if(to_parse[2] == 'W')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.lora_current_altitude = Data.get_i2c_current_altitude();
-			Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
-			Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
-			Local.lora_current_speed = Data.get_i2c_current_speed();
+			Local.mega_pressure = Data.get_i2c_mega_pressure(to_parse);
+			Local.mega_altitude = Data.get_i2c_mega_altitude(to_parse);
+			Local.mega_external_temperature = Data.get_i2c_mega_temp(to_parse);
 		}
-		// Checks for i2c packet type of Target data.
-		else if(to_parse[2] == 'T')
+		// Checks for i2c packet type of Gryo data.
+		else if(to_parse[2] == 'G')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.lora_target_altitude = Data.get_i2c_target_altitude();
-			Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
-			Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
-			Local.lora_target_distance = Data.get_i2c_target_distance();
+			Local.mega_roll = Data.get_i2c_mega_roll(to_parse);
+			Local.mega_pitch = Data.get_i2c_mega_pitch(to_parse);
+			Local.mega_yaw = Data.get_i2c_mega_yaw(to_parse);
 		}
-		// Checks for i2c packet type of Network data.
-		else if(to_parse[2] == 'N')
+		// Checks for i2c packet type of Positioning data.
+		else if(to_parse[2] == 'P')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.authority_mode = Data.get_i2c_authority_mode(); 
-			Data.Local.lora_target_throttle = Data.get_i2c_target_throttle(to_parse);
-			Data.Local.craft_manual_direction = Data.get_i2c_manual_command(to_parse);
-			Local.craft_anchor_status = Data.get_i2c_craft_anchor();
+			Local.target_heading = Data.get_i2c_target_heading(to_parse);
+			Local.current_heading = Data.get_i2c_current_heading(to_parse);
+			Local.craft_state = Data.get_i2c_craft_state(to_parse);
 		}
 	}
 }

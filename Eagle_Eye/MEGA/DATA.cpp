@@ -163,28 +163,28 @@ void DATA::update_data()
 		if(to_parse[2] == 'C')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.lora_current_altitude = Data.get_i2c_current_altitude();
-			Local.lora_current_latitude = Data.get_i2c_current_latitude() / 10000.0;
-			Local.lora_current_longitude = Data.get_i2c_current_longitude() / 10000.0;
-			Local.lora_current_speed = Data.get_i2c_current_speed();
+			Local.lora_current_altitude = Data.get_i2c_current_altitude(to_parse);
+			Local.lora_current_latitude = Data.get_i2c_current_latitude(to_parse) / 10000.0;
+			Local.lora_current_longitude = Data.get_i2c_current_longitude(to_parse) / 10000.0;
+			Local.lora_current_speed = Data.get_i2c_current_speed(to_parse);
 		}
 		// Checks for i2c packet type of Target data.
 		else if(to_parse[2] == 'T')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.lora_target_altitude = Data.get_i2c_target_altitude();
-			Local.lora_target_latitude = Data.get_i2c_target_latitude() / 10000.0;
-			Local.lora_target_longitude = Data.get_i2c_target_longitude() / 10000.0;
-			Local.lora_target_distance = Data.get_i2c_target_distance();
+			Local.lora_target_altitude = Data.get_i2c_target_altitude(to_parse);
+			Local.lora_target_latitude = Data.get_i2c_target_latitude(to_parse) / 10000.0;
+			Local.lora_target_longitude = Data.get_i2c_target_longitude(to_parse) / 10000.0;
+			Local.lora_target_distance = Data.get_i2c_target_distance(to_parse);
 		}
 		// Checks for i2c packet type of Network data.
 		else if(to_parse[2] == 'N')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.authority_mode = Data.get_i2c_authority_mode(); 
-			Data.Local.lora_target_throttle = Data.get_i2c_target_throttle(to_parse);
-			Data.Local.craft_manual_direction = Data.get_i2c_manual_command(to_parse);
-			Local.craft_anchor_status = Data.get_i2c_craft_anchor();
+			Local.authority_mode = Data.get_i2c_authority_mode(to_parse); 
+			Local.lora_target_throttle = Data.get_i2c_target_throttle(to_parse);
+			Local.craft_manual_direction = Data.get_i2c_manual_command(to_parse);
+			Local.craft_anchor_status = Data.get_i2c_craft_anchor(to_parse);
 		}
 	}
 }
@@ -238,13 +238,12 @@ void DATA::to_screen()
 	    Serial.println("|                                                                           |");
 	    Serial.println("|                               MOTOR DATA                                  |");
 	    Serial.print(  "|  State:          "); Serial.print(Movement.get_movement_state());		Serial.println("\t\t\t\t\t\t\t    |");
-      	Serial.print(  "|  Tar Throttle:   "); Serial.print(Data.Local.lora_target_throttle); Serial.println("\t\t\t\t\t\t\t    |");
+      Serial.print(  "|  Tar Throttle:   "); Serial.print(Data.Local.lora_target_throttle); Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Servo Degree:   "); Serial.print(Movement.servo_degree);       		Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Forward:        "); Serial.print(Imu.move_forward);    				    Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Right:          "); Serial.print(Imu.turn_right);      				    Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Left:           "); Serial.print(Imu.turn_left);       				    Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Up:             "); Serial.print(Imu.move_up);         				    Serial.println("\t\t\t\t\t\t\t    |");
-	    Serial.print(  "|  Down:           "); Serial.print(Imu.move_down);       				    Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Cur Heading:    "); Serial.print(Imu.current_heading);        		  Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.print(  "|  Tar Heading:    "); Serial.print(Imu.target_heading);            	Serial.println("\t\t\t\t\t\t\t    |");
 	    Serial.println("|                                                                           |");

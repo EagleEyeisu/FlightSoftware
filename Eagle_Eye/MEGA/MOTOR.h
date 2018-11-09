@@ -82,6 +82,8 @@ class MOTOR
     int throttle_input = 0;
     // The degree of the servo from 0 to 180.
     int servo_degree = 0; 
+    // Movement state of the craft. This is what the craft is currently doing
+    // and not necessarily what it wants to do.
     enum Orientation {NONE,RIGHT,LEFT,FORWARD,UP,BREAK};
     enum Orientation craft_state = NONE;
 };

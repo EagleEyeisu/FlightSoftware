@@ -6,6 +6,8 @@
 
 #include "I2C.h"
 #include "DATA.h"
+#include "IMU.h"
+#include "MOTOR.h"
 #include "Globals.h"
 #include <Wire.h>
 #include <Arduino.h>
@@ -33,6 +35,22 @@ void I2C::initialize()
 	Wire.begin(8);
  	Wire.onReceive(receiveEvent);
 }
+
+
+/**
+ * Controls what message gets sent and where they go. 
+ */
+void I2C::manager()
+{
+	if(i2c_packet_set == false)
+	{
+		// Clears and refills the network packet to be sent to the LoRa.
+    	create_packet();
+	}
+    // Sends the packet over to the LoRa. 
+    send_packet();
+}
+
 
 
 /**
@@ -102,7 +120,6 @@ void receiveEvent(int howMany)
 		    }
     	}
     }
-
     // Checks for proper formatting. Forces the program to wait for a valid i2c packet
     // prior to trying to parse the data.
     if(start_flag && end_flag)
@@ -123,98 +140,84 @@ void receiveEvent(int howMany)
 
 
 /**
- * Controls what message gets sent and where they go. 
- * Much like an old telephone switchboard operator.
- */
-void I2C::manager()
-{
-    // Clears and fills the network packet to be sent to the Mega.
-    create_packet();
-    // Uploads message to CAN to be delivered to Mega.
-    send_packet();
-}
-
-
-/**
  * Builds the message to sent to the LoRa via I2^C.
  */
 void I2C::create_packet()
 {
    /**
-    *                I2^C PACKETS   (LoRA -> MEGA)
+    *                I2^C PACKETS   (MEGA -> LoRa)
     *
-    * $,C,current_Altitude, current_Latitude, current_Longitude, current_Speed,$
-    *   1        2                 3                 4                5
-    * $,T,target_Altitude, target_Latitude, target_Longitude, target_distance,$
-    *   1       2                3                 4                 5
-    * $,N, authority_mode, target_throttle, manual_direction, craft_anchor,$
-    *   1        2                3                 5              5
+    * $,W,mega_pressure, mega_altitude, mega_external_temp,$
+    *   1      2               3                 4
+    * $,G,mega_roll, mega_pitch, mega_yaw,$
+    *   1     2           3          4
+    * $,P, target_heading, current_heading, craft_state,$
+    *   1        2                3               4
     */
 
     // Creates a temporary string to hold all need information.
     i2c_packet = "";
     // Each line below appends a certain divider or value to the string.
     i2c_packet += '$';
-    i2c_packet += ',';
     // The three conditional statements alternate to send each of the three packets.
-    // 1 = C packet.
+    // 1 = W packet.
     // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
     // to send a i2c packet.
     if(i2c_selector == 1 && i2c_send_permission)
     {
+    	// Alerts the system that the packet has been updated for this turn.
+        i2c_packet_set = true;
         // Updates the selector back to 2 to switch to the next packet.
         i2c_selector = 2;
         // Appends the appropriate variables to fill out the packet.
         i2c_packet += ',';
-        i2c_packet += 'C';
+        i2c_packet += 'W';
         i2c_packet += ',';
-        i2c_packet += Data.Local.current_altitude;
+        i2c_packet += Data.Local.mega_pressure;
         i2c_packet += ',';
-        i2c_packet += Data.Local.current_latitude * 10000.0;
+        i2c_packet += Data.Local.mega_altitude;
         i2c_packet += ',';
-        i2c_packet += Data.Local.current_longitude * 10000.0;
-        i2c_packet += ',';
-        i2c_packet += Data.Local.current_speed;
+        i2c_packet += Data.Local.mega_external_temperature;
         i2c_packet += ',';
     }
-    // 2 = T packet.
+    // 2 = G packet.
     // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
     // to send a i2c packet.
     else if(i2c_selector == 2 && i2c_send_permission)
     {
+    	// Alerts the system that the packet has been updated for this turn.
+        i2c_packet_set = true;
         // Updates the selector back to 3 to switch to the next packet.
         i2c_selector = 3;
         // Appends the appropriate variables to fill out the packet.
         i2c_packet += ',';
-        i2c_packet += 'T';
+        i2c_packet += 'G';
         i2c_packet += ',';
-        i2c_packet += Data.Local.current_target_altitude;
+        i2c_packet += Data.Local.mega_roll;
         i2c_packet += ',';
-        i2c_packet += Data.Local.current_target_latitude * 10000.0;
+        i2c_packet += Data.Local.mega_pitch;
         i2c_packet += ',';
-        i2c_packet += Data.Local.current_target_longitude * 10000.0;
-        i2c_packet += ',';
-        i2c_packet += Data.Local.current_target_distance;
+        i2c_packet += Data.Local.mega_yaw;
         i2c_packet += ',';
     }
-    // 2 = T packet.
+    // 2 = P packet.
     // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
     // to send a i2c packet.
     else if(i2c_selector == 3 && i2c_send_permission)
     {
+    	// Alerts the system that the packet has been updated for this turn.
+        i2c_packet_set = true;
         // Updates the selector back to 1 to complete the cycle.
         i2c_selector = 1;
         // Appends the appropriate variables to fill out the packet.
         i2c_packet += ',';
-        i2c_packet += 'N';
+        i2c_packet += 'P';
         i2c_packet += ',';
-        i2c_packet += Radio.Network.authority_mode;
+        i2c_packet += Imu.target_heading;
         i2c_packet += ',';
-        i2c_packet += Radio.Network.target_throttle;
+        i2c_packet += Imu.current_heading;
         i2c_packet += ',';
-        i2c_packet += Radio.Network.manual_direction;
-        i2c_packet += ',';
-        i2c_packet += Radio.Network.craft_anchor;
+        i2c_packet += Movement.craft_state;
         i2c_packet += ',';
     }
     // Completes the packet.
@@ -227,8 +230,6 @@ void I2C::create_packet()
  */
 void I2C::send_packet()
 {
-    // No longer my turn.
-    Comm.i2c_send_permission = false;
     // Every 1 second, the lora is allowed to send i2c data.
     if(millis() - i2c_timer > 200 && i2c_send_permission)
     {
@@ -248,5 +249,10 @@ void I2C::send_packet()
         Serial.println(i2c_packet);
         // Closes the transmission.
         Wire.endTransmission();
+        // No longer my turn.
+    	  Comm.i2c_send_permission = false;
+    	  // Allows the next i2c packet to cycle to the next packet type.
+        Comm.i2c_packet_set = false;
+
     }
 }

@@ -55,7 +55,7 @@ void setup()
  */
 void loop()
 {
-    // Communicates with the Mega to check for certain events happening
+    // Communicates with the LoRa to check for certain events happening
     // throughout the system.
     Comm.manager();
     // Reads in all needed values from periphals.

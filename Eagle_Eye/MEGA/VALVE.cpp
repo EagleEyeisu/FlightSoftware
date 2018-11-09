@@ -2,6 +2,7 @@
  * VALVE.cpp is repsonsible for Valve Opening and Closing onboard Eagle Eye.
  */
 
+#include "VALVE.h"
 #include "Globals.h"
 #include <Arduino.h>
  
@@ -18,13 +19,13 @@ VALVE::VALVE()
  /**
  * Setup The GPIO Pin for the Valve.
  */
-VALVE::initialize()
+void VALVE::initialize()
 {
   pinMode(VALVE_CTRL,OUTPUT);
 }
 
 
-VALVE::manager()
+void VALVE::manager()
 {
   if(valve_switch == 1)
   {
@@ -40,7 +41,7 @@ VALVE::manager()
  /**
  * Used to Open the Valve.
  */
-VALVE::open_valve()
+void VALVE::open_valve()
 {
   digitalWrite(VALVE_CTRL, HIGH);
 }
@@ -48,7 +49,7 @@ VALVE::open_valve()
  /**
  * Used to Close the Valve
  */
-VALVE::close_valve()
+void VALVE::close_valve()
 {
   digitalWrite(VALVE_CTRL, LOW);
 }

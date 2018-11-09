@@ -39,6 +39,21 @@ void I2C::initialize()
 
 
 /**
+ * Controls what message gets sent and where they go.
+ */
+void I2C::manager()
+{
+    if(i2c_packet_set == false)
+    {
+        // Clears and refills the network packet to be sent to the Mega.
+        create_packet();
+    }
+    // Sends the packet over to the LoRa. 
+    send_packet();
+}
+
+
+/**
  * Recieves bytes over I2C Connection.
  */
 void receiveEvent(int howMany)
@@ -110,8 +125,6 @@ void receiveEvent(int howMany)
     // prior to trying to parse the data.
     if(start_flag && end_flag)
     {
-        // Alerts the system that there is new data present.
-        Data.new_data = Data.YES;
         // Updates packet flag to true.
         Comm.flag_complete_packet = true;
     }
@@ -126,19 +139,6 @@ void receiveEvent(int howMany)
 
 
 /**
- * Controls what message gets sent and where they go. 
- * Much like an old telephone switchboard operator.
- */
-void I2C::manager()
-{
-    // Clears and fills the network packet to be sent to the Mega.
-    create_packet();
-    // Uploads message to CAN to be delivered to Mega.
-    send_packet();
-}
-
-
-/**
  * Builds the message to sent to the Mega via I2^C.
  */
 void I2C::create_packet()
@@ -146,9 +146,9 @@ void I2C::create_packet()
    /**
     *                I2^C PACKETS   (LoRA -> MEGA)
     *
-    * $,C,current_Altitude, current_Latitude, current_Longitude, current_Speed,$
+    * $,C,current_altitude, current_latitude, current_longitude, current_Speed,$
     *   1        2                 3                 4                5
-    * $,T,target_Altitude, target_Latitude, target_Longitude, target_distance,$
+    * $,T,target_altitude, target_latitude, target_longitude, target_distance,$
     *   1       2                3                 4                 5
     * $,N, authority_mode, target_throttle, manual_direction, craft_anchor,$
     *   1        2                3                 5              5
@@ -158,13 +158,14 @@ void I2C::create_packet()
     i2c_packet = "";
     // Each line below appends a certain divider or value to the string.
     i2c_packet += '$';
-    i2c_packet += ',';
     // The three conditional statements alternate to send each of the three packets.
     // 1 = C packet.
     // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
     // to send a i2c packet.
     if(i2c_selector == 1 && i2c_send_permission)
     {
+        // Alerts the system that the packet has been updated for this turn.
+        i2c_packet_set = true;
     	// Updates the selector back to 2 to switch to the next packet.
     	i2c_selector = 2;
     	// Appends the appropriate variables to fill out the packet.
@@ -185,6 +186,8 @@ void I2C::create_packet()
     // to send a i2c packet.
     else if(i2c_selector == 2 && i2c_send_permission)
     {
+        // Alerts the system that the packet has been updated for this turn.
+        i2c_packet_set = true;
     	// Updates the selector back to 3 to switch to the next packet.
     	i2c_selector = 3;
     	// Appends the appropriate variables to fill out the packet.
@@ -200,11 +203,13 @@ void I2C::create_packet()
     	i2c_packet += Data.Local.current_target_distance;
     	i2c_packet += ',';
     }
-    // 2 = T packet.
+    // 2 = N packet.
     // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
     // to send a i2c packet.
     else if(i2c_selector == 3 && i2c_send_permission)
     {
+        // Alerts the system that the packet has been updated for this turn.
+        i2c_packet_set = true;
     	// Updates the selector back to 1 to complete the cycle.
     	i2c_selector = 1;
     	// Appends the appropriate variables to fill out the packet.
@@ -230,8 +235,6 @@ void I2C::create_packet()
  */
 void I2C::send_packet()
 {
-	// No longer my turn.
-	Comm.i2c_send_permission = false;
 	// Every 1 second, the lora is allowed to send i2c data.
 	if(millis() - i2c_timer > 200 && i2c_send_permission)
 	{
@@ -241,7 +244,7 @@ void I2C::send_packet()
 	    int character_iterator = 0;
 	    // Sends the first installment of 32 characters to the Mega. (0-32)
 		// Assigns address of the receiving board.
-		Wire.beginTransmission(8);
+		Wire.beginTransmission(0);
 		// Sends the message.
 		while(character_iterator < i2c_packet.length())
 	    {
@@ -251,5 +254,9 @@ void I2C::send_packet()
    		Serial.println(i2c_packet);
 		// Closes the transmission.
 		Wire.endTransmission();
+        // No longer my turn.
+        i2c_send_permission = false;
+        // Allows the next i2c packet to cycle to the next packet type.
+        i2c_packet_set = false;
 	}
 }

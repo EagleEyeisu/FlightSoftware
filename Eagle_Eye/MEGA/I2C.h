@@ -36,7 +36,12 @@ class I2C
     // Selects between the (INSERT DESCRIPTORS HERE).
     int i2c_selector = 1;
     // Controls who has access to send over the i2c line.
-    bool i2c_send_permission = true;
+    bool i2c_send_permission = false;
+    // Makes sure the packet type is only set once per turn to maintain
+    // the cyclical order.
+    bool i2c_packet_set = false;
+    // Timer.
+    unsigned long i2c_timer = 0;
 };
 
 #endif

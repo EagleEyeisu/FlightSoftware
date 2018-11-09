@@ -35,7 +35,7 @@ class DATA
     // Reads in the taret longitude via i2c.
     float get_i2c_target_longitude(char buf[]);
     // Reads in the taret distance via i2c.
-    float get_i2c_destination_distance(char buf[]);
+    float get_i2c_target_distance(char buf[]);
     // Reads in the speed via i2c.
     float get_i2c_current_speed(char buf[]);
     // Reads in the flight mode of the craft.
@@ -115,7 +115,7 @@ class DATA
         // that percentage of thrust. 
         float lora_target_throttle = 0.0;
         // Current distance to target in meters. (Brought over from LoRa)
-        float lora_destination_distance = 0.0;
+        float lora_target_distance = 0.0;
         // Speed in meters per second. (Brought over from LoRa)
         float lora_current_speed = 0.0;
     };

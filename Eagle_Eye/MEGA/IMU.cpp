@@ -169,14 +169,9 @@ void IMU::check_altitude_tolerance()
     {
         move_up = true;
     }
-    else if(altitude_difference < -target_altitude_tolerance)
-    {
-        move_down = true;
-    }
     else
     {
         move_up = false;
-        move_down = false;
     }
 }
 
@@ -186,7 +181,7 @@ void IMU::check_altitude_tolerance()
 void IMU::check_distance_tolerance()
 {
     // Checks if distance is within tolerance.
-    if(Data.Local.lora_destination_distance > target_distance_tolerance)
+    if(Data.Local.lora_target_distance > target_distance_tolerance)
     {
         // If not, move the craft forward.
         move_forward = true;
