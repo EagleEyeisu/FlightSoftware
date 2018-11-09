@@ -61,16 +61,9 @@ class MC_Tabi():
 		#IMU_h Variables
 		self.target_heading = 0
 		self.current_heading = 0
-		self.turn_right = None
-		self.turn_left = None
-		self.move_up = None
-		self.move_down = None
-		self.move_forward = None
 
 		#Motor_h Variables
 		self.current_throttle = 0
-		self.throttle_input = 0
-		self.servo_degree = 0
 		self.craft_state = None
 
 	def variable_setup(self):
@@ -107,16 +100,8 @@ class MC_Tabi():
 		#IMU_h Variables
 		self.target_heading = StringVar(self.craft_frame)
 		self.current_heading = StringVar(self.craft_frame)
-		self.turn_right = StringVar(self.craft_frame)
-		self.turn_left = StringVar(self.craft_frame)
-		self.move_up = StringVar(self.craft_frame)
-		self.move_down = StringVar(self.craft_frame)
-		self.move_forward = StringVar(self.craft_frame)
 
 		#Motor_h Variables
-		self.current_throttle = StringVar(self.craft_frame)
-		self.throttle_input = StringVar(self.craft_frame)
-		self.servo_degree = StringVar(self.craft_frame)
 		self.craft_state = StringVar(self.craft_frame)
 
                 #Configure
@@ -126,33 +111,6 @@ class MC_Tabi():
 		self.roll_call_status.trace("w", self.callback_update_transmission)
 
 		#Configure
-		
-
-		#New Variables
-		#Data_h Variables_Flight_Data (for EagleEye Tab)
-		self.craft_roll = StringVar(self.craft_frame)
-		self.craft_pitch = StringVar(self.craft_frame)
-		self.craft_yaw = StringVar(self.craft_frame)
-		self.pressure = StringVar(self.craft_frame)
-		self.external_temperature = StringVar(self.craft_frame)
-		self.destination_distance = StringVar(self.craft_frame)
-		self.current_speed = StringVar(self.craft_frame)
-		self.satillite_count = StringVar(self.craft_frame)
-
-		#IMU_h Variables
-		self.target_heading = StringVar(self.craft_frame)
-		self.current_heading = StringVar(self.craft_frame)
-		self.turn_right = StringVar(self.craft_frame)
-		self.turn_left = StringVar(self.craft_frame)
-		self.move_up = StringVar(self.craft_frame)
-		self.move_down = StringVar(self.craft_frame)
-		self.move_forward = StringVar(self.craft_frame)
-
-		#Motor_h Variables
-		self.current_throttle = StringVar(self.craft_frame)
-		self.throttle_input = StringVar(self.craft_frame)
-		self.servo_degree = StringVar(self.craft_frame)
-		self.craft_state = StringVar(self.craft_frame)
 
 		# Initialization of varaibles on GUI startup.
 		self.operational_mode.set("NOT STARTED")
@@ -176,16 +134,8 @@ class MC_Tabi():
 		#IMU_h Variables
 		self.target_heading.set("------")
 		self.current_heading.set("------")
-		self.turn_right.set("None")
-		self.turn_left.set("None")
-		self.move_up.set("None")
-		self.move_down.set("None")
-		self.move_forward.set("None")
 
 		#Motor_h Variables
-		self.current_throttle.set("------")
-		self.throttle_input.set("------")
-		self.servo_degree.set("------")
 		self.craft_state.set("None")
 
 	def create_entry_objects(self):
@@ -210,16 +160,8 @@ class MC_Tabi():
 		#IMU_h Variables
 		self.entry_target_heading = Entry(self.craft_frame, state="readonly", textvariable = self.target_heading, justify='center')
 		self.entry_current_heading = Entry(self.craft_frame, state="readonly", textvariable = self.current_heading, justify='center')
-		self.entry_turn_right = Entry(self.craft_frame, state="readonly", textvariable = self.turn_right, justify='center')
-		self.entry_turn_left = Entry(self.craft_frame, state="readonly", textvariable = self.turn_left, justify='center')
-		self.entry_move_up = Entry(self.craft_frame, state="readonly", textvariable = self.move_up, justify='center')
-		self.entry_move_down = Entry(self.craft_frame, state="readonly", textvariable = self.move_down, justify='center')
-		self.entry_move_forward = Entry(self.craft_frame, state="readonly", textvariable = self.move_forward, justify='center')
 
 		#Motor_h Variables
-		self.entry_current_throttle = Entry(self.craft_frame, state="readonly", textvariable = self.current_throttle, justify='center')
-		self.entry_throttle_input = Entry(self.craft_frame, state="readonly", textvariable = self.throttle_input, justify='center')
-		self.entry_servo_degree = Entry(self.craft_frame, state="readonly", textvariable = self.servo_degree, justify='center')
 		self.entry_craft_state = Entry(self.craft_frame, state="readonly", textvariable = self.craft_state, justify='center')
 
 	def create_button_objects(self):
@@ -230,8 +172,6 @@ class MC_Tabi():
 		"""
 
 		# Creates button widgets. (Triggers specified callback method.)
-		
-		self.button_queue_commands = Button(self.craft_frame, text="Get Data", command=self.callback_queue_commands)
 
 		#New Button
 		self.button_update = Button(self.craft_frame, text="Update", command=self.callback_update)
@@ -256,20 +196,20 @@ class MC_Tabi():
 
 		# Above divider one.
 		
-		self.create_label_east(0,0, self.craft_frame, "Roll")
+		self.create_label_center(0,0, self.craft_frame, "Craft Roll                        ")
 		self.entry_craft_roll.grid(row=0, column=1, sticky = 'w')
-		self.create_label_east(1,0, self.craft_frame, "Pitch")
+		self.create_label_center(1,0, self.craft_frame, "Craft Pitch                      ")
 		self.entry_craft_pitch.grid(row=1, column=1, sticky = 'w')
-		self.create_label_east(2,0, self.craft_frame, "Yaw")
+		self.create_label_center(2,0, self.craft_frame, "Craft Yaw                        ")
 		self.entry_craft_yaw.grid(row=2, column=1, sticky = 'w')
-		self.create_label_east(0,5, self.craft_frame, "Pressure")
-		self.entry_pressure.grid(row=0, column=6, sticky = 'w')
-		self.create_label_east(1,5, self.craft_frame, "External Temperature")
-		self.entry_external_temperature.grid(row=1, column=6, sticky = 'w')
-		self.create_label_east(2,5, self.craft_frame, "Destination Distance")
-		self.entry_destination_distance.grid(row=2, column=6, sticky = 'w')
-		self.create_label_east(3,5, self.craft_frame, "Current Speed")
-		self.entry_current_speed.grid(row=3, column=6, sticky = 'w')
+		self.create_label_center(3,0, self.craft_frame, "External Pressure       ")
+		self.entry_pressure.grid(row=3, column=1, sticky = 'w')
+		self.create_label_center(4,0, self.craft_frame, "External Temperature")
+		self.entry_external_temperature.grid(row=4, column=1, sticky = 'w')
+		self.create_label_center(6,0, self.craft_frame, "Destination Distance  ")
+		self.entry_destination_distance.grid(row=6, column=1, sticky = 'w')
+		self.create_label_center(7,0, self.craft_frame, "Current Speed              ")
+		self.entry_current_speed.grid(row=7, column=1, sticky = 'w')
 		
 
 		# Terminal divider. KEEP THIS AT THE BOTTOM OF THIS METHOD.
@@ -287,25 +227,15 @@ class MC_Tabi():
 		# Above divider.
 
 		
-		self.create_label_center(6, 1, self.craft_frame, "Target Heading")
-		self.entry_target_heading.grid(row = 6,column = 2, sticky = 'we')
-		self.create_label_center(7, 1, self.craft_frame, "Current Heading")
-		self.entry_current_heading.grid(row = 7,column = 2, sticky = 'we')
-		self.create_label_center(8, 1, self.craft_frame, "Turn Right")
-		self.entry_turn_right.grid(row = 8,column = 2, sticky = 'we')
-		self.create_label_center(9, 1, self.craft_frame, "Turn Left")
-		self.entry_turn_left.grid(row = 9,column = 2, sticky = 'we')
-		self.create_label_center(6, 5, self.craft_frame, "Move Up")
-		self.entry_move_up.grid(row = 6,column = 6, sticky = 'we')
-		self.create_label_center(7, 5, self.craft_frame, "Move Down")
-		self.entry_move_down.grid(row = 7,column = 6, sticky = 'we')
-		self.create_label_center(8, 5, self.craft_frame, "Move Forward")
-		self.entry_move_forward.grid(row = 8,column = 6, sticky = 'we')
+		self.create_label_center(8, 0, self.craft_frame, "Target Heading             ")
+		self.entry_target_heading.grid(row = 8,column = 1, sticky = 'we')
+		self.create_label_center(9, 0, self.craft_frame, "Current Heading          ")
+		self.entry_current_heading.grid(row = 9,column = 1, sticky = 'we')
                 
 
 		# Terminal divider. KEEP THIS AT THE BOTTOM OF THE METHOD.
 		terminal_divider_two = Label(self.craft_frame, background="#F1BE48")
-		terminal_divider_two.grid(row=13, column=0, columnspan=20, sticky='we')
+		terminal_divider_two.grid(row=10, column=0, columnspan=20, sticky='we')
 
 	def layout_mission_control(self):
 		""" 
@@ -316,22 +246,12 @@ class MC_Tabi():
 		"""
 
 		# Below final divider.
-		'''
 		
-                '''
-		self.create_label_center(14,0, self.craft_frame, "Current Throttle")
-		self.entry_current_throttle.grid(row=14, column=1, sticky = 'w')
-		self.create_label_center(14,3, self.craft_frame, "Throttle Input")
-		self.entry_throttle_input.grid(row=14, column=4, sticky = 'w')
-		self.create_label_center(15,0, self.craft_frame, "Servo Degree")
-		self.entry_servo_degree.grid(row=15, column=1, sticky = 'w')
-		self.create_label_center(15,3, self.craft_frame, "Craft State")
-		self.entry_craft_state.grid(row=15, column=4, sticky = 'w')
-		self.create_label_center(14,6, self.craft_frame, "Satillite Count")
-		self.entry_satillite_count.grid(row=14, column=7, sticky = 'w')
-
-		self.button_queue_commands.grid(row = 16, column = 4, sticky = 'e')
-		self.button_update.grid(row = 16, column = 3, sticky = 'e')
+		self.create_label_center(11,0, self.craft_frame, "Craft State                      ")
+		self.entry_craft_state.grid(row=11, column=1, sticky = 'w')
+		self.create_label_center(12,0, self.craft_frame, "Satillite Count                ")
+		self.entry_satillite_count.grid(row=12, column=1, sticky = 'w')
+		self.button_update.grid(row = 13, column = 0, sticky = 'e')
 		
 	def main_mc_tabi(self):
 		"""
@@ -420,27 +340,6 @@ class MC_Tabi():
 		"""
 
 		self.operational_mode.set("RUNNING")
-
-	def callback_queue_commands(self):
-		"""
-		Triggered by the press of SEND button next to the modified commands entry.
-
-		@param self         - Instance of the class.
-		"""
-
-		try:
-			# Checks for non-null connection to mission control's lora microcontroller.
-			if g.PORT_MC_LORA is not None:
-				# Converts substring into each's corresponding integer value.
-				converted_transmission = self.convert_serial()
-				# If non-null, send transmission via serial port.
-				send(g.PORT_MC_LORA.get_port(), converted_transmission)
-				print("Completed connection to lora.")
-		# Null connection.
-		except Exception as e:
-			# Prints general error statement. (Used to tell which method errored out)
-			print("Invalid connection to mission control's lora.")
-			print("Exception: " + str(e))
 			
 	def callback_update(self):
 		"""
@@ -466,7 +365,7 @@ class MC_Tabi():
 		###
 		###
 		###
-		self.current_throttle.set("0");
+		
 		# Checks for none null connection to mission_control Uc.
 		if g.PORT_MC_LORA is not None:
 			temp_input = g.PORT_MC_LORA.input.get()
