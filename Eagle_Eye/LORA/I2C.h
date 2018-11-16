@@ -10,7 +10,6 @@
 class I2C
 {
 	public:
-  
 	// Constructor
 	I2C();
 	// Runs initialzation script for the I2C protocol.

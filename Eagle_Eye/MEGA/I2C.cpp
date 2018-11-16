@@ -46,6 +46,7 @@ void I2C::manager()
 	{
 		// Clears and refills the network packet to be sent to the LoRa.
     	create_packet();
+      Serial.println("Packet Set.");
 	}
     // Sends the packet over to the LoRa. 
     send_packet();
@@ -65,7 +66,7 @@ void receiveEvent(int howMany)
     bool start_flag = false;
     bool end_flag = false;
     bool junk_flag = false;
-    Serial.println("In Interrupt");
+    Serial.println("Activity Detected.");
     // Checks if there is available i2c input.
     if(Wire.available())
     {
@@ -128,6 +129,7 @@ void receiveEvent(int howMany)
         Data.new_data = Data.YES;
         // Updates packet flag to true.
         Comm.flag_complete_packet = true;
+        Serial.println("Valid Packet.");
     }
     // Formatting was incorrect. Invalid packet.
     else
@@ -166,7 +168,7 @@ void I2C::create_packet()
     if(i2c_selector == 1 && i2c_send_permission)
     {
     	// Alerts the system that the packet has been updated for this turn.
-        i2c_packet_set = true;
+        Comm.i2c_packet_set = true;
         // Updates the selector back to 2 to switch to the next packet.
         i2c_selector = 2;
         // Appends the appropriate variables to fill out the packet.
@@ -186,7 +188,7 @@ void I2C::create_packet()
     else if(i2c_selector == 2 && i2c_send_permission)
     {
     	// Alerts the system that the packet has been updated for this turn.
-        i2c_packet_set = true;
+        Comm.i2c_packet_set = true;
         // Updates the selector back to 3 to switch to the next packet.
         i2c_selector = 3;
         // Appends the appropriate variables to fill out the packet.
@@ -206,7 +208,7 @@ void I2C::create_packet()
     else if(i2c_selector == 3 && i2c_send_permission)
     {
     	// Alerts the system that the packet has been updated for this turn.
-        i2c_packet_set = true;
+        Comm.i2c_packet_set = true;
         // Updates the selector back to 1 to complete the cycle.
         i2c_selector = 1;
         // Appends the appropriate variables to fill out the packet.
@@ -231,7 +233,7 @@ void I2C::create_packet()
 void I2C::send_packet()
 {
     // Every 1 second, the lora is allowed to send i2c data.
-    if(millis() - i2c_timer > 200 && i2c_send_permission)
+    if(millis() - i2c_timer > 200 && Comm.i2c_send_permission)
     {
         // Resets timer.
         i2c_timer = millis();
@@ -246,6 +248,7 @@ void I2C::send_packet()
             Wire.write(i2c_packet[character_iterator]);
             character_iterator++;
         }
+        Serial.print("Sent: ");
         Serial.println(i2c_packet);
         // Closes the transmission.
         Wire.endTransmission();
@@ -253,6 +256,5 @@ void I2C::send_packet()
     	  Comm.i2c_send_permission = false;
     	  // Allows the next i2c packet to cycle to the next packet type.
         Comm.i2c_packet_set = false;
-
     }
 }
