@@ -189,13 +189,13 @@ void RADIO::manager()
         if(554.0 < received_id && received_id < 556.0)
         {
             // Delays # seconds to offset this node from the main mission_control node.
-            delay(1000);
+            delay(500);
             // Updates network state.
             operation_mode = Radio.NORMAL;
         }
 	}
 	// Each of the crafts have # seconds to broadcast.
-	else if((millis() - broadcast_timer > 1000) && (operation_mode == NORMAL))
+	else if((millis() - broadcast_timer > 500) && (operation_mode == NORMAL))
     {
 		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
         broadcast_timer = millis();

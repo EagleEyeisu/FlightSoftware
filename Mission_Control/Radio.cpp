@@ -172,8 +172,8 @@ void RADIO::manager()
         // Updates craft_id to the network start signal.
         Radio.Network.craft_id = 555.0;
 	}
-	// Each of the 2 crafts have 5 seconds to broadcast. That means each craft will broadcast every 10 seconds.
-	else if((millis() - broadcast_timer >= 10000) && (operation_mode == Radio.NORMAL))
+	// Each of the 2 crafts have # seconds to broadcast. That means each craft will broadcast every # seconds.
+	else if((millis() - broadcast_timer >= 500) && (operation_mode == Radio.NORMAL))
     {
 		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
 		broadcast_timer = millis();
