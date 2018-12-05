@@ -5,7 +5,7 @@
 
 
 #include "I2C.h"
-#include "DATA.h"
+#include "DATA.h" 
 #include "IMU.h"
 #include "MOTOR.h"
 #include "Globals.h"
@@ -44,17 +44,39 @@ void I2C::initialize()
  */
 void I2C::manager()
 {
-    Serial.print("Packet check: "); Serial.println(Comm.i2c_packet_set);
-    if(Comm.i2c_packet_set == false)
-    {
-        // Clears and refills the network packet to be sent to the LoRa.
-        create_packet();
-    }
-    // Sends the packet over to the LoRa. 
+    // Clears and refills the network packet to be sent to the LoRa.
+    create_packet();
+    // Checks and handles the deadlock scenario.
+    deadlock_monitor();
+    // Sends the packet over to the LoRa.
     send_packet();
 }
 
 
+/**
+ * Monitors for i2c deadlock by monitoring how many cycles
+ * have passed by without hearing from the LoRa device.
+ */
+void I2C::deadlock_monitor()
+{
+    // 5 cycles have passed since last contact with Arduino LoRa.
+    if(Comm.i2c_deadlock_counter >= 5)
+    {   
+        // Deadlock detected. Turning true will trigger rebroadcast
+        // the next time send_packet is called.
+        Comm.i2c_my_turn = true;
+        // Reset deadlock counter to 0.
+        Comm.i2c_deadlock_counter = 0;
+    }
+    // Deadlock not detected yet. Checks if the packet has been set.
+    // If this packet set status is true, we iterate the deadlock
+    // counter.
+    else if(Comm.i2c_packet_set)
+    {
+        // Packet set status is true. Increment deadlock counter.
+        Comm.i2c_deadlock_counter++;
+    }
+}
 
 /**
  * Recieves bytes over I2C Connection.
@@ -157,68 +179,72 @@ void I2C::create_packet()
     * $,P, target_heading, current_heading, craft_state,$
     *   1        2                3               4
     */
-
-    // Creates a temporary string to hold all need information.
-    i2c_packet = "";
-    // Each line below appends a certain divider or value to the string.
-    i2c_packet += '$';
-    // The three conditional statements alternate to send each of the three packets.
-    // 1 = W packet.
-    if(i2c_selector == 1)
+    
+    Serial.print("Packet check: "); Serial.println(Comm.i2c_packet_set);
+    if(Comm.i2c_packet_set == false)
     {
-    	// Alerts the system that the packet has been updated for this turn.
-        Comm.i2c_packet_set = true;
-        // Updates the selector back to 2 to switch to the next packet.
-        i2c_selector = 2;
-        // Appends the appropriate variables to fill out the packet.
-        i2c_packet += ',';
-        i2c_packet += 'W';
-        i2c_packet += ',';
-        i2c_packet += Data.Local.mega_pressure;
-        i2c_packet += ',';
-        i2c_packet += Data.Local.mega_altitude;
-        i2c_packet += ',';
-        i2c_packet += Data.Local.mega_external_temperature;
-        i2c_packet += ',';
+        // Creates a temporary string to hold all need information.
+        i2c_packet = "";
+        // Each line below appends a certain divider or value to the string.
+        i2c_packet += '$';
+        // The three conditional statements alternate to send each of the three packets.
+        // 1 = W packet.
+        if(i2c_selector == 1)
+        {
+        	// Alerts the system that the packet has been updated for this turn.
+            Comm.i2c_packet_set = true;
+            // Updates the selector back to 2 to switch to the next packet.
+            i2c_selector = 2;
+            // Appends the appropriate variables to fill out the packet.
+            i2c_packet += ',';
+            i2c_packet += 'W';
+            i2c_packet += ',';
+            i2c_packet += Data.Local.mega_pressure;
+            i2c_packet += ',';
+            i2c_packet += Data.Local.mega_altitude;
+            i2c_packet += ',';
+            i2c_packet += Data.Local.mega_external_temperature;
+            i2c_packet += ',';
+        }
+        // 2 = G packet.
+        else if(i2c_selector == 2)
+        {
+        	// Alerts the system that the packet has been updated for this turn.
+            Comm.i2c_packet_set = true;
+            // Updates the selector back to 3 to switch to the next packet.
+            i2c_selector = 3;
+            // Appends the appropriate variables to fill out the packet.
+            i2c_packet += ',';
+            i2c_packet += 'G';
+            i2c_packet += ',';
+            i2c_packet += Data.Local.mega_roll;
+            i2c_packet += ',';
+            i2c_packet += Data.Local.mega_pitch;
+            i2c_packet += ',';
+            i2c_packet += Data.Local.mega_yaw;
+            i2c_packet += ',';
+        }
+        // 2 = P packet.
+        else if(i2c_selector == 3)
+        {
+        	// Alerts the system that the packet has been updated for this turn.
+            Comm.i2c_packet_set = true;
+            // Updates the selector back to 1 to complete the cycle.
+            i2c_selector = 1;
+            // Appends the appropriate variables to fill out the packet.
+            i2c_packet += ',';
+            i2c_packet += 'P';
+            i2c_packet += ',';
+            i2c_packet += Imu.target_heading;
+            i2c_packet += ',';
+            i2c_packet += Imu.current_heading;
+            i2c_packet += ',';
+            i2c_packet += Movement.craft_state;
+            i2c_packet += ',';
+        }
+        // Completes the packet.
+        i2c_packet += '$';
     }
-    // 2 = G packet.
-    else if(i2c_selector == 2)
-    {
-    	// Alerts the system that the packet has been updated for this turn.
-        Comm.i2c_packet_set = true;
-        // Updates the selector back to 3 to switch to the next packet.
-        i2c_selector = 3;
-        // Appends the appropriate variables to fill out the packet.
-        i2c_packet += ',';
-        i2c_packet += 'G';
-        i2c_packet += ',';
-        i2c_packet += Data.Local.mega_roll;
-        i2c_packet += ',';
-        i2c_packet += Data.Local.mega_pitch;
-        i2c_packet += ',';
-        i2c_packet += Data.Local.mega_yaw;
-        i2c_packet += ',';
-    }
-    // 2 = P packet.
-    else if(i2c_selector == 3 && Comm.i2c_my_turn)
-    {
-    	// Alerts the system that the packet has been updated for this turn.
-        Comm.i2c_packet_set = true;
-        // Updates the selector back to 1 to complete the cycle.
-        i2c_selector = 1;
-        // Appends the appropriate variables to fill out the packet.
-        i2c_packet += ',';
-        i2c_packet += 'P';
-        i2c_packet += ',';
-        i2c_packet += Imu.target_heading;
-        i2c_packet += ',';
-        i2c_packet += Imu.current_heading;
-        i2c_packet += ',';
-        i2c_packet += Movement.craft_state;
-        i2c_packet += ',';
-    }
-    // Completes the packet.
-    i2c_packet += '$';
 }
 
 

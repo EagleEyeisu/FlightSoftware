@@ -7,7 +7,7 @@
 #include <Arduino.h>
 #include "I2C.h"
 #include "DATA.h"
-#include "Globals.h"
+#include "Globals.h" 
 #include "RADIO.h"
 #include <stdlib.h>
 #include <string.h>
@@ -46,12 +46,8 @@ void I2C::initialize()
  */
 void I2C::manager()
 {
-    Serial.print("Packet check: "); Serial.println(Comm.i2c_packet_set);
-    if(Comm.i2c_packet_set == false)
-    {
-        // Clears and refills the network packet to be sent to the Mega.
-        create_packet();
-    }
+    // Clears and refills the network packet to be sent to the Mega.
+    create_packet();
     // Sends the packet over to the Mega. 
     send_packet();
 }
@@ -160,73 +156,77 @@ void I2C::create_packet()
     *   1        2                3                 5              5
     */
 
-    // Creates a temporary string to hold all need information.
-    i2c_packet = "";
-    // Each line below appends a certain divider or value to the string.
-    i2c_packet += '$';
-    // The three conditional statements alternate to send each of the three packets.
-    // 1 = C packet.
-    if(i2c_selector == 1)
+    Serial.print("Packet check: "); Serial.println(Comm.i2c_packet_set);
+    if(Comm.i2c_packet_set == false)
     {
-        // Alerts the system that the packet has been updated for this turn.
-        Comm.i2c_packet_set = true;
-    	// Updates the selector back to 2 to switch to the next packet.
-    	i2c_selector = 2;
-    	// Appends the appropriate variables to fill out the packet.
-    	i2c_packet += ',';
-    	i2c_packet += 'C';
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_altitude;
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_latitude * 10000.0;
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_longitude * 10000.0;
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_speed;
-    	i2c_packet += ',';
+        // Creates a temporary string to hold all need information.
+        i2c_packet = "";
+        // Each line below appends a certain divider or value to the string.
+        i2c_packet += '$';
+        // The three conditional statements alternate to send each of the three packets.
+        // 1 = C packet.
+        if(i2c_selector == 1)
+        {
+            // Alerts the system that the packet has been updated for this turn.
+            Comm.i2c_packet_set = true;
+        	// Updates the selector back to 2 to switch to the next packet.
+        	i2c_selector = 2;
+        	// Appends the appropriate variables to fill out the packet.
+        	i2c_packet += ',';
+        	i2c_packet += 'C';
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_altitude;
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_latitude * 10000.0;
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_longitude * 10000.0;
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_speed;
+        	i2c_packet += ',';
+        }
+        // 2 = T packet.
+        else if(i2c_selector == 2)
+        {
+            // Alerts the system that the packet has been updated for this turn.
+            Comm.i2c_packet_set = true;
+        	// Updates the selector back to 3 to switch to the next packet.
+        	i2c_selector = 3;
+        	// Appends the appropriate variables to fill out the packet.
+        	i2c_packet += ',';
+        	i2c_packet += 'T';
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_target_altitude;
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_target_latitude * 10000.0;
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_target_longitude * 10000.0;
+        	i2c_packet += ',';
+        	i2c_packet += Data.Local.current_target_distance;
+        	i2c_packet += ',';
+        }
+        // 2 = N packet.
+        else if(i2c_selector == 3)
+        {
+            // Alerts the system that the packet has been updated for this turn.
+            Comm.i2c_packet_set = true;
+        	// Updates the selector back to 1 to complete the cycle.
+        	i2c_selector = 1;
+        	// Appends the appropriate variables to fill out the packet.
+        	i2c_packet += ',';
+        	i2c_packet += 'N';
+        	i2c_packet += ',';
+        	i2c_packet += Radio.Network.authority_mode;
+        	i2c_packet += ',';
+        	i2c_packet += Radio.Network.target_throttle;
+        	i2c_packet += ',';
+        	i2c_packet += Radio.Network.manual_direction;
+        	i2c_packet += ',';
+        	i2c_packet += Radio.Network.craft_anchor;
+        	i2c_packet += ',';
+        }
+        // Completes the packet.
+        i2c_packet += '$';
     }
-    // 2 = T packet.
-    else if(i2c_selector == 2)
-    {
-        // Alerts the system that the packet has been updated for this turn.
-        Comm.i2c_packet_set = true;
-    	// Updates the selector back to 3 to switch to the next packet.
-    	i2c_selector = 3;
-    	// Appends the appropriate variables to fill out the packet.
-    	i2c_packet += ',';
-    	i2c_packet += 'T';
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_target_altitude;
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_target_latitude * 10000.0;
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_target_longitude * 10000.0;
-    	i2c_packet += ',';
-    	i2c_packet += Data.Local.current_target_distance;
-    	i2c_packet += ',';
-    }
-    // 2 = N packet.
-    else if(i2c_selector == 3)
-    {
-        // Alerts the system that the packet has been updated for this turn.
-        Comm.i2c_packet_set = true;
-    	// Updates the selector back to 1 to complete the cycle.
-    	i2c_selector = 1;
-    	// Appends the appropriate variables to fill out the packet.
-    	i2c_packet += ',';
-    	i2c_packet += 'N';
-    	i2c_packet += ',';
-    	i2c_packet += Radio.Network.authority_mode;
-    	i2c_packet += ',';
-    	i2c_packet += Radio.Network.target_throttle;
-    	i2c_packet += ',';
-    	i2c_packet += Radio.Network.manual_direction;
-    	i2c_packet += ',';
-    	i2c_packet += Radio.Network.craft_anchor;
-    	i2c_packet += ',';
-    }
-    // Completes the packet.
-    i2c_packet += '$';
 }
 
 

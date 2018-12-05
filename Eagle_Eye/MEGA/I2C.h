@@ -2,13 +2,12 @@
  * I2C.h declares and holds the variables and frunctions used for I2C.
  */
 
-
 #ifndef I2C_h
 #define I2C_h
 
 #include <Arduino.h>
 
-class I2C
+class I2C 
 {
     public:
     // Constructor. 
@@ -21,9 +20,10 @@ class I2C
     void manager();
     // Builds byte array to be sent to MEGA.
     void create_packet();
+    // Monitors for and responds to deadlock occurances.
+    void deadlock_monitor();
     // Sends byte array to MEGA.
     void send_packet();
-
 
     /*---------------------------------Variables---------------------------------*/
 
@@ -42,6 +42,8 @@ class I2C
     bool i2c_packet_set = false;
     // Timer.
     unsigned long i2c_timer = 0;
+    // Counter variable used in monitoring for deadlock occurances.
+    int i2c_deadlock_counter = 0;
 };
 
 #endif
