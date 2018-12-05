@@ -11,7 +11,7 @@
 class I2C
 {
     public:
-    // Constructor.
+    // Constructor. 
     I2C();
     // Reads in a individual byte from the I2C port.
     void receiveEvent(int howMany); 
@@ -36,7 +36,7 @@ class I2C
     // Selects between the (INSERT DESCRIPTORS HERE).
     int i2c_selector = 1;
     // Controls who has access to send over the i2c line.
-    bool i2c_send_permission = false;
+    bool i2c_my_turn;
     // Makes sure the packet type is only set once per turn to maintain
     // the cyclical order.
     bool i2c_packet_set = false;

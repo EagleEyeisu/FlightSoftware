@@ -32,8 +32,10 @@ void I2C::initialize()
 	// Sets the address for the current micro controller.
 	// Mega - 0
 	// LoRa - 8
-	Wire.begin(8);
+	Wire.begin(0);
  	Wire.onReceive(receiveEvent);
+ 	// Initializes the system to have the LoRa start.
+    Comm.i2c_my_turn = true;
 }
 
 
@@ -42,12 +44,12 @@ void I2C::initialize()
  */
 void I2C::manager()
 {
-	if(i2c_packet_set == false)
-	{
-		// Clears and refills the network packet to be sent to the LoRa.
-    	create_packet();
-      Serial.println("Packet Set.");
-	}
+    Serial.print("Packet check: "); Serial.println(Comm.i2c_packet_set);
+    if(Comm.i2c_packet_set == false)
+    {
+        // Clears and refills the network packet to be sent to the LoRa.
+        create_packet();
+    }
     // Sends the packet over to the LoRa. 
     send_packet();
 }
@@ -59,18 +61,17 @@ void I2C::manager()
  */
 void receiveEvent(int howMany)
 {
-    Comm.i2c_send_permission = true;
+    Comm.i2c_my_turn = true;
     // Resets the input string to null.
     Comm.i2c_input_buffer = "";
     // Resets formatting variables to false.
     bool start_flag = false;
     bool end_flag = false;
     bool junk_flag = false;
-    Serial.println("Activity Detected.");
     // Checks if there is available i2c input.
     if(Wire.available())
     {
-    	// Reads in first ascii int and casts to char.
+      // Reads in first ascii int and casts to char.
     	char temp = Wire.read();
     	// First char should be the dollar sign. 
     	// If so, continute. If not, junk it.
@@ -125,11 +126,10 @@ void receiveEvent(int howMany)
     // prior to trying to parse the data.
     if(start_flag && end_flag)
     {
-        // Alerts the system that there is new data present.
-        Data.new_data = Data.YES;
         // Updates packet flag to true.
         Comm.flag_complete_packet = true;
         Serial.println("Valid Packet.");
+        Serial.println(Comm.i2c_input_buffer);
     }
     // Formatting was incorrect. Invalid packet.
     else
@@ -137,6 +137,7 @@ void receiveEvent(int howMany)
         // Packet is screwed up. Alerts the system not to try to pull data from
         // this packet.
         Comm.flag_complete_packet = false;
+        Serial.println("Incorrect Packet.");
     }
 }
 
@@ -163,9 +164,7 @@ void I2C::create_packet()
     i2c_packet += '$';
     // The three conditional statements alternate to send each of the three packets.
     // 1 = W packet.
-    // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
-    // to send a i2c packet.
-    if(i2c_selector == 1 && i2c_send_permission)
+    if(i2c_selector == 1)
     {
     	// Alerts the system that the packet has been updated for this turn.
         Comm.i2c_packet_set = true;
@@ -183,9 +182,7 @@ void I2C::create_packet()
         i2c_packet += ',';
     }
     // 2 = G packet.
-    // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
-    // to send a i2c packet.
-    else if(i2c_selector == 2 && i2c_send_permission)
+    else if(i2c_selector == 2)
     {
     	// Alerts the system that the packet has been updated for this turn.
         Comm.i2c_packet_set = true;
@@ -203,9 +200,7 @@ void I2C::create_packet()
         i2c_packet += ',';
     }
     // 2 = P packet.
-    // i2c_send_permission (T or F) signifies if its the LoRa or MEGA's turn
-    // to send a i2c packet.
-    else if(i2c_selector == 3 && i2c_send_permission)
+    else if(i2c_selector == 3 && Comm.i2c_my_turn)
     {
     	// Alerts the system that the packet has been updated for this turn.
         Comm.i2c_packet_set = true;
@@ -233,13 +228,12 @@ void I2C::create_packet()
 void I2C::send_packet()
 {
     // Every 1 second, the lora is allowed to send i2c data.
-    if(millis() - i2c_timer > 200 && Comm.i2c_send_permission)
+    if((millis() - i2c_timer > 50) && (Comm.i2c_my_turn == true))
     {
         // Resets timer.
         i2c_timer = millis();
         // Iterator
         int character_iterator = 0;
-        // Sends the first installment of 32 characters to the Mega. (0-32)
         // Assigns address of the receiving board.
         Wire.beginTransmission(8);
         // Sends the message.
@@ -253,8 +247,8 @@ void I2C::send_packet()
         // Closes the transmission.
         Wire.endTransmission();
         // No longer my turn.
-    	  Comm.i2c_send_permission = false;
-    	  // Allows the next i2c packet to cycle to the next packet type.
+    	Comm.i2c_my_turn = false;
+    	// Allows the next i2c packet to cycle to the next packet type.
         Comm.i2c_packet_set = false;
     }
 }
