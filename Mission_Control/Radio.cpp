@@ -173,7 +173,7 @@ void RADIO::manager()
         Radio.Network.craft_id = 555.0;
 	}
 	// Each of the 2 crafts have # seconds to broadcast. That means each craft will broadcast every # seconds.
-	else if((millis() - broadcast_timer >= 500) && (operation_mode == Radio.NORMAL))
+	else if((millis() - broadcast_timer >= 1000) && (operation_mode == Radio.NORMAL))
     {
 		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
 		broadcast_timer = millis();
@@ -196,7 +196,7 @@ void RADIO::roll_call()
   // Updates the Craft_ID to the network call in signal "999.0".
   Network.craft_id = 999.0;
     // Timer of 5 seconds.
-    if(millis() - rc_broadcast >= 5000)
+    if(millis() - rc_broadcast >= 2000)
     {
         // Resets the counter. This disabled rollcall broadcasting again until 5 seconds has passed.
         rc_broadcast = millis();
@@ -244,10 +244,6 @@ void RADIO::broadcast()
     // Converts from String to char array. 
     char transmission[temp.length()];
     temp.toCharArray(transmission, temp.length());
-    // Blinks LED onboard of LoRa to signal broadcast
-    blink_led();
-    delay(100);
-    blink_led();
     // Sends message passed in as paramter via antenna.
     rf95.send(transmission, sizeof(transmission));
     // Pauses all operations until the micro controll has guaranteed the transmission of the
@@ -315,6 +311,7 @@ void RADIO::radio_receive()
         {
             // Used to display the received data in the GUI.
             radio_input = buf;
+            blink_led();
             // Conversion from uint8_t to string. The purpose of this is to be able to convert to an 
             // unsigned char array for parsing. 
             String str = (char*)buf;

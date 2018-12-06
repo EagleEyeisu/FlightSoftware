@@ -195,7 +195,7 @@ void RADIO::manager()
         }
 	}
 	// Each of the crafts have # seconds to broadcast.
-	else if((millis() - broadcast_timer > 500) && (operation_mode == NORMAL))
+	else if((millis() - broadcast_timer > 1000) && (operation_mode == NORMAL))
     {
 		// Resets the counter. This disables broadcasting again until 10 seconds has passed.
         broadcast_timer = millis();
@@ -227,8 +227,6 @@ void RADIO::radio_receive()
             str.toCharArray(to_parse,str.length());
             // Used to display the received data in the GUI.
             radio_input = buf;
-            blink_led();
-            delay(100);
             blink_led();
             Serial.print("Radio In: ");
             Serial.println(radio_input);
