@@ -10,7 +10,7 @@
 from tkinter import *
 from tkinter.ttk import *
 from communication import *
-from inputs import get_gamepad
+# from inputs import get_gamepad
 import globals as g
 import os
 
@@ -56,7 +56,7 @@ class MC_Tab():
 		self.target_latitude_set = None
 		self.target_longitude = None
 		self.target_longitude_set = None
-		self.controller_previous_selection = False
+		#self.controller_previous_selection = False
 
 		# Misc variables.
 		self.modified_commands = None
@@ -181,7 +181,7 @@ class MC_Tab():
 		self.button_roll_call_stop = Button(self.mc_frame, text="RC Stop", command=self.callback_roll_call_stop)
 		self.button_start_network = Button(self.mc_frame, text="Network Start", command=self.callback_network_start)
 		self.button_anchor_set = Button(self.mc_frame, text="Drop Anchor!", command=self.callback_craft_anchor)
-		self.button_connect_controller = Button(self.mc_frame, text="Controller Status", command=self.callback_setup_controller)
+		# self.button_connect_controller = Button(self.mc_frame, text="Controller Status", command=self.callback_setup_controller)
 		self.button_manual_forward = Button(self.mc_frame, text="FORWARD", command=self.callback_manual_forward)
 		self.button_manual_left = Button(self.mc_frame, text="LEFT", command=self.callback_manual_left)
 		self.button_manual_right = Button(self.mc_frame, text="RIGHT", command=self.callback_manual_right)
@@ -208,8 +208,8 @@ class MC_Tab():
 		self.label_ee_node.configure(background='red')
 		self.label_relay_node = Label(self.mc_frame,  text="RELAY", relief='solid')
 		self.label_relay_node.configure(background='red')
-		self.label_xbox_controller_status= Label(self.mc_frame, relief='solid')
-		self.label_xbox_controller_status.configure(background='red')
+		# self.label_xbox_controller_status= Label(self.mc_frame, relief='solid')
+		# self.label_xbox_controller_status.configure(background='red')
 
 	def create_checkbox_objects(self):
 		""" 
@@ -247,8 +247,8 @@ class MC_Tab():
 		self.button_roll_call_stop.grid(row=3, column=1, rowspan=2, sticky='ns')
 		self.button_start_network.grid(row=3, column=2, rowspan=2, sticky='nws')
 		self.button_anchor_set.grid(row=3, column=3, rowspan=2, sticky='nws')
-		self.button_connect_controller.grid(row=3, column=5, sticky='nswe')
-		self.label_xbox_controller_status.grid(row=4, column=5, sticky='nwse')
+		# self.button_connect_controller.grid(row=3, column=5, sticky='nswe')
+		# self.label_xbox_controller_status.grid(row=4, column=5, sticky='nwse')
 
 		# Terminal divider. KEEP THIS AT THE BOTTOM OF THIS METHOD.
 		terminal_divider_one = Label(self.mc_frame, background="#F1BE48")
@@ -349,20 +349,20 @@ class MC_Tab():
 		# Embeds command line into the gui.
 		#self.embed_cmd() # Work in progress for another day.		
 
-	def callback_setup_controller(self):
-		"""
-		Responsible for connecting to and monitoring the controller for its input.
-		(STARTS XBOX CONTROLLER / CONNECTS / MONITORS USER'S INPUT)
+	# def callback_setup_controller(self):
+	# 	"""
+	# 	Responsible for connecting to and monitoring the controller for its input.
+	# 	(STARTS XBOX CONTROLLER / CONNECTS / MONITORS USER'S INPUT)
 		
-		@param self - Instance of the class.
-		"""
+	# 	@param self - Instance of the class.
+	# 	"""
 
-		print("\nStarting connection process to xbox controller.--------")
-		g.timer_xbox_controller = threading.Timer(0.1, self.xbox_input_monitor)
-		g.timer_xbox_controller.start()
-		# Sets the visual indication
-		self.label_xbox_controller_status.configure(background='green')
-		print("\nFinished setup process.--------------------------------")
+	# 	print("\nStarting connection process to xbox controller.--------")
+	# 	g.timer_xbox_controller = threading.Timer(0.1, self.xbox_input_monitor)
+	# 	g.timer_xbox_controller.start()
+	# 	# Sets the visual indication
+	# 	self.label_xbox_controller_status.configure(background='green')
+	# 	print("\nFinished setup process.--------------------------------")
 
 	def callback_manual_none(self):
 		self.manual_command.set("NONE")
@@ -379,92 +379,92 @@ class MC_Tab():
 	def callback_manual_up(self):
 		self.manual_command.set("UP")
 
-	def xbox_input_monitor(self):
-		"""
-		This method monitors the changes in the authority mode (manual vs auto).
-		When in manual, this method reads an xbox controller's input every 2 seconds.
+	# def xbox_input_monitor(self):
+	# 	"""
+	# 	This method monitors the changes in the authority mode (manual vs auto).
+	# 	When in manual, this method reads an xbox controller's input every 2 seconds.
 
-		@param self - Instance of the class.
-		"""
+	# 	@param self - Instance of the class.
+	# 	"""
 
-		g.timer_xbox_controller = threading.Timer(0.1, self.xbox_input_monitor)
-		g.timer_xbox_controller.start()
-		# Checks for a incoming data.
-		try:
-			if self.authority_mode.get() in "MANUAL":
-				# Gathers the current information from the Xbox Controller.
-				events = get_gamepad()
-				# Cycles through the objects data to check for desired
-				# button presses. (1 button press = 1 event)
-				for event in events:
-					# Checks if the bottom gamepad arrow was pressed.
-					if((event.code == "ABS_HAT0Y") and (event.state == 1)):
-						if(self.controller_previous_selection != "ARROW_DOWN"):
-							self.controller_previous_selection = "ARROW_DOWN"
-							self.manual_command.set("NONE")
-							print("Down Arrow: " + str(event.code), str(event.state))
-						break
-					# Checks if the top gamepad arrow was pressed.
-					elif((event.code == "ABS_HAT0Y") and (event.state == -1)):
-						if(self.controller_previous_selection != "ARROW_UP"):
-							self.controller_previous_selection = "ARROW_UP"
-							self.manual_command.set("FORWARD")
-							print("Up Arrow: " + str(event.code), str(event.state))  
-						break
-					# Checks if the left gamepad arrow was pressed.
-					elif((event.code == "ABS_HAT0X") and (event.state == -1)):
-						if(self.controller_previous_selection != "ARROW_LEFT"):
-							self.controller_previous_selection = "ARROW_LEFT"
-							self.manual_command.set("LEFT")
-							print("Left Arrow: " + str(event.code), str(event.state)) 
-						break 
-					# Checks if the right gamepad arrow was pressed.
-					elif((event.code == "ABS_HAT0X") and (event.state == 1)):
-						if(self.controller_previous_selection != "ARROW_RIGHT"):
-							self.controller_previous_selection = "ARROW_RIGHT"
-							self.manual_command.set("RIGHT")
-							print("Right Arrow: " + str(event.code), str(event.state))  
-						break
-					# Checks if the 'Y' button was pressed.
-					elif((event.code == "BTN_NORTH") and (event.state == 1)):
-						if(self.controller_previous_selection != "BUTTON_Y"):
-							self.controller_previous_selection = "BUTTON_Y"
-							self.manual_command.set("UP")
-							print("Y Button: " + str(event.code), str(event.state)) 
-						break
-					# Checks if 'B' button was pressed.
-					elif((event.code == "BTN_EAST") and (event.state == 1)):
-						if(self.controller_previous_selection != "BUTTON_B"):
-							self.controller_previous_selection = "BUTTON_B"
-							self.callback_craft_anchor()
-							print("B Button: " + str(event.code), str(event.state)) 
-						break
-					# Checks if Right Bumper was pressed.
-					elif((event.code == "BTN_TR") and (event.state == 1)):
-						if(self.controller_previous_selection != "BUMPER_RIGHT"):
-							self.controller_previous_selection = "BUMPER_RIGHT"
-							self.increment_throttle()
-							print("Right Bumper: " + str(event.code), str(event.state))
-						break
-					# Checks if Left Bumper was pressed.
-					elif((event.code == "BTN_TL") and (event.state == 1)):
-						if(self.controller_previous_selection != "BUMPER_LEFT"):
-							self.controller_previous_selection = "BUMPER_LEFT"
-							self.decrement_throttle()
-							print("Left Bumper: " + str(event.code), str(event.state))
-						break
-					# Checks if A button was pressed.
-					elif((event.code == "BTN_SOUTH") and (event.state == 1)):
-						if(self.controller_previous_selection != "BUTTON_A"):
-							self.controller_previous_selection = "BUTTON_A"
-							self.callback_queue_commands()
-							print("A Button: " + str(event.code), str(event.state))
-						break
-		except Exception as e:
-			self.label_xbox_controller_status.configure(background='yellow')
-			g.timer_xbox_controller.cancel()
-			print("Xbox Input Monitor Issue.")
-			print("Exception: " + str(e))
+	# 	g.timer_xbox_controller = threading.Timer(0.1, self.xbox_input_monitor)
+	# 	g.timer_xbox_controller.start()
+	# 	# Checks for a incoming data.
+	# 	try:
+	# 		if self.authority_mode.get() in "MANUAL":
+	# 			# Gathers the current information from the Xbox Controller.
+	# 			events = get_gamepad()
+	# 			# Cycles through the objects data to check for desired
+	# 			# button presses. (1 button press = 1 event)
+	# 			for event in events:
+	# 				# Checks if the bottom gamepad arrow was pressed.
+	# 				if((event.code == "ABS_HAT0Y") and (event.state == 1)):
+	# 					if(self.controller_previous_selection != "ARROW_DOWN"):
+	# 						self.controller_previous_selection = "ARROW_DOWN"
+	# 						self.manual_command.set("NONE")
+	# 						print("Down Arrow: " + str(event.code), str(event.state))
+	# 					break
+	# 				# Checks if the top gamepad arrow was pressed.
+	# 				elif((event.code == "ABS_HAT0Y") and (event.state == -1)):
+	# 					if(self.controller_previous_selection != "ARROW_UP"):
+	# 						self.controller_previous_selection = "ARROW_UP"
+	# 						self.manual_command.set("FORWARD")
+	# 						print("Up Arrow: " + str(event.code), str(event.state))  
+	# 					break
+	# 				# Checks if the left gamepad arrow was pressed.
+	# 				elif((event.code == "ABS_HAT0X") and (event.state == -1)):
+	# 					if(self.controller_previous_selection != "ARROW_LEFT"):
+	# 						self.controller_previous_selection = "ARROW_LEFT"
+	# 						self.manual_command.set("LEFT")
+	# 						print("Left Arrow: " + str(event.code), str(event.state)) 
+	# 					break 
+	# 				# Checks if the right gamepad arrow was pressed.
+	# 				elif((event.code == "ABS_HAT0X") and (event.state == 1)):
+	# 					if(self.controller_previous_selection != "ARROW_RIGHT"):
+	# 						self.controller_previous_selection = "ARROW_RIGHT"
+	# 						self.manual_command.set("RIGHT")
+	# 						print("Right Arrow: " + str(event.code), str(event.state))  
+	# 					break
+	# 				# Checks if the 'Y' button was pressed.
+	# 				elif((event.code == "BTN_NORTH") and (event.state == 1)):
+	# 					if(self.controller_previous_selection != "BUTTON_Y"):
+	# 						self.controller_previous_selection = "BUTTON_Y"
+	# 						self.manual_command.set("UP")
+	# 						print("Y Button: " + str(event.code), str(event.state)) 
+	# 					break
+	# 				# Checks if 'B' button was pressed.
+	# 				elif((event.code == "BTN_EAST") and (event.state == 1)):
+	# 					if(self.controller_previous_selection != "BUTTON_B"):
+	# 						self.controller_previous_selection = "BUTTON_B"
+	# 						self.callback_craft_anchor()
+	# 						print("B Button: " + str(event.code), str(event.state)) 
+	# 					break
+	# 				# Checks if Right Bumper was pressed.
+	# 				elif((event.code == "BTN_TR") and (event.state == 1)):
+	# 					if(self.controller_previous_selection != "BUMPER_RIGHT"):
+	# 						self.controller_previous_selection = "BUMPER_RIGHT"
+	# 						self.increment_throttle()
+	# 						print("Right Bumper: " + str(event.code), str(event.state))
+	# 					break
+	# 				# Checks if Left Bumper was pressed.
+	# 				elif((event.code == "BTN_TL") and (event.state == 1)):
+	# 					if(self.controller_previous_selection != "BUMPER_LEFT"):
+	# 						self.controller_previous_selection = "BUMPER_LEFT"
+	# 						self.decrement_throttle()
+	# 						print("Left Bumper: " + str(event.code), str(event.state))
+	# 					break
+	# 				# Checks if A button was pressed.
+	# 				elif((event.code == "BTN_SOUTH") and (event.state == 1)):
+	# 					if(self.controller_previous_selection != "BUTTON_A"):
+	# 						self.controller_previous_selection = "BUTTON_A"
+	# 						self.callback_queue_commands()
+	# 						print("A Button: " + str(event.code), str(event.state))
+	# 					break
+	# 	except Exception as e:
+	# 		self.label_xbox_controller_status.configure(background='yellow')
+	# 		g.timer_xbox_controller.cancel()
+	# 		print("Xbox Input Monitor Issue.")
+	# 		print("Exception: " + str(e))
 
 	def increment_throttle(self):
 		""" 

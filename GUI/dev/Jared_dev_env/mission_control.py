@@ -9,7 +9,7 @@
 
 from tkinter import *
 from tkinter.ttk import *
-# from inputs import *
+# from inputs import get_gamepad
 from communication import *
 import globals as g
 import os

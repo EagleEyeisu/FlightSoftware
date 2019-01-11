@@ -103,7 +103,7 @@ class GUI_Terminal():
 			g.timer_craft_lora.cancel()
 		if g.timer_craft_mega is not None:
 			g.timer_craft_mega.cancel()
-		if g.timer_xbox_controller is not None:
-			g.timer_xbox_controller.cancel()
+		# if g.timer_xbox_controller is not None:
+		#	g.timer_xbox_controller.cancel()
 
 		self.gui_window.quit()
