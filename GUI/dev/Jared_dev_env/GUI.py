@@ -10,8 +10,8 @@ from login_functions import *
 from gui_functions import *
 from communication import *
 
+# Enables / Disables login window.
 LOGIN_ENABLE = False
-SERIAL_SELECTED = None
 
 
 def main():
@@ -42,7 +42,7 @@ def login():
 def GUI():
 	""" 
 	Main terminal application for interfacing
-	with the Ealge Eye craft.
+	with the craft.
 	"""
 	# Creation of class.
 	gui = GUI_Terminal()
