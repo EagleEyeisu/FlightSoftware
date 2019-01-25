@@ -1,6 +1,6 @@
-s#############################################################
+#############################################################
 #
-#	Property of Eagle Eye. 
+#	Property of Eagle Eye.
 #
 #   Authors:
 #           Jared Danner
@@ -18,7 +18,7 @@ import os
 class MC_Tab():
 
 	def __init__(self, mc_frame):
-		""" 
+		"""
 		Initialization function for the class.
 
 		@param self     - Instance of the class.
@@ -67,8 +67,8 @@ class MC_Tab():
 
 
 	def variable_setup(self):
-		""" 
-		Initializes classe variables to proper types and starting values. 
+		"""
+		Initializes classe variables to proper types and starting values.
 
 		@param self - Instance of the class.
 		"""
@@ -141,7 +141,7 @@ class MC_Tab():
 
 
 	def create_entry_objects(self):
-		""" 
+		"""
 		Creates/configures entry objects.
 
 		@param self - Instance of the class.
@@ -172,7 +172,7 @@ class MC_Tab():
 
 
 	def create_button_objects(self):
-		""" 
+		"""
 		Creates/configures button objects.
 
 		@param self - Instance of the class.
@@ -199,7 +199,7 @@ class MC_Tab():
 
 
 	def create_label_objects(self):
-		""" 
+		"""
 		Creates/configures Label objects.
 
 		@param self - Instance of the class.
@@ -218,16 +218,16 @@ class MC_Tab():
 
 
 	def create_checkbox_objects(self):
-		""" 
+		"""
 		Creates/configures checkbox objects.
 
 		@param self - Instance of the class.
 		"""
 
-		# Creates checkbox objects. 
+		# Creates checkbox objects.
 		self.checkbox_automatic = Checkbutton(self.mc_frame, text="Automatic", variable=self.authority_mode, onvalue="AUTO", offvalue="OFF")
 		self.checkbox_manual = Checkbutton(self.mc_frame, text="Manual      ", variable=self.authority_mode, onvalue="MANUAL", offvalue="OFF")
-		
+
 
 	def layout_network(self):
 		"""
@@ -304,7 +304,7 @@ class MC_Tab():
 
 
 	def layout_mission_control(self):
-		""" 
+		"""
 		Binds the sections of widgets related to mission_control to the bottom
 		portion of the frame.
 
@@ -347,7 +347,7 @@ class MC_Tab():
 
 		# Initializes class variables.
 		self.variable_setup()
-		# Creates/configures the tk widgets. 
+		# Creates/configures the tk widgets.
 		self.create_entry_objects()
 		self.create_button_objects()
 		self.create_label_objects()
@@ -361,13 +361,13 @@ class MC_Tab():
 		# Configures serial environment.
 		setup_comms()
 		# Embeds command line into the gui.
-		#self.embed_cmd() # Work in progress for another day.		
+		#self.embed_cmd() # Work in progress for another day.
 
 	# def callback_setup_controller(self):
 	# 	"""
 	# 	Responsible for connecting to and monitoring the controller for its input.
 	# 	(STARTS XBOX CONTROLLER / CONNECTS / MONITORS USER'S INPUT)
-		
+
 	# 	@param self - Instance of the class.
 	# 	"""
 
@@ -459,35 +459,35 @@ class MC_Tab():
 	# 					if(self.controller_previous_selection != "ARROW_UP"):
 	# 						self.controller_previous_selection = "ARROW_UP"
 	# 						self.manual_command.set("FORWARD")
-	# 						print("Up Arrow: " + str(event.code), str(event.state))  
+	# 						print("Up Arrow: " + str(event.code), str(event.state))
 	# 					break
 	# 				# Checks if the left gamepad arrow was pressed.
 	# 				elif((event.code == "ABS_HAT0X") and (event.state == -1)):
 	# 					if(self.controller_previous_selection != "ARROW_LEFT"):
 	# 						self.controller_previous_selection = "ARROW_LEFT"
 	# 						self.manual_command.set("LEFT")
-	# 						print("Left Arrow: " + str(event.code), str(event.state)) 
-	# 					break 
+	# 						print("Left Arrow: " + str(event.code), str(event.state))
+	# 					break
 	# 				# Checks if the right gamepad arrow was pressed.
 	# 				elif((event.code == "ABS_HAT0X") and (event.state == 1)):
 	# 					if(self.controller_previous_selection != "ARROW_RIGHT"):
 	# 						self.controller_previous_selection = "ARROW_RIGHT"
 	# 						self.manual_command.set("RIGHT")
-	# 						print("Right Arrow: " + str(event.code), str(event.state))  
+	# 						print("Right Arrow: " + str(event.code), str(event.state))
 	# 					break
 	# 				# Checks if the 'Y' button was pressed.
 	# 				elif((event.code == "BTN_NORTH") and (event.state == 1)):
 	# 					if(self.controller_previous_selection != "BUTTON_Y"):
 	# 						self.controller_previous_selection = "BUTTON_Y"
 	# 						self.manual_command.set("UP")
-	# 						print("Y Button: " + str(event.code), str(event.state)) 
+	# 						print("Y Button: " + str(event.code), str(event.state))
 	# 					break
 	# 				# Checks if 'B' button was pressed.
 	# 				elif((event.code == "BTN_EAST") and (event.state == 1)):
 	# 					if(self.controller_previous_selection != "BUTTON_B"):
 	# 						self.controller_previous_selection = "BUTTON_B"
 	# 						self.callback_craft_anchor()
-	# 						print("B Button: " + str(event.code), str(event.state)) 
+	# 						print("B Button: " + str(event.code), str(event.state))
 	# 					break
 	# 				# Checks if Right Bumper was pressed.
 	# 				elif((event.code == "BTN_TR") and (event.state == 1)):
@@ -518,7 +518,7 @@ class MC_Tab():
 
 
 	def increment_throttle(self):
-		""" 
+		"""
 		Responsible for incrementing the throttle variable by 1% for each call.
 
 		@param self - Instance of the class.
@@ -544,7 +544,7 @@ class MC_Tab():
 	def embed_cmd(self):
 		"""
 		Creates a inner frame object and links it to the os's command line.
-		
+
 		DOES NOT CURRENT WORK.
 
 		@param self - Instance of the class.
@@ -561,12 +561,12 @@ class MC_Tab():
 
 
 	def callback_update_mc_node_status(self, *args):
-		""" 
+		"""
 		Upon serial data notification that the mc_node's network status has been
 		updated, this method will change the color of the visual representation on
-		the gui to inform the user. 
-		Green = Connected. 
-		Yellow = Was, but lost. 
+		the gui to inform the user.
+		Green = Connected.
+		Yellow = Was, but lost.
 		Red = Not connected / lost.
 
 		@param self - Instance of the class.
@@ -582,12 +582,12 @@ class MC_Tab():
 
 
 	def callback_update_ee_node_status(self, *args):
-		""" 
+		"""
 		Upon serial data notification that the ee_node's network status has been
 		updated, this method will change the color of the visual representation on
-		the gui to inform the user. 
-		Green = Connected. 
-		Yellow = Was, but lost. 
+		the gui to inform the user.
+		Green = Connected.
+		Yellow = Was, but lost.
 		Red = Not connected / lost.
 
 		@param self - Instance of the class.
@@ -603,12 +603,12 @@ class MC_Tab():
 
 
 	def callback_update_relay_node_status(self, *args):
-		""" 
+		"""
 		Upon serial data notification that the relay_node's network status has been
 		updated, this method will change the color of the visual representation on
-		the gui to inform the user. 
-		Green = Connected. 
-		Yellow = Was, but lost. 
+		the gui to inform the user.
+		Green = Connected.
+		Yellow = Was, but lost.
 		Red = Not connected / lost.
 
 		@param self - Instance of the class.
@@ -643,7 +643,7 @@ class MC_Tab():
 			if "N" in temp_input:
 				serial_data, radio_data = str(temp_input).split("]")
 				# Variables such as '$' and 'N' are thrown out as junk.
-				# t_ stands for temp because the numbers need to be converted to the 
+				# t_ stands for temp because the numbers need to be converted to the
 				# corresponding string for the gui to show.
 				junk, junk ,t_craft_ts, t_alt, t_lat, t_lon, t_event, t_craft_id, t_mc_ts = str(serial_data).split(",")
 				t_radio_in, t_radio_out, junk = str(radio_data).split("/")
@@ -660,7 +660,7 @@ class MC_Tab():
 			# R signifies the packet being of type Roll Call.
 			elif "R" in temp_input:
 				# Variables such as '$' and 'R' are thrown out as junk.
-				# t_ stands for temp because the numbers need to be converted to the 
+				# t_ stands for temp because the numbers need to be converted to the
 				# corresponding string for the gui to show.
 				junk, junk, t_mc_node, t_ee_node, t_relay_node, junk = str(temp_input).split(",")
 				# Setting individual variables from the parsed packet.
@@ -853,7 +853,7 @@ class MC_Tab():
 
 	def convert_serial(self):
 		"""
-		Responsible for taking the variables to be set via serial and converting 
+		Responsible for taking the variables to be set via serial and converting
 		them to their correct integer value.
 
 		@param self - Instance of the class.

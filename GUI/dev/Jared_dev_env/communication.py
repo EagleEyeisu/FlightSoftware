@@ -1,6 +1,6 @@
 #############################################################
 #
-#	Property of Eagle Eye. 
+#	Property of Eagle Eye.
 #
 #   Authors:
 #           Jared Danner
@@ -24,11 +24,11 @@ def setup_comms():
 	ports = get_serial_ports()
 	# Validates the current ports to ensure they are Eagle Eye's micro controllers.
 	validate_ports(ports)
-	# Starets timer based tasks to check for incoming serial data. 
+	# Starets timer based tasks to check for incoming serial data.
 	config_scheduler()
-	# Terminal verbose message. 
+	# Terminal verbose message.
 	print("Comms setup complete.----------------------------------\n")
-	
+
 
 def get_serial_ports():
 	""" Detects and returns all active serial ports. """
@@ -64,11 +64,11 @@ def validate_ports(ports):
 		#### USB connection detected. Grabs needed port info. ####
 
 		try:
-			# Splits the port info. 
+			# Splits the port info.
 			com_number, port_description = str(port).split("-")
 			# Trims whitespace.
 			com_number = com_number.strip()
-			# Trims whitespace. 
+			# Trims whitespace.
 			port_description = port_description.strip()
 		# Prints exception handler.
 		except Exception as e:
@@ -78,11 +78,11 @@ def validate_ports(ports):
 			print("Exception: " + str(e))
 			# Terminal verbose message displaying the port that failed.
 			print("Unable to parse: " + str(port))
-		
+
 
 		#### Attempts to recreate serial connection to ensure validity. ####
-		
-		try: 
+
+		try:
 			# If all previous steps have passed, the recreation process coninutes.
 			if passed:
 				# Creates empty serial object.
@@ -103,14 +103,14 @@ def validate_ports(ports):
 			print("Exception: " + str(e))
 			# Terminal verbose message displaying the port that failed.
 			print("Invalid connection to: " + str(port))
-		
+
 
 		#### Pings microcontroller to fetch its system ID. ####
-		
+
 		try:
 			# If all previous steps have passed, the recreation process coninutes.
 			if passed:
-				# Debug info. 
+				# Debug info.
 				print("Pinging: " + port_description)
 				# Contacts the Eagle Eye microcontroller to figure out what type of microcontroller its
 				# connected to.
@@ -118,7 +118,7 @@ def validate_ports(ports):
 				# Pauses program execution for 1/10th a second. To allow time for the microcontroller to
 				# process the request for info and reply.
 				time.sleep(0.1)
-				# Reads incoming serial port data from the passed in serial port object. 
+				# Reads incoming serial port data from the passed in serial port object.
 				response = generic_receive(ser)
 				# Checks if microcontroller response matches that of known Eagle Eye hardware.
 				if response in "CRAFT_LORA":
@@ -163,8 +163,8 @@ def validate_ports(ports):
 
 def config_scheduler():
 	"""
-	Sets a thread bound timer object to run a method to capture 
-	serial input every x seconds. 
+	Sets a thread bound timer object to run a method to capture
+	serial input every x seconds.
 	"""
 
 	try:
@@ -185,7 +185,7 @@ def config_scheduler():
 			# Units are seconds.
 			g.timer_craft_lora = threading.Timer(0.6, craft_lora_receive)
 			# Starts the countdown timer.
-			g.timer.start()
+			g.timer_craft_lora.start()
 		# Checks for valid connection the the craft's Arduino LoRa.
 		if g.PORT_CRAFT_MEGA is not None:
 			# Terminal verbose message.
@@ -324,9 +324,9 @@ def craft_mega_receive():
 
 
 def send(ser, message):
-	""" 
+	"""
 	Sends passed in parameter over the bound serial port.
-	
+
 	@param ser     - Developer specificed serial port.
 	@param message - Paramter to be encoded and sent.
 	"""

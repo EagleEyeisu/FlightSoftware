@@ -1,6 +1,6 @@
 #############################################################
 #
-#	Property of Eagle Eye. 
+#	Property of Eagle Eye.
 #
 #   Authors:
 #           Robert Zartman
@@ -22,7 +22,7 @@ NODE_RELAY_ID = 2
 class MC_Tabi():
 
 	def __init__(self, craft_frame):
-		""" 
+		"""
 		Initialization function for the class.
 
 		@param self     - Instance of the class.
@@ -31,21 +31,6 @@ class MC_Tabi():
 
 		# Parent variables.
 		self.craft_frame = craft_frame
-
-		# Network variables.
-		self.operational_mode = None
-		self.roll_call_status = None
-		self.node_mission_control = None
-		self.node_eagle_eye = None
-		self.node_relay = None
-		self.radio_received = None
-		self.radio_sent = None
-
-		
-
-		# Other
-		self.modified_commands = None
-
 
                 #New Variables
 		#Data_h Variables_Flight_Data (for EagleEye Tab)
@@ -67,24 +52,11 @@ class MC_Tabi():
 		self.craft_state = None
 
 	def variable_setup(self):
-		""" 
-		Initializes class variables to proper types and starting values. 
+		"""
+		Initializes class variables to proper types and starting values.
 
 		@param self - Instance of the class.
 		"""
-
-		# StringVar variables are strings that update their text in entries when
-		# their value is changed.
-		self.operational_mode = StringVar(self.craft_frame)
-		self.roll_call_status = StringVar(self.craft_frame)
-		self.node_mission_control = "HOME"
-		self.node_eagle_eye = "CRAFT"
-		self.node_relay = "RELAY"
-		self.radio_received = StringVar(self.craft_frame)
-		self.radio_sent = StringVar(self.craft_frame)
-		
-		
-		self.modified_commands = StringVar(self.craft_frame)
 
 		#New Variables
 		#Data_h Variables_Flight_Data (for EagleEye Tab)
@@ -103,22 +75,6 @@ class MC_Tabi():
 
 		#Motor_h Variables
 		self.craft_state = StringVar(self.craft_frame)
-
-                #Configure
-		
-		# Configures tracing for all variables.
-		self.operational_mode.trace("w", self.callback_update_transmission)
-		self.roll_call_status.trace("w", self.callback_update_transmission)
-
-		#Configure
-
-		# Initialization of varaibles on GUI startup.
-		self.operational_mode.set("NOT STARTED")
-		self.roll_call_status.set("NOT STARTED")
-		self.radio_received.set("-------")
-		self.radio_sent.set("-------")
-		
-		self.modified_commands.set("-------")
 
 		#New Variables
 		#Data_h Variables_Flight_Data (for EagleEye Tab)
@@ -139,13 +95,13 @@ class MC_Tabi():
 		self.craft_state.set("None")
 
 	def create_entry_objects(self):
-		""" 
+		"""
 		Creates/configures entry objects.
 
 		@param self - Instance of the class.
 		"""
 
-		
+
 		#New Variables
 		#Data_h Variables_Flight_Data (for EagleEye Tab)
 		self.entry_craft_roll = Entry(self.craft_frame, state="readonly", textvariable = self.craft_roll, justify='center')
@@ -165,7 +121,7 @@ class MC_Tabi():
 		self.entry_craft_state = Entry(self.craft_frame, state="readonly", textvariable = self.craft_state, justify='center')
 
 	def create_button_objects(self):
-		""" 
+		"""
 		Creates/configures button objects.
 
 		@param self - Instance of the class.
@@ -177,17 +133,17 @@ class MC_Tabi():
 		self.button_update = Button(self.craft_frame, text="Update", command=self.callback_update)
 
 	def create_checkbox_objects(self):
-		""" 
+		"""
 		Creates/configures checkbox objects.
 
 		@param self - Instance of the class.
 		"""
 
 		# Creates checkbox objects.
-		
-		
+
+
 	def layout_network(self):
-		""" 
+		"""
 		Binds the sections of widgets related to the network to the top
 		portion of the frame.
 
@@ -195,7 +151,7 @@ class MC_Tabi():
 		"""
 
 		# Above divider one.
-		
+
 		self.create_label_center(0,0, self.craft_frame, "Craft Roll                        ")
 		self.entry_craft_roll.grid(row=0, column=1, sticky = 'w')
 		self.create_label_center(1,0, self.craft_frame, "Craft Pitch                      ")
@@ -210,14 +166,14 @@ class MC_Tabi():
 		self.entry_destination_distance.grid(row=6, column=1, sticky = 'w')
 		self.create_label_center(7,0, self.craft_frame, "Current Speed              ")
 		self.entry_current_speed.grid(row=7, column=1, sticky = 'w')
-		
+
 
 		# Terminal divider. KEEP THIS AT THE BOTTOM OF THIS METHOD.
 		terminal_divider_one = Label(self.craft_frame, background="#F1BE48")
 		terminal_divider_one.grid(row=5, column=0, columnspan=20, sticky='we')
 
 	def layout_craft(self):
-		""" 
+		"""
 		Binds the sections of widgets related to the craft to the middle
 		portion of the frame.
 
@@ -226,19 +182,19 @@ class MC_Tabi():
 
 		# Above divider.
 
-		
+
 		self.create_label_center(8, 0, self.craft_frame, "Target Heading             ")
 		self.entry_target_heading.grid(row = 8,column = 1, sticky = 'we')
 		self.create_label_center(9, 0, self.craft_frame, "Current Heading          ")
 		self.entry_current_heading.grid(row = 9,column = 1, sticky = 'we')
-                
+
 
 		# Terminal divider. KEEP THIS AT THE BOTTOM OF THE METHOD.
 		terminal_divider_two = Label(self.craft_frame, background="#F1BE48")
 		terminal_divider_two.grid(row=10, column=0, columnspan=20, sticky='we')
 
 	def layout_mission_control(self):
-		""" 
+		"""
 		Binds the sections of widgets related to mission_control to the bottom
 		portion of the frame.
 
@@ -246,13 +202,13 @@ class MC_Tabi():
 		"""
 
 		# Below final divider.
-		
+
 		self.create_label_center(11,0, self.craft_frame, "Craft State                      ")
 		self.entry_craft_state.grid(row=11, column=1, sticky = 'w')
 		self.create_label_center(12,0, self.craft_frame, "Satillite Count                ")
 		self.entry_satillite_count.grid(row=12, column=1, sticky = 'w')
 		self.button_update.grid(row = 13, column = 0, sticky = 'e')
-		
+
 	def main_mc_tabi(self):
 		"""
 		Fills the frame with widgets needed for the mission control interface.
@@ -265,7 +221,7 @@ class MC_Tabi():
 
 		# Initializes class variables.
 		self.variable_setup()
-		# Creates/configures the tk widgets. 
+		# Creates/configures the tk widgets.
 		self.create_entry_objects()
 		self.create_button_objects()
 		self.create_checkbox_objects()
@@ -281,7 +237,7 @@ class MC_Tabi():
 		"""
 		Responsible for monitoring the threaded processes for manual control.
 		(PICKED UP XBOX CONTROLLER INPUT)
-		
+
 		@param self - Instance of the class.
 		"""
 
@@ -299,48 +255,17 @@ class MC_Tabi():
 
 		temp_packet = ""
 
-		# Update 
+		# Update
 		temp_packet += "$"
 		temp_packet += ","
-		
 		temp_packet += str(self.operational_mode.get())
 		temp_packet += ","
 		temp_packet += str(self.roll_call_status.get())
 		temp_packet += ","
-		
-		
+		temp_packet += "$"
 
 		self.modified_commands.set(temp_packet)
 
-	def callback_roll_call_start(self):
-		"""
-		Triggered by the press of "button_roll_call_start".
-
-		@param self - Instance of the class.
-		"""
-
-		self.roll_call_status.set("RUNNING")
-		self.operational_mode.set("ROLL CALL")
-
-	def callback_roll_call_stop(self):
-		"""
-		Triggered by the press of "button_roll_call_stop".
-
-		@param self - Instance of the class.
-		"""
-
-		self.roll_call_status.set("FINISHED")
-		self.operational_mode.set("STANDBY")
-
-	def callback_network_start(self):
-		"""
-		Triggered by the press of "button_network_start".
-
-		@param self - Instance of the class.
-		"""
-
-		self.operational_mode.set("RUNNING")
-			
 	def callback_update(self):
 		"""
 		Method is run each time the connected microcontrollers send serial data to the gui.
@@ -352,7 +277,6 @@ class MC_Tabi():
 		"""
 
 		temp_input = ""
-###
 		###
 		###
 		###
@@ -365,7 +289,8 @@ class MC_Tabi():
 		###
 		###
 		###
-		
+		###
+
 		# Checks for none null connection to mission_control Uc.
 		if g.PORT_MC_LORA is not None:
 			temp_input = g.PORT_MC_LORA.input.get()
@@ -373,7 +298,7 @@ class MC_Tabi():
 			if "N" in temp_input:
 				serial_data, radio_data = str(temp_input).split("]")
 				# Variables such as '$' and 'N' are thrown out as junk.
-				# t_ stands for temp because the numbers need to be converted to the 
+				# t_ stands for temp because the numbers need to be converted to the
 				# corresponding string for the gui to show.
 				junk, junk ,t_craft_ts, t_alt, t_lat, t_lon, t_event, t_craft_id, t_mc_ts, t_c_sp, t_t_d, t_sat_c = str(serial_data).split(",")
 				t_radio_in, t_radio_out, junk = str(radio_data).split("/")
@@ -394,7 +319,7 @@ class MC_Tabi():
 			# R signifies the packet being of type Roll Call.
 			elif "R" in temp_input:
 				# Variables such as '$' and 'R' are thrown out as junk.
-				# t_ stands for temp because the numbers need to be converted to the 
+				# t_ stands for temp because the numbers need to be converted to the
 				# corresponding string for the gui to show.
 				junk, junk, t_mc_node, t_ee_node, t_relay_node, junk = str(temp_input).split(",")
 				# Setting individual variables from the parsed packet.
@@ -410,12 +335,12 @@ class MC_Tabi():
 
 
 
-		
+
 
 
 	def convert_serial(self):
 		"""
-		Responsible for taking the variables to be set via serial and converting 
+		Responsible for taking the variables to be set via serial and converting
 		them to their correct integer value.
 
 		@param self - Instance of the class.
@@ -457,7 +382,7 @@ class MC_Tabi():
 			new_packet += ","
 			new_packet += "$"
 
-	
+
 	def create_label_east(self, r, c, frame, title):
 		"""
 		Creates a label to be placed inside of the passed in frame at the given grid locations.

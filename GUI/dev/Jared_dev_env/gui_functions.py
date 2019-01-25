@@ -1,6 +1,6 @@
 #############################################################
 #
-#	Property of Eagle Eye. 
+#	Property of Eagle Eye.
 #
 #   Authors:
 #           Jared Danner
@@ -16,7 +16,7 @@ import globals as g
 class GUI_Terminal():
 
 	def __init__(self):
-		""" 
+		"""
 		Initialization function for the class.
 
 		@param self - Instance of the class.
@@ -27,7 +27,7 @@ class GUI_Terminal():
 		self.craft_frame = None
 
 	def configure_gui_terminal(self):
-		""" 
+		"""
 		Configures the main GUI application window to hold
 		the required widgets. Displays upon .mainloop().
 
@@ -76,12 +76,12 @@ class GUI_Terminal():
 		# Creates an inner frame. (Tab)
 		self.craft_frame = Frame(book)
 		# The layout of each frame works as a grid system. The next two lines define how many
-		# rows and columsn exist on the frames. These row/column numbers are used to 
+		# rows and columsn exist on the frames. These row/column numbers are used to
 		# position buttons and displays around the GUI. Weight of 1 just means no button possess more
-		# "importance" than other buttons. Just don't change the weight. 
+		# "importance" than other buttons. Just don't change the weight.
 		self.mc_frame.columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), weight=1)
 		self.mc_frame.rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22), weight=1)
-		# Adds these frames to the GUI terminal. 
+		# Adds these frames to the GUI terminal.
 		book.add(self.mc_frame, text="Mission Control")
 		book.add(self.craft_frame, text="     Eagle Eye       ")
 
