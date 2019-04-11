@@ -11,6 +11,14 @@ CLK = D5
 CS = D4
 D0 = D3
 
+#### Note on IO
+     LoRa, IMU, and BMP communication occur over I2C. Exact pins connected do not matter, but must match up with clock/data port ordering according to MEGA pinouts.
+
+     Temperature sensor pinouts are:
+     		 CLK = D5
+		 CS = D4
+		 D0 = D3
+
 ### Dependencies:
 - Ardunio.h
 - Adafruit_BMP085_U.h
