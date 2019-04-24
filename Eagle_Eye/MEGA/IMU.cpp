@@ -38,6 +38,9 @@ void IMU::initialize()
 	   Serial.print("PROBLEM WITH 9DOF");
 	   while(1);
     }
+    // Note: IMU and other peripherals commmunicate using I2C
+    // -> exact pins do not matter. Ensure clock and data are correct however.
+
     // Sets specific calibration values. DO NOT CHANGE.
     lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
     lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
