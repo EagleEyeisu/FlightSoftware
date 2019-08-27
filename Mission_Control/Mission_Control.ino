@@ -26,7 +26,6 @@ void setup(){
     // Creates a serial communication line between the arduino and the serial port 
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
-    
     // Initializes the Radio.
     Radio.initialize();
 }
@@ -64,12 +63,10 @@ void serial_input()
             char t = Serial.read();
             new_input += t;
         }
-        
         // Creates a character array of the length of the serial input. 
         char toParse[new_input.length()];
         // Converts said string to character array.
         new_input.toCharArray(toParse, new_input.length());
-        
         // Checks for the python gui starting up and attemping to establish serial connection
         // to this microcontroller.
         if(toParse[0] == 'P' && Data.gui_connection == false)

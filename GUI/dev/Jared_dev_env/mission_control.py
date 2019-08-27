@@ -9,7 +9,7 @@
 
 from tkinter import *
 from tkinter.ttk import *
-# from inputs import *
+# from inputs import get_gamepad
 from communication import *
 import globals as g
 import os
@@ -66,7 +66,6 @@ class MC_Tab():
 		self.authority_mode = "MANUAL"
 
 
-
 	def variable_setup(self):
 		"""
 		Initializes classe variables to proper types and starting values.
@@ -103,7 +102,8 @@ class MC_Tab():
 		self.modified_commands = StringVar(self.mc_frame)
 		self.manual_command = StringVar(self.mc_frame)
 
-		# Configures tracing for all variables.
+		# Configures tracing for all variables. When these variables are written to,
+		# the corresponding method will run. (Allows for real time display updating)
 		self.node_mission_control.trace("w", self.callback_update_mc_node_status)
 		self.node_eagle_eye.trace("w", self.callback_update_ee_node_status)
 		self.node_relay.trace("w", self.callback_update_relay_node_status)
@@ -117,7 +117,7 @@ class MC_Tab():
 		self.authority_mode.trace("w", self.callback_update_transmission)
 		self.manual_command.trace("w", self.callback_update_transmission)
 
-		# Initialization of varaibles on GUI startup.
+		# Initialization of varaible values on GUI startup.
 		self.roll_call_status.set("NOT STARTED")
 		self.radio_received.set("-------")
 		self.radio_sent.set("-------")
@@ -138,6 +138,7 @@ class MC_Tab():
 		self.modified_commands.set("")
 		self.manual_command.set("NONE")
 		self.operational_mode.set("NOT STARTED")
+
 
 	def create_entry_objects(self):
 		"""
@@ -169,6 +170,7 @@ class MC_Tab():
 		self.entry_target_longitude_set = Entry(self.mc_frame, textvariable=self.target_longitude_set, justify='right')
 		self.entry_modified_commands = Entry(self.mc_frame, state="readonly", justify='right', textvariable=self.modified_commands)
 
+
 	def create_button_objects(self):
 		"""
 		Creates/configures button objects.
@@ -195,6 +197,7 @@ class MC_Tab():
 		self.button_target_longitude_set = Button(self.mc_frame, text="Set", command=self.callback_target_longitude)
 		self.button_queue_commands = Button(self.mc_frame, text="Send", command=self.callback_queue_commands)
 
+
 	def create_label_objects(self):
 		"""
 		Creates/configures Label objects.
@@ -202,6 +205,8 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
+		# These objects are banners that are used to give context to each corresponding section
+		# of either buttons, display bars, or other objects on the GUI.
 		self.label_mc_node = Label(self.mc_frame, text="GROUND STATION", relief='solid')
 		self.label_mc_node.configure(background='red')
 		self.label_ee_node = Label(self.mc_frame, text="CRAFT", relief='solid')
@@ -210,6 +215,7 @@ class MC_Tab():
 		self.label_relay_node.configure(background='red')
 		# self.label_xbox_controller_status= Label(self.mc_frame, relief='solid')
 		# self.label_xbox_controller_status.configure(background='red')
+
 
 	def create_checkbox_objects(self):
 		"""
@@ -222,6 +228,7 @@ class MC_Tab():
 		self.checkbox_automatic = Checkbutton(self.mc_frame, text="Automatic", variable=self.authority_mode, onvalue="AUTO", offvalue="OFF")
 		self.checkbox_manual = Checkbutton(self.mc_frame, text="Manual      ", variable=self.authority_mode, onvalue="MANUAL", offvalue="OFF")
 
+
 	def layout_network(self):
 		"""
 		Binds the sections of widgets related to the network to the top
@@ -230,7 +237,7 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		# Above divider one.
+		# Above divider one. (divider at bottom of method)
 		self.create_label_east(0, 0, self.mc_frame, "Network Status:")
 		self.entry_operational_mode.grid(row=0, column=1, sticky='w')
 		self.create_label_east(1, 0, self.mc_frame, "Roll Call Status:")
@@ -250,9 +257,12 @@ class MC_Tab():
 		# self.button_connect_controller.grid(row=3, column=5, sticky='nswe')
 		# self.label_xbox_controller_status.grid(row=4, column=5, sticky='nwse')
 
-		# Terminal divider. KEEP THIS AT THE BOTTOM OF THIS METHOD.
+		# Terminal divider. KEEP AT THE BOTTOM OF THIS METHOD.
+		# This divider is a golden bar strecthing across the screen to provide
+		# distinction between variable sections.
 		terminal_divider_one = Label(self.mc_frame, background="#F1BE48")
 		terminal_divider_one.grid(row=5, column=0, columnspan=20, sticky='we')
+
 
 	def layout_craft(self):
 		"""
@@ -262,7 +272,7 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
-		# Above divider.
+		# Above divider. (divider at bottom of method)
 		self.create_label_center(6, 1, self.mc_frame, "CRAFT")
 		self.button_manual_forward.grid(row=6, column=6)
 		self.button_manual_throttle_up.grid(row=6, column=9, rowspan=2)
@@ -286,9 +296,12 @@ class MC_Tab():
 		# self.create_label_center(?, ?, self.mc_frame, "Craft ID")
 		# entry_craft_longitude.grid(row=?, column=?, sticky='we')
 
-		# Terminal divider. KEEP THIS AT THE BOTTOM OF THE METHOD.
+		# Terminal divider. KEEP AT THE BOTTOM OF THIS METHOD.
+		# This divider is a golden bar strecthing across the screen to provide
+		# distinction between variable sections.
 		terminal_divider_two = Label(self.mc_frame, background="#F1BE48")
 		terminal_divider_two.grid(row=13, column=0, columnspan=20, sticky='we')
+
 
 	def layout_mission_control(self):
 		"""
@@ -323,6 +336,7 @@ class MC_Tab():
 		self.create_label_east(22, 1, self.mc_frame, "Modified Commands:")
 		self.entry_modified_commands.grid(row=22, column=2, columnspan=6, sticky='we')
 		self.button_queue_commands.grid(row=22, column=9)
+
 
 	def main_mc_tab(self):
 		"""
@@ -364,20 +378,56 @@ class MC_Tab():
 	# 	self.label_xbox_controller_status.configure(background='green')
 	# 	print("\nFinished setup process.--------------------------------")
 
+
 	def callback_manual_none(self):
+		"""
+		Sets the desired movement of the craft.
+
+		@param self - Instance of the class.
+		"""
+
 		self.manual_command.set("NONE")
 
+
 	def callback_manual_forward(self):
+		"""
+		Sets the desired movement of the craft.
+
+		@param self - Instance of the class.
+		"""
+
 		self.manual_command.set("FORWARD")
 
+
 	def callback_manual_left(self):
+		"""
+		Sets the desired movement of the craft.
+
+		@param self - Instance of the class.
+		"""
+
 		self.manual_command.set("LEFT")
 
+
 	def callback_manual_right(self):
+		"""
+		Sets the desired movement of the craft.
+
+		@param self - Instance of the class.
+		"""
+
 		self.manual_command.set("RIGHT")
 
+
 	def callback_manual_up(self):
+		"""
+		Sets the desired movement of the craft.
+
+		@param self - Instance of the class.
+		"""
+
 		self.manual_command.set("UP")
+
 
 	# def xbox_input_monitor(self):
 	# 	"""
@@ -466,6 +516,7 @@ class MC_Tab():
 	# 		print("Xbox Input Monitor Issue.")
 	# 		print("Exception: " + str(e))
 
+
 	def increment_throttle(self):
 		"""
 		Responsible for incrementing the throttle variable by 1% for each call.
@@ -476,6 +527,7 @@ class MC_Tab():
 		temp = int(self.target_throttle.get())
 		temp += 1
 		self.target_throttle.set(str(temp))
+
 
 	def decrement_throttle(self):
 		"""
@@ -488,18 +540,25 @@ class MC_Tab():
 		temp -= 1
 		self.target_throttle.set(str(temp))
 
+
 	def embed_cmd(self):
 		"""
 		Creates a inner frame object and links it to the os's command line.
+
+		DOES NOT CURRENT WORK.
 
 		@param self - Instance of the class.
 		"""
 
 		# Creation of frame to house the command line / terminal.
 		cmd = Frame(self.mc_frame)
+		# Assigns the frames position.
 		cmd.grid(row=5, column=6, columnspan=12, rowspan=6, stick='we')
+		# Grabs the system id of the command terminal.
 		wid = cmd.winfo_id()
+		# Attempts to bind the terminal into the frame.
 		os.system('xterm -into %d -geometry 40x20 -sb &' % wid)
+
 
 	def callback_update_mc_node_status(self, *args):
 		"""
@@ -513,12 +572,14 @@ class MC_Tab():
 		@param self - Instance of the class.
 		"""
 
+		# Refer to above documentation for what the numbers mean.
 		if self.node_mission_control.get() in "0.00":
 			self.label_mc_node.configure(background='red')
 		elif self.node_mission_control.get() in "1.00":
 			self.label_mc_node.configure(background='green')
 		elif self.node_mission_control.get() in "2.00":
 			self.label_mc_node.configure(background='yellow')
+
 
 	def callback_update_ee_node_status(self, *args):
 		"""
@@ -531,12 +592,15 @@ class MC_Tab():
 
 		@param self - Instance of the class.
 		"""
+
+		# Refer to above documentation for what the numbers mean.
 		if self.node_eagle_eye.get() in "0.00":
 			self.label_ee_node.configure(background='red')
 		elif self.node_eagle_eye.get() in "1.00":
 			self.label_ee_node.configure(background='green')
 		elif self.node_eagle_eye.get() in "2.00":
 			self.label_ee_node.configure(background='yellow')
+
 
 	def callback_update_relay_node_status(self, *args):
 		"""
@@ -549,12 +613,15 @@ class MC_Tab():
 
 		@param self - Instance of the class.
 		"""
+
+		# Refer to above documentation for what the numbers mean.
 		if self.node_relay.get() in "0.00":
 			self.label_relay_node.configure(background='red')
 		elif self.node_relay.get() in "1.00":
 			self.label_relay_node.configure(background='green')
 		elif self.node_relay.get() in "2.00":
 			self.label_relay_node.configure(background='yellow')
+
 
 	def callback_update_gui(self, *args):
 		"""
@@ -568,8 +635,9 @@ class MC_Tab():
 
 		temp_input = ""
 
-		# Checks for none null connection to mission_control Uc.
+		# Checks for a none null connection to mission_control microcontroller.
 		if g.PORT_MC_LORA is not None:
+			# If valid connection, get its serial data input.
 			temp_input = g.PORT_MC_LORA.input.get()
 			# N signifies the packet being of normal communication type.
 			if "N" in temp_input:
@@ -600,11 +668,14 @@ class MC_Tab():
 				self.node_eagle_eye.set(t_ee_node)
 				self.node_relay.set(t_relay_node)
 
+		# To be setup at a later date.
 		if g.PORT_CRAFT_LORA is not None:
 			placeholder = 1 + 1
 
+		# To be setup by Robert.
 		if g.PORT_CRAFT_MEGA is not None:
 			placeholder = 1 + 1
+
 
 	def callback_update_transmission(self, *args):
 		"""
@@ -664,6 +735,7 @@ class MC_Tab():
 			# Prints actual error.
 			print("Exception: " + str(e))
 
+
 	def callback_roll_call_start(self):
 		"""
 		Triggered by the press of "button_roll_call_start".
@@ -673,6 +745,7 @@ class MC_Tab():
 
 		self.roll_call_status.set("RUNNING")
 		self.operational_mode.set("ROLLCALL")
+
 
 	def callback_roll_call_stop(self):
 		"""
@@ -684,6 +757,7 @@ class MC_Tab():
 		self.roll_call_status.set("FINISHED")
 		self.operational_mode.set("STANDBY")
 
+
 	def callback_network_start(self):
 		"""
 		Triggered by the press of "button_network_start".
@@ -692,6 +766,7 @@ class MC_Tab():
 		"""
 
 		self.operational_mode.set("NORMAL")
+
 
 	def callback_craft_anchor(self):
 		"""
@@ -710,6 +785,7 @@ class MC_Tab():
 			# Sets motor throttle to 0 %.
 			self.target_throttle.set("0")
 
+
 	def callback_target_throttle(self):
 		"""
 		Triggered by the press of Add button next to target throttle.
@@ -717,11 +793,12 @@ class MC_Tab():
 		@param self       - Instance of the class.
 		"""
 
-		# Upper restriction.
+		# Upper restriction. This ensures the target throttle never goes above 100%.
 		if int(self.target_throttle_set.get()) > 100:
+			# If over 100, reset to 100.
 			self.target_throttle_set.set("100")
-
 		self.target_throttle.set(self.target_throttle_set.get())
+
 
 	def callback_target_altitude(self):
 		"""
@@ -732,6 +809,7 @@ class MC_Tab():
 
 		self.target_altitude.set(self.target_altitude_set.get())
 
+
 	def callback_target_latitude(self):
 		"""
 		Triggered by the press of Add button next to target latitude.
@@ -740,6 +818,7 @@ class MC_Tab():
 		"""
 
 		self.target_latitude.set(self.target_latitude_set.get())
+
 
 	def callback_target_longitude(self):
 		"""
@@ -750,11 +829,12 @@ class MC_Tab():
 
 		self.target_longitude.set(self.target_longitude_set.get())
 
+
 	def callback_queue_commands(self):
 		"""
 		Triggered by the press of SEND button next to the modified commands entry.
 
-		@param self         - Instance of the class.
+		@param self		- Instance of the class.
 		"""
 
 		try:
@@ -769,6 +849,7 @@ class MC_Tab():
 			# Prints general error statement. (Used to tell which method errored out)
 			print("Invalid connection to mission control's lora.")
 			print("Exception: " + str(e))
+
 
 	def convert_serial(self):
 		"""
@@ -827,6 +908,7 @@ class MC_Tab():
 			print("Unable to convert commands.")
 			print("Exception: " + str(e))
 
+
 	def convert_direction(self):
 		"""
 		Converts to correct integer value.
@@ -845,6 +927,7 @@ class MC_Tab():
 		elif self.manual_command.get() == "UP":
 			return "4.00"
 
+
 	def convert_authority(self):
 		"""
 		Converts to correct integer value.
@@ -856,6 +939,7 @@ class MC_Tab():
 			return "0.00"
 		elif self.authority_mode.get() == "AUTO":
 			return "1.00"
+
 
 	def convert_op_mode(self):
 		"""
@@ -873,6 +957,7 @@ class MC_Tab():
 		elif self.operational_mode.get() == "NORMAL":
 			return "3.00"
 
+
 	def convert_anchor(self):
 		"""
 		Converts to correct integer value.
@@ -884,6 +969,7 @@ class MC_Tab():
 			return "0.00"
 		elif self.craft_anchor.get() == "HOISTED":
 			return "1.00"
+
 
 	def create_label_east(self, r, c, frame, title):
 		"""
@@ -898,6 +984,7 @@ class MC_Tab():
 		# Label object.
 		label = Label(frame, text=title, font='Helvetica 12 bold')
 		label.grid(row=r, column=c, sticky='e')
+
 
 	def create_label_center(self, r, c, frame, title):
 		"""

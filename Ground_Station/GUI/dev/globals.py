@@ -1,27 +1,35 @@
 #############################################################
 #
-#	Property of Eagle Eye. 
+#	Property of Eagle Eye.
 #
 #   Authors:
 #           Jared Danner
 #
 #############################################################
 
-# Serial port objects. Object class defined at bottom of communication.py. 
-PORT_MC_LORA = None
-PORT_CRAFT_LORA = None
-PORT_CRAFT_MEGA = None
+# System user id.
+SYSTEM_USER = None
+
+# Serial port objects. Object class defined at bottom of communication.py.
+# If let None, it will dynamically find its correct port #.
+PORT_MISSION_CONTROL_LORA = None
+PORT_PAYLOAD_LORA = None
+PORT_RECOVERY_LORA = None
+PORT_ROTOR_CONTROLLER = None
 
 # Node ID's.
 NODE_MISSION_CONTROL_ID = 0
-NODE_EAGLE_EYE_ID = 1
-NODE_RELAY_ID = 2
+NODE_PAYLOAD_ID = 1
+NODE_RECOVERY_ID = 2
 
 # Tkinter frame objects.
 mc_class_reference = None
+payload_class_reference = None
 
 # Threaded timer objects.
-timer_mc_lora = None
-timer_craft_lora = None
-timer_craft_mega = None
-timer_xbox_controller = None
+timer_mission_control_lora = None
+timer_payload_lora = None
+timer_recovery_lora = None
+timer_mission_control_contact_timer = None
+timer_payload_contact_timer = None
+timer_recovery_contact_timer = None

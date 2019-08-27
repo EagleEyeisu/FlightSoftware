@@ -1,5 +1,5 @@
 /**
- * Data.cpp contains the struct that holds all the Crafts situational information.
+ * Data.cpp contains the struct that holds all the Craft's situational information.
  */
 
 #include <Arduino.h>
@@ -99,7 +99,6 @@ void DATA::update_gui()
 	    Data.serial_timer = millis();
 	    // Starts or updates mission control microsecond timer. (Converts to seconds w/ 2 decimal places for easy of use)
 	    Radio.Network.home_ts = millis()/1000.0;
-	    
     	// Holds outgoing message.
 		String temp_packet = "";
     	// Gets set true if a packet (TO BE SENT) has been created.
@@ -119,10 +118,11 @@ void DATA::update_gui()
 			temp_packet += Radio.relay_node.node_status;
 			temp_packet += ",";
 			temp_packet += "$";
-     temp_packet += "$"; // Weird serial issue where it only sends one of the '$'. To be looked into.
 		}
 		// Normal GUI <-> mission_control Config.
-		else if((Radio.operation_mode == Radio.NORMAL) || (Radio.operation_mode == Radio.STANDBY) || (Radio.operation_mode == Radio.NONE))
+		else if((Radio.operation_mode == Radio.NORMAL) 
+				 || (Radio.operation_mode == Radio.STANDBY) 
+				 || (Radio.operation_mode == Radio.NONE))
 		{
 			confirmed_packet = true;
 			temp_packet += "$";
@@ -148,12 +148,12 @@ void DATA::update_gui()
 			temp_packet += Radio.radio_output;
 			temp_packet += "/";
 			temp_packet += "$";
-      		temp_packet += "$"; // Weird serial issue where it only sends one of the '$'. To be looked into.
 		}
-
+		// Ensures that the packet has been assembled in the above if/else-if statement.
 		if(confirmed_packet){
-			// Converts from String to char array. 
+			// Defines a char array with the length needed to hold the received packet.
 			char serial_packet[temp_packet.length()];
+			// Converts from String to char array. 
 			temp_packet.toCharArray(serial_packet, temp_packet.length());
 			// Sends packet via serial to python GUI.
 			Serial.write(serial_packet);
@@ -206,21 +206,35 @@ void DATA::get_serial_op_mode(char buf[])
 	// Parses out operation_mode representated as integer.
     int temp_mode = (Parse(buf,5));
     // Converts integer representation to the appropriate state.
+    // Checks for state of NONE. (Network operations have yet to begin)
     if(temp_mode == 0.0)
     {
+    	// Assign appropriate program state.
     	Radio.operation_mode = Radio.NONE;
     }
+    // Checks if the rollcall command has been given.
     else if(temp_mode == 1.0)
-    {
+    {	
+    	// Update the mode to begin the rollcall sequence.
     	Radio.operation_mode = Radio.ROLLCALL;
-      Radio.mc_node.node_status = 1.0;
+    	// Setting the node status of the mission control node to
+    	// 1.0 signifies that this node is working optimally in 
+    	// the network.
+      	Radio.mc_node.node_status = 1.0;
     }
+    // Checks for user command of network standby.
     else if(temp_mode == 2.0)
     {
+    	// Updates network accordingly.
     	Radio.operation_mode = Radio.STANDBY;
     }
+    // Checks for the user given command to start the network.
     else if(temp_mode == 3.0)
     {
+    	// Updates network to Normal operations mode.
+    	// This effectively starts the network cycle.
+    	// (Data will begin to flow between the checked
+    	// in nodes)
     	Radio.operation_mode = Radio.NORMAL;
     }
 }

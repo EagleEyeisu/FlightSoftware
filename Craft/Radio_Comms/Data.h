@@ -6,12 +6,20 @@
 #define Data_h
 
 #include <Arduino.h>
+#include <SD.h>
+#include <SPI.h>
   
 class DATA
 {
-  public:
+  	public:
 	// Constructor
 	DATA();
+	// Configures flags and LEDs.
+    void initialize();
+    // Manages the bootup process and status leds.
+    void manager();
+	// Log the data to the sd card.
+    void log_data();
 	// Parses passed in message by using commas as the identifiers.
 	float Parse(char message[], int objective);
 	// Responsible for pulling current sensor data from peripherals.
@@ -34,71 +42,62 @@ class DATA
     float get_i2c_current_heading(char buf[]);
     // Retrieves the MEGA's craft state.
     float get_i2c_craft_state(char buf[]);
+	// Pulses external receive led.
+    void blink_receive_led();
+    // Pulses external sending led.
+    void blink_send_led();
+    // Pulses onboard error led.
+    void blink_error_led();
 	
 	/*---------------------------------Variables---------------------------------*/
-  	
-	// Stores all of Eagle Eye's current flight data.
-	// The difference between this struct and the one initalized in Radio.h is that this information
-	// is saves gathered/used/saved locally. The Radio.h struct holds all the network information
-	// being passed between crafts (nodes).
-	struct Flight_Data 
-	{
-		/*------------------------Mega Information------------------------*/
 
-		// Altitude of the craft.
-        float mega_altitude = 0.0;
-        // Roll value of the craft.
-        float mega_roll = 0.0;
-        // Pitch value of the craft.
-        float mega_pitch = 0.0;
-        // Yaw value of the craft.
-        float mega_yaw = 0.0;
-        // External atmosphereic pressure.
-        float mega_pressure = 0.0;
-        // External temperature of craft.
-        float mega_external_temperature = 0.0;
-        // Current angle to the target.
-	    float target_heading = 0.0;
-	    // Current bearing for craft.
-	    float current_heading = 0.0;
-	    // Movement state of the craft. This is what the craft is currently doing
-	    // and not necessarily what it wants to do.
-	    float craft_state = 0.0;
+    /*----- Flight Controller variables -----*/
 
+	// Altitude of the craft.
+    float fltctrl_altitude = 0.0;
+    // Roll value of the craft.
+    float fltctrl_roll = 0.0;
+    // Pitch value of the craft.
+    float fltctrl_pitch = 0.0;
+    // Yaw value of the craft.
+    float fltctrl_yaw = 0.0;
+    // External atmosphereic pressure.
+    float fltctrl_pressure = 0.0;
+    // External temperature of craft.
+    float fltctrl_external_temperature = 0.0;
+    // Current angle to the target.
+	float target_heading = 0.0;
+	// Current bearing for craft.
+	float craft_heading = 0.0;
+	// Movement state of the craft. This is what the craft is currently doing
+	// and not nessecarily what it wants to do.
+	float craft_state = 0.0;
 
-		/*------------------------LoRa Information------------------------*/
+    /*----- Radio Comms variables -----*/
 
-		// Altitude of the craft gathered from GPS.
-		float current_altitude  = 0.0;
-		// Latitude of the craft gathered from GPS.
-		float current_latitude = 0.0;
-		// Longitude of the craft gathered from GPS.
-		float current_longitude = 0.0;
-		// Satellite Count of the craft gathered from the GPS.
-		float current_satillite_count = 0.0;
-	    // Speed in meters per second.
-	    float current_speed = 0.0;
-		// LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
-		float current_event = 0.0;
-	    // Time of flight. Used for data capture in SD card.
-	    char current_gps_time[10];
-	    // Target Altitude for the craft.
-	    float current_target_altitude = 10000.0;
-	   	// Target Latitude for craft.
-	    float current_target_latitude = 0.0;
-	    // Target Longitude for craft.
-	    float current_target_longitude = 0.0;
-	    // Current distance to target in meters.
-	    float current_target_distance = 0.0;
-		// Holds the crafts previous altitude.
-		float previous_altitude = 0.0;
-		// Holds the crafts previous latitude.
-		float previous_latitude = 0.0;
-		// Holds the crafts previous longitude.
-		float previous_longitude = 0.0;
-	    // Holds the crafts previous target distance.
-	    float previous_target_distance = 0.0;
-	};
-	struct Flight_Data Local;
+	// LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
+  	float craft_event = 0.0;
+    // Set High for # (defined below) seconds on startup to tell other nodes in the system
+    // that an unexpected power cycle has occurred and they need to clear 
+    // their locally held variables.
+    float node_reset = 0.0;
+    // Number of seconds after startup that the node_reset will be held high.
+    unsigned long startup_timer = 0;
+    // Turns true after # seconds of running. Used to tell if the system started 
+    // up correctly.
+    bool system_boot_complete = false;
+    // Power status of the LED outside of the box.
+    bool external_led = false;
+    // Timer to switch the external_led on/off at 1/2sec.
+    unsigned long ext_led_timer = 0;
+    // Timer to log data to the sd card every second.
+    unsigned long sd_timer = 0;
+    // DIGITAL LEDS.
+    const byte OPERATIONAL_LED = 9;
+    const byte RECEIVE_LED = A1;
+    const byte SEND_LED = A2;
+    const byte ERROR_LED = 13;
+    // SD CARD.
+    const byte SD_CS = 4;
 };
 #endif

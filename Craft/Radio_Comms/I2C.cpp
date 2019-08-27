@@ -9,6 +9,7 @@
 #include "DATA.h"
 #include "Globals.h" 
 #include "RADIO.h"
+#include "GPS.h"
 #include <stdlib.h>
 #include <string.h>
 #include <Wire.h>
@@ -31,8 +32,8 @@ void I2C::initialize()
 	// Predeclaration of method that will be set as a interrupt.
     void receiveEvent(int howMany);
 	// Sets the address for the current micro controller.
-	// Mega - 0
-	// LoRa - 8
+	// Flight Controller - 0
+	// Radio - 8
 	Wire.begin(8);
 	Wire.onReceive(receiveEvent);
     // Initializes the system to have the LoRa start.
@@ -141,12 +142,12 @@ void receiveEvent(int howMany)
 
 
 /**
- * Builds the message to sent to the Mega via I2^C.
+ * Builds the message to sent to the Flight Controller via I2^C.
  */
 void I2C::create_packet()
 {
    /**
-    *                I2^C PACKETS   (LoRA -> MEGA)
+    *                I2^C PACKETS   (Radio -> Flight Controller)
     *
     * $,C,current_altitude, current_latitude, current_longitude, current_Speed,$
     *   1        2                 3                 4                5
@@ -164,7 +165,7 @@ void I2C::create_packet()
         // Each line below appends a certain divider or value to the string.
         i2c_packet += '$';
         // The three conditional statements alternate to send each of the three packets.
-        // 1 = C packet.
+        // 1 = C packet. (Current positioning)
         if(i2c_selector == 1)
         {
             // Alerts the system that the packet has been updated for this turn.
@@ -175,16 +176,16 @@ void I2C::create_packet()
         	i2c_packet += ',';
         	i2c_packet += 'C';
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_altitude;
+        	i2c_packet += Gps.craft_altitude;
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_latitude * 10000.0;
+        	i2c_packet += Gps.craft_latitude * 10000.0;
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_longitude * 10000.0;
+        	i2c_packet += Gps.craft_longitude * 10000.0;
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_speed;
+        	i2c_packet += Gps.craft_speed;
         	i2c_packet += ',';
         }
-        // 2 = T packet.
+        // 2 = T packet. (Target positioning)
         else if(i2c_selector == 2)
         {
             // Alerts the system that the packet has been updated for this turn.
@@ -195,16 +196,16 @@ void I2C::create_packet()
         	i2c_packet += ',';
         	i2c_packet += 'T';
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_target_altitude;
+        	i2c_packet += Gps.craft_target_altitude;
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_target_latitude * 10000.0;
+        	i2c_packet += Gps.craft_target_latitude * 10000.0;
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_target_longitude * 10000.0;
+        	i2c_packet += Gps.craft_target_longitude * 10000.0;
         	i2c_packet += ',';
-        	i2c_packet += Data.Local.current_target_distance;
+        	i2c_packet += Gps.craft_target_distance;
         	i2c_packet += ',';
         }
-        // 2 = N packet.
+        // 2 = N packet. (Network commands)
         else if(i2c_selector == 3)
         {
             // Alerts the system that the packet has been updated for this turn.
@@ -215,13 +216,13 @@ void I2C::create_packet()
         	i2c_packet += ',';
         	i2c_packet += 'N';
         	i2c_packet += ',';
-        	i2c_packet += Radio.Network.authority_mode;
+        	i2c_packet += Radio.authority_mode;
         	i2c_packet += ',';
-        	i2c_packet += Radio.Network.target_throttle;
+        	i2c_packet += Radio.target_throttle;
         	i2c_packet += ',';
-        	i2c_packet += Radio.Network.manual_direction;
+        	i2c_packet += Radio.manual_direction;
         	i2c_packet += ',';
-        	i2c_packet += Radio.Network.craft_anchor;
+        	i2c_packet += Radio.craft_anchor;
         	i2c_packet += ',';
         }
         // Completes the packet.

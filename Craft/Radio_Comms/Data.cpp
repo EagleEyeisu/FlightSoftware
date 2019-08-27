@@ -21,12 +21,39 @@ DATA::DATA()
 }
 
 
+/**
+ * Initialize the SD card and status LEDs.
+ */
+void DATA::initialize()
+{
+    // Check for valid connection to SD card.
+    if(!SD.begin(SD_CS))
+    {
+        // Invalid connection.
+        while(1)
+        {
+            blink_error_led(); 
+        }
+    }
+}
+
+
+/**
+ * Manages the bootup process and status leds.
+ */
+void DATA::manager()
+{
+    // Stores data to sd card.
+    // log_data();
+}
+
+
 /*--------------------I2C NETWORK PACKET (W)--------------------*/
 
 /**
  * Retrieves the MEGA's pressure value.
  */
-float DATA::get_i2c_mega_pressure(char buf[])
+float DATA::get_i2c_fltctrl_pressure(char buf[])
 {
  	return Data.Parse(buf,2);
 }
@@ -35,7 +62,7 @@ float DATA::get_i2c_mega_pressure(char buf[])
 /**
  * Retrieves the MEGA's altitude value (calculated by pressure).
  */
-float DATA::get_i2c_mega_altitude(char buf[])
+float DATA::get_i2c_fltctrl_altitude(char buf[])
 {
  	return Data.Parse(buf,3);
 }
@@ -44,7 +71,7 @@ float DATA::get_i2c_mega_altitude(char buf[])
 /**
  * Retrieves the MEGA's temperature value (external temp).
  */
-float DATA::get_i2c_mega_temp(char buf[])
+float DATA::get_i2c_fltctrl_temp(char buf[])
 {
  	return Data.Parse(buf,4);
 }
@@ -55,7 +82,7 @@ float DATA::get_i2c_mega_temp(char buf[])
 /**
  * Retrieves the MEGA's roll value.
  */
-float DATA::get_i2c_mega_roll(char buf[])
+float DATA::get_i2c_fltctrl_roll(char buf[])
 {
  	return Data.Parse(buf,2);
 }
@@ -64,7 +91,7 @@ float DATA::get_i2c_mega_roll(char buf[])
 /**
  * Retrieves the MEGA's pitch value.
  */
-float DATA::get_i2c_mega_pitch(char buf[])
+float DATA::get_i2c_fltctrl_pitch(char buf[])
 {
  	return Data.Parse(buf,3);
 }
@@ -73,7 +100,7 @@ float DATA::get_i2c_mega_pitch(char buf[])
 /**
  * Retrieves the MEGA's yaw value.
  */
-float DATA::get_i2c_mega_yaw(char buf[])
+float DATA::get_i2c_fltctrl_yaw(char buf[])
 {
  	return Data.Parse(buf,4);
 }
@@ -133,25 +160,25 @@ void DATA::update_data()
 		if(to_parse[2] == 'W')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.mega_pressure = Data.get_i2c_mega_pressure(to_parse);
-			Local.mega_altitude = Data.get_i2c_mega_altitude(to_parse);
-			Local.mega_external_temperature = Data.get_i2c_mega_temp(to_parse);
+			fltctrl_pressure = Data.get_i2c_fltctrl_pressure(to_parse);
+			fltctrl_altitude = Data.get_i2c_fltctrl_altitude(to_parse);
+			fltctrl_external_temperature = Data.get_i2c_fltctrl_temp(to_parse);
 		}
 		// Checks for i2c packet type of Gryo data.
 		else if(to_parse[2] == 'G')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.mega_roll = Data.get_i2c_mega_roll(to_parse);
-			Local.mega_pitch = Data.get_i2c_mega_pitch(to_parse);
-			Local.mega_yaw = Data.get_i2c_mega_yaw(to_parse);
+			fltctrl_roll = Data.get_i2c_fltctrl_roll(to_parse);
+			fltctrl_pitch = Data.get_i2c_fltctrl_pitch(to_parse);
+			fltctrl_yaw = Data.get_i2c_fltctrl_yaw(to_parse);
 		}
 		// Checks for i2c packet type of Positioning data.
 		else if(to_parse[2] == 'P')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			Local.target_heading = Data.get_i2c_target_heading(to_parse);
-			Local.current_heading = Data.get_i2c_current_heading(to_parse);
-			Local.craft_state = Data.get_i2c_craft_state(to_parse);
+			target_heading = Data.get_i2c_target_heading(to_parse);
+			current_heading = Data.get_i2c_current_heading(to_parse);
+			craft_state = Data.get_i2c_craft_state(to_parse);
 		}
 	}
 }
@@ -223,4 +250,66 @@ float DATA::Parse(char message[], int objective)
 	float temp = atof(parsed_section);
 	// Returns the desired parsed section in number (float) form.
 	return temp;
+}
+
+
+/**
+ * Logs data to the SD card.
+ */
+void DATA::log_data()
+{
+  if(millis() - sd_timer > 1000)
+  {
+    sd_timer = millis();
+    // Open & Save.
+    File sd_card;
+    sd_card = SD.open("Payload_Data", FILE_WRITE);
+    if(sd_card)
+    {
+      sd_card.print("Radio In: ");
+      sd_card.println(Radio.radio_input);
+      sd_card.print("Radio Out: ");
+      sd_card.println(Radio.radio_output);
+    }
+    sd_card.close();
+  }
+}
+
+
+/**
+ * Blinks the external led referring to the receive led.
+ */
+void DATA::blink_receive_led()
+{
+    // ON
+    digitalWrite(RECEIVE_LED, HIGH);
+    delay(100);
+    // OFF
+    digitalWrite(RECEIVE_LED, LOW);
+}
+
+
+/**
+ * Blinks the external led referring to the sending led.
+ */
+void DATA::blink_send_led()
+{
+    // ON
+    analogWrite(SEND_LED, HIGH);
+    delay(100);
+    // OFF
+    analogWrite(SEND_LED, LOW);
+}
+
+
+/*
+ * Blinks LED on error.
+ */
+void DATA::blink_error_led()
+{
+    // ON
+    digitalWrite(ERROR_LED, HIGH);
+    delay(100);
+    // OFF
+    digitalWrite(ERROR_LED, LOW);
 }
