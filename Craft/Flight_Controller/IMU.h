@@ -35,7 +35,7 @@ class IMU
     // Current angle to the target.
     float target_heading = 0.0;
     // Current bearing for craft.
-    float current_heading = 0.0;
+    float craft_heading = 0.0;
     // Tolerance for heading angle.
     float target_heading_tolerance = 10.0;
     // Tolerance for difference in altitudes.

@@ -121,18 +121,18 @@ float IMU::get_yaw()
 void IMU::calculate_target_heading()
 {
     // Pulls in data to be used in calculations.
-    float lat1 = Data.Local.lora_current_latitude;
-    float lon1 = Data.Local.lora_current_longitude;
-    float lat2 = Data.Local.lora_target_latitude;
-    float lon2 = Data.Local.lora_target_longitude;
+    float lat1 = Data.radio_craft_latitude;
+    float lon1 = Data.radio_craft_longitude;
+    float lat2 = Data.radio_target_latitude;
+    float lon2 = Data.radio_target_longitude;
     // Math. (Ask Christopher Johannsen if problem occurs)
     float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
     float y = sin(lon2-lon1) * cos(lat2); 
-    current_heading = atan2(y, x);
+    craft_heading = atan2(y, x);
     // Normalize to 0-360.
-    current_heading = fmod((current_heading + 360.0),360.0);
+    craft_heading = fmod((craft_heading + 360.0),360.0);
     // Calculates the target heading.
-    float target_heading = current_heading - Imu.get_yaw();
+    float target_heading = craft_heading - Imu.get_yaw();
     if(target_heading > 180)
     {
         target_heading -= 360;
@@ -164,7 +164,7 @@ void IMU::calculate_target_heading()
  */
 void IMU::check_altitude_tolerance()
 {
-    float altitude_difference = Data.Local.lora_target_altitude - Data.Local.lora_current_altitude;
+    float altitude_difference = Data.radio_target_altitude - Data.radio_craft_altitude;
     if(altitude_difference > target_altitude_tolerance)
     {
         move_up = true;
@@ -181,7 +181,7 @@ void IMU::check_altitude_tolerance()
 void IMU::check_distance_tolerance()
 {
     // Checks if distance is within tolerance.
-    if(Data.Local.lora_target_distance > target_distance_tolerance)
+    if(Data.radio_target_distance > target_distance_tolerance)
     {
         // If not, move the craft forward.
         move_forward = true;

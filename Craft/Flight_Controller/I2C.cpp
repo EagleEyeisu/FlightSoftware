@@ -30,8 +30,8 @@ void I2C::initialize()
     // Predeclaration of method that will be set as a interrupt.
     void receiveEvent(int howMany);
 	// Sets the address for the current micro controller.
-	// Mega - 0
-	// LoRa - 8
+	// Flight Controller - 0
+	// Radio - 8
 	Wire.begin(0);
  	Wire.onReceive(receiveEvent);
  	// Initializes the system to have the LoRa start.
@@ -199,11 +199,11 @@ void I2C::create_packet()
             i2c_packet += ',';
             i2c_packet += 'W';
             i2c_packet += ',';
-            i2c_packet += Data.Local.mega_pressure;
+            i2c_packet += Data.ftlctrl_pressure;
             i2c_packet += ',';
-            i2c_packet += Data.Local.mega_altitude;
+            i2c_packet += Data.ftlctrl_altitude;
             i2c_packet += ',';
-            i2c_packet += Data.Local.mega_external_temperature;
+            i2c_packet += Data.ftlctrl_external_temperature;
             i2c_packet += ',';
         }
         // 2 = G packet.
@@ -217,11 +217,11 @@ void I2C::create_packet()
             i2c_packet += ',';
             i2c_packet += 'G';
             i2c_packet += ',';
-            i2c_packet += Data.Local.mega_roll;
+            i2c_packet += Data.ftlctrl_roll;
             i2c_packet += ',';
-            i2c_packet += Data.Local.mega_pitch;
+            i2c_packet += Data.ftlctrl_pitch;
             i2c_packet += ',';
-            i2c_packet += Data.Local.mega_yaw;
+            i2c_packet += Data.ftlctrl_yaw;
             i2c_packet += ',';
         }
         // 2 = P packet.
@@ -249,11 +249,11 @@ void I2C::create_packet()
 
 
 /**
- * Sends bytes over I2C comms to the LoRa.
+ * Sends bytes over I2C comms to the Radio.
  */
 void I2C::send_packet()
 {
-    // Every 1 second, the lora is allowed to send i2c data.
+    // Every 1 second, the radio is allowed to send i2c data.
     if((millis() - i2c_timer > 50) && (Comm.i2c_my_turn == true))
     {
         // Resets timer.

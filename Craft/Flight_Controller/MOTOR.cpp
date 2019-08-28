@@ -32,7 +32,7 @@ void MOTOR::manager()
      */
 
     // Checks for a positive anchor status. (E BREAK)
-    if(Data.Local.craft_anchor_status == true)
+    if(Data.anchor_status == true)
     {
         // Checks if the break is already applied. If so, no need to apply it again.
         if(craft_state != BREAK)
@@ -47,12 +47,12 @@ void MOTOR::manager()
     else
     {
         // Checks for flight mode "manual".
-        if(Data.Local.authority_mode == 0.0)
+        if(Data.authority_mode == 0.0)
         {
             manual_flight();
         }
         // Checks for flight mode "auto".
-        else if(Data.Local.authority_mode == 1.0)
+        else if(Data.authority_mode == 1.0)
         {
             auto_pilot();
         }
@@ -65,7 +65,7 @@ void MOTOR::manager()
  */
 int MOTOR::convert_throttle()
 {
-  int input = Data.Local.lora_target_throttle;
+  int input = Data.radio_target_throttle;
   int throttle = input * 10;
   throttle = throttle + 980;
   return throttle;
@@ -84,7 +84,7 @@ void MOTOR::manual_flight()
     // 2 - Left.
     // 3 - Right.
     // 4 - Up.
-    int command = Data.Local.craft_manual_direction;
+    int command = Data.radio_manual_direction;
 
     /**
      * Outer series of conditionals are focused on orienting the craft. Not propelling it.
@@ -480,7 +480,7 @@ void MOTOR::spin_down()
  */
 String MOTOR::get_movement_state()
 {  
-    int temp_state = Movement.craft_state;
+    int temp_state = craft_state;
     if(temp_state == 0)
     {
         return "NONE";
