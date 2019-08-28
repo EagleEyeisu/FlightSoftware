@@ -98,7 +98,7 @@ void receiveEvent(int howMany)
 		    	// End '$' has already been seen. Throw away the rest.
 		    	else if (junk_flag == true)
 		    	{	
-		    		// Reads in i2c input and kills it.
+		    		// Throws away bad I2C data.
 		    		char junk = temp;
 		    	}
                 // Middle of the packet data. Add to buffer.
@@ -115,7 +115,7 @@ void receiveEvent(int howMany)
     		// Cycles until there is no input.
     		while(Wire.available())
 		    {
-		    	// Reads in i2c input and kills it.
+		    	// Throws away bad I2C data.
 		    	char junk = Wire.read();
 		    }
     	}

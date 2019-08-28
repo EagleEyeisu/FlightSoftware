@@ -51,7 +51,7 @@ void DATA::manager()
 /*--------------------I2C NETWORK PACKET (W)--------------------*/
 
 /**
- * Retrieves the MEGA's pressure value.
+ * Retrieves the flight controller's pressure value.
  */
 float DATA::get_i2c_fltctrl_pressure(char buf[])
 {
@@ -60,7 +60,7 @@ float DATA::get_i2c_fltctrl_pressure(char buf[])
 
 
 /**
- * Retrieves the MEGA's altitude value (calculated by pressure).
+ * Retrieves the flight controller's altitude value (calculated by pressure).
  */
 float DATA::get_i2c_fltctrl_altitude(char buf[])
 {
@@ -69,7 +69,7 @@ float DATA::get_i2c_fltctrl_altitude(char buf[])
 
 
 /**
- * Retrieves the MEGA's temperature value (external temp).
+ * Retrieves the flight controller's temperature value (external temp).
  */
 float DATA::get_i2c_fltctrl_temp(char buf[])
 {
@@ -80,7 +80,7 @@ float DATA::get_i2c_fltctrl_temp(char buf[])
 /*--------------------I2C NETWORK PACKET (G)--------------------*/
 
 /**
- * Retrieves the MEGA's roll value.
+ * Retrieves the flight controller's roll value.
  */
 float DATA::get_i2c_fltctrl_roll(char buf[])
 {
@@ -89,7 +89,7 @@ float DATA::get_i2c_fltctrl_roll(char buf[])
 
 
 /**
- * Retrieves the MEGA's pitch value.
+ * Retrieves the flight controller's pitch value.
  */
 float DATA::get_i2c_fltctrl_pitch(char buf[])
 {
@@ -98,7 +98,7 @@ float DATA::get_i2c_fltctrl_pitch(char buf[])
 
 
 /**
- * Retrieves the MEGA's yaw value.
+ * Retrieves the flight controller's yaw value.
  */
 float DATA::get_i2c_fltctrl_yaw(char buf[])
 {
@@ -109,7 +109,7 @@ float DATA::get_i2c_fltctrl_yaw(char buf[])
 /*--------------------I2C NETWORK PACKET (P)--------------------*/
 
 /**
- * Retrieves the MEGA's target heading angle.
+ * Retrieves the flight controller's target heading angle.
  */
 float DATA::get_i2c_target_heading(char buf[])
 {
@@ -118,7 +118,7 @@ float DATA::get_i2c_target_heading(char buf[])
 
 
 /**
- * Retrieves the MEGA's current heading angle.
+ * Retrieves the flight controller's current heading angle.
  */
 float DATA::get_i2c_current_heading(char buf[])
 {
@@ -127,7 +127,7 @@ float DATA::get_i2c_current_heading(char buf[])
 
 
 /**
- * Retrieves the MEGA's craft state.
+ * Retrieves the flight controller's craft state.
  * Possible values:
  * 0 : NONE
  * 1 : RIGHT

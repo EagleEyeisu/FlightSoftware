@@ -73,7 +73,7 @@ bool GPS::fixation_monitor()
         if(gps.satellites.value() == 0)
         {
             // Triggers onboard event detection.
-            Data.payload_event = 2.0;
+            Data.craft_event = 2.0;
             // Updates the fix status.
             fix_status = false;
         }

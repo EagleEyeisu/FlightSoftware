@@ -325,7 +325,7 @@ void RADIO::radio_receive()
                     recovery_latitude = get_radio_recovery_latitude(to_parse);
                     recovery_longitude = get_radio_recovery_longitude(to_parse);
                 }
-                // Reads in the value associated with the reset. 
+                // Reads in the value associated with the reset.
                 received_reset = get_radio_node_reset(to_parse);
                 // Reads in Craft ID to see where signal came from.
                 received_id = get_radio_node_id(to_parse);

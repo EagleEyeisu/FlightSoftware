@@ -24,23 +24,23 @@ class DATA
 	float Parse(char message[], int objective);
 	// Responsible for pulling current sensor data from peripherals.
     void update_data();
-    // Retrieves the MEGA's pressure value.
+    // Retrieves the flight controller's pressure value.
     float get_i2c_mega_pressure(char buf[]);
-    // Retrieves the MEGA's altitude value (calculated by pressure).
+    // Retrieves the flight controller's altitude value (calculated by pressure).
     float get_i2c_mega_altitude(char buf[]);
-    // Retrieves the MEGA's temperature value (external temp).
+    // Retrieves the flight controller's temperature value (external temp).
     float get_i2c_mega_temp(char buf[]);
-    // Retrieves the MEGA's roll value.
+    // Retrieves the flight controller's roll value.
     float get_i2c_mega_roll(char buf[]);
-    // Retrieves the MEGA's pitch value.
+    // Retrieves the flight controller's pitch value.
     float get_i2c_mega_pitch(char buf[]);
-    // Retrieves the MEGA's yaw value.
+    // Retrieves the flight controller's yaw value.
     float get_i2c_mega_yaw(char buf[]);
-    // Retrieves the MEGA's target heading angle.
+    // Retrieves the flight controller's target heading angle.
     float get_i2c_target_heading(char buf[]);
-    // Retrieves the MEGA's current heading angle.
+    // Retrieves the flight controller's current heading angle.
     float get_i2c_current_heading(char buf[]);
-    // Retrieves the MEGA's craft state.
+    // Retrieves the flight controller's craft state.
     float get_i2c_craft_state(char buf[]);
 	// Pulses external receive led.
     void blink_receive_led();
