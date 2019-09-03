@@ -118,7 +118,7 @@ def build_url_craft(map_center):
     map_url +=  zoom_base + craft_zoom
     map_url +=  size_base + "500x500"
     map_url +=  maptype_base + craft_maptype
-    map_url +=  marker_base + "color:red%7Clabel:P%7C" + map_center
+    map_url +=  marker_base + "color:red%7Clabel:C%7C" + map_center
     map_url +=  google_api_key
     # Returns url.
     return map_url
@@ -166,7 +166,7 @@ def build_url_network():
     map_url +=  zoom_base + network_zoom
     map_url +=  size_base + "500x500"
     map_url +=  maptype_base + network_maptype
-    map_url +=  marker_base + "color:green%7Clabel:R%7C" + map_center
+    map_url +=  marker_base + "color:green%7Clabel:H%7C" + map_center
     map_url +=  google_api_key
     # Returns url.
     return map_url
@@ -186,7 +186,7 @@ def place_craft(mc_frame):
     # Reassigns the label object with the image attribute.
     mc_frame.craft_map_image.image = temp_image
     # Places image into GUI.
-    mc_frame.craft_map_image.grid(row=15, column=0, rowspan=2, columnspan=4, sticky='nswe')
+    mc_frame.craft_map_image.grid(row=17, column=0, rowspan=2, columnspan=4, sticky='nswe')
     # Returns the updated 
     return mc_frame
 
@@ -205,7 +205,7 @@ def place_recovery(mc_frame):
     # Reassigns the label object with the image attribute.
     mc_frame.recovery_map_image.image = temp_image
     # Places image into GUI.
-    mc_frame.recovery_map_image.grid(row=15, column=5, rowspan=2, columnspan=4, sticky='nswe')
+    mc_frame.recovery_map_image.grid(row=17, column=5, rowspan=2, columnspan=4, sticky='nswe')
     # Returns the updated 
     return mc_frame
     
@@ -224,6 +224,6 @@ def place_network(mc_frame):
     # Reassigns the label object with the image attribute.
     mc_frame.network_map_image.image = temp_image
     # Places image into GUI.
-    mc_frame.network_map_image.grid(row=15, column=10, rowspan=2, columnspan=4, sticky='nswe')
+    mc_frame.network_map_image.grid(row=17, column=10, rowspan=2, columnspan=4, sticky='nswe')
     # Returns the updated 
     return mc_frame

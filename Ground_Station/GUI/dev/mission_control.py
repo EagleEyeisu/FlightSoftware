@@ -81,8 +81,6 @@ class MC_Tab():
 		self.node_mission_control = StringVar(self.mc_frame)
 		self.node_craft = StringVar(self.mc_frame)
 		self.node_recovery = StringVar(self.mc_frame)
-		self.node_platform = StringVar(self.mc_frame)
-		self.release_status = StringVar(self.mc_frame)
 		self.radio_received = StringVar(self.mc_frame)
 		self.radio_sent = StringVar(self.mc_frame)
 		self.radio_craft_rssi = StringVar(self.mc_frame)
@@ -103,8 +101,6 @@ class MC_Tab():
 		self.node_mission_control.trace("w", self.callback_update_mission_control_node_status)
 		self.node_craft.trace("w", self.callback_update_craft_node_status)
 		self.node_recovery.trace("w", self.callback_update_recovery_node_status)
-		self.node_platform.trace("w", self.callback_update_platform_node_status)
-		self.release_status.trace("w", self.callback_update_release_status)
 
 		# Initialization of varaible values on GUI startup.
 		self.radio_received.set("-------")
@@ -113,7 +109,7 @@ class MC_Tab():
 		self.radio_recovery_rssi.set("-------")
 		self.radio_craft_last_contact.set("-------")
 		self.radio_recovery_last_contact.set("-------")
-		self.radio_last_received_node.set("Recovery")
+		self.radio_last_received_node.set("-------")
 		self.craft_time.set("-------")
 		self.craft_altitude.set("-------")
 		self.craft_latitude.set("-------")
@@ -161,7 +157,6 @@ class MC_Tab():
 		"""
 
 		# Creates button widgets. (Triggers specified callback method.)
-		self.button_platform_launch = Button(self.mc_frame, text="Release\nBalloon", command=self.callback_release_balloon)
 		self.button_craft_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_craft_zoom_in)
 		self.button_craft_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_craft_zoom_out)
 		self.button_craft_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_craft_maptype)
@@ -184,14 +179,10 @@ class MC_Tab():
 		# of either buttons, display bars, or other objects on the GUI.
 		self.label_mission_control_node = Label(self.mc_frame, text="GROUND STATION", relief='solid', anchor="center")
 		self.label_mission_control_node.configure(background='red')
-		self.label_craft_node = Label(self.mc_frame, text="PAYLOAD", relief='solid', anchor="center")
+		self.label_craft_node = Label(self.mc_frame, text="CRAFT", relief='solid', anchor="center")
 		self.label_craft_node.configure(background='red')
 		self.label_recovery_node = Label(self.mc_frame,  text="RECOVERY", relief='solid', anchor="center")
 		self.label_recovery_node.configure(background='red')
-		self.label_platform_node = Label(self.mc_frame,  text="PLATFORM", relief='solid', anchor="center")
-		self.label_platform_node.configure(background='red')
-		self.label_release_status = Label(self.mc_frame, relief='solid', anchor="center")
-		self.label_release_status.configure(background='red', text="Pre-Launch")
 
 
 	def layout_network(self):
@@ -202,18 +193,15 @@ class MC_Tab():
 		"""
 
 		# Above divider one. (divider at bottom of method)
-		self.button_platform_launch.grid(row=3, column=0, rowspan=2, sticky='nse')
-		self.label_release_status.grid(row=3, column=1, columnspan=2, rowspan=2, sticky='nswe')
-		self.create_label_east_2(0, 0, self.mc_frame, "Node Status:")
-		self.label_mission_control_node.grid(row=0, column=1, sticky='nswe')
-		self.label_craft_node.grid(row=1, column=1, sticky='nswe')
-		self.label_recovery_node.grid(row=0, column=2, sticky='nswe')
-		self.label_platform_node.grid(row=1, column=2, sticky='nswe')
+		self.create_label_east_2(1, 0, self.mc_frame, "Node Status:")
+		self.label_mission_control_node.grid(row=0, column=1, rowspan=2, sticky='nswe')
+		self.label_craft_node.grid(row=2, column=1, rowspan=2, sticky='nswe')
+		self.label_recovery_node.grid(row=0, column=2, rowspan=2, sticky='nswe')
 		self.create_label_east(0, 5, self.mc_frame, "Received:")
 		self.entry_radio_received.grid(row=0, column=6, columnspan=9, sticky='we')
 		self.create_label_east(1, 5, self.mc_frame, "Sent:")
 		self.entry_radio_sent.grid(row=1, column=6, columnspan=9, sticky='we')
-		self.create_label_east(2, 5, self.mc_frame, "RSSI Payload:")
+		self.create_label_east(2, 5, self.mc_frame, "RSSI Craft:")
 		self.entry_radio_craft_rssi.grid(row=2, column=6, sticky='we')
 		self.create_label_east(2, 8, self.mc_frame, "Last Contact (s):")
 		self.entry_radio_craft_last_contact.grid(row=2, column=9, sticky='w')
@@ -239,7 +227,7 @@ class MC_Tab():
 		"""
 
 		# PAYLOAD
-		self.create_label_center(6, 1, self.mc_frame, "PAYLOAD")
+		self.create_label_center(6, 1, self.mc_frame, "CRAFT")
 		self.create_label_center(7, 0, self.mc_frame, "Up Time (s): ")
 		self.entry_craft_time.grid(row=7, column=1, columnspan=2, sticky='we')
 		self.create_label_center(8, 0, self.mc_frame, "Altitude (m): ")
@@ -252,18 +240,21 @@ class MC_Tab():
 		# self.entry_craft_event.grid(row=11, column=1, sticky='we')
 		self.create_label_center(11, 0, self.mc_frame, "Speed:            ")
 		self.entry_craft_speed.grid(row=11, column=1, columnspan=2, sticky='we')
+
+
+
 		# RECOVERY
-		self.create_label_center(6, 6, self.mc_frame, "RECOVERY")
-		self.create_label_center(7, 5, self.mc_frame, "Up Time (s): ")
-		self.entry_recovery_time.grid(row=7, column=6, columnspan=2, sticky='we')
-		self.create_label_center(8, 5, self.mc_frame, "Latitude:       ")
-		self.entry_recovery_latitude.grid(row=8, column=6, columnspan=2, sticky='we')
-		self.create_label_center(9, 5, self.mc_frame, "Longitude:   ")
-		self.entry_recovery_longitude.grid(row=9, column=6, columnspan=2, sticky='we')
+		self.create_label_center(6, 11, self.mc_frame, "RECOVERY")
+		self.create_label_center(7, 10, self.mc_frame, "Up Time (s): ")
+		self.entry_recovery_time.grid(row=7, column=11, columnspan=2, sticky='we')
+		self.create_label_center(8, 10, self.mc_frame, "Latitude:       ")
+		self.entry_recovery_latitude.grid(row=8, column=11, columnspan=2, sticky='we')
+		self.create_label_center(9, 10, self.mc_frame, "Longitude:   ")
+		self.entry_recovery_longitude.grid(row=9, column=11, columnspan=2, sticky='we')
 		# MISSION CONTROL
-		self.create_label_center(6, 11, self.mc_frame, "MISSION CONTROL")
-		self.create_label_center(7, 10, self.mc_frame, "Up Time (s):   ")
-		self.entry_mission_control_time.grid(row=7, column=11, columnspan=2, sticky='we')
+		self.create_label_center(11, 11, self.mc_frame, "GROUND")
+		self.create_label_center(12, 10, self.mc_frame, "Up Time (s):   ")
+		self.entry_mission_control_time.grid(row=12, column=11, columnspan=2, sticky='we')
 
 
 	def layout_mission_maps(self):
@@ -282,28 +273,31 @@ class MC_Tab():
 		# Reassigns the label object with the image attribute.
 		self.craft_map_image.image = temp_image
 		# Places image into GUI.
-		self.craft_map_image.grid(row=15, column=0, rowspan=2, columnspan=4, sticky='nswe')
-		self.button_craft_zoom_in.grid(row=13, column=3, sticky="nsew")
-		self.button_craft_zoom_out.grid(row=13, column=0, sticky="nsew")
-		self.button_craft_map_type.grid(row=15, column=4, sticky="we")
+		self.craft_map_image.grid(row=17, column=0, columnspan=4, sticky='nswe')
+		self.button_craft_zoom_in.grid(row=16, column=3, sticky="nsew")
+		self.button_craft_zoom_out.grid(row=16, column=0, sticky="nsew")
+		self.button_craft_map_type.grid(row=17, column=4, sticky="we")
+		self.create_label_center_2(16, 1, self.mc_frame, "CRAFT")
 		# Binds image inside of label object. (Needed to use the grid layout)
 		self.recovery_map_image = Label(self.mc_frame, image=temp_image)
 		# Reassigns the label object with the image attribute.
 		self.recovery_map_image.image = temp_image
 		# Places image into GUI.
-		self.recovery_map_image.grid(row=15, column=5, rowspan=2, columnspan=4, sticky='nswe')
-		self.button_recovery_zoom_in.grid(row=13, column=8, sticky="nsew")
-		self.button_recovery_zoom_out.grid(row=13, column=5, sticky="nsew")
-		self.button_recovery_map_type.grid(row=15, column=9, sticky="we")
+		self.recovery_map_image.grid(row=17, column=5, columnspan=4, sticky='nswe')
+		self.button_recovery_zoom_in.grid(row=16, column=8, sticky="nsew")
+		self.button_recovery_zoom_out.grid(row=16, column=5, sticky="nsew")
+		self.button_recovery_map_type.grid(row=17, column=9, sticky="we")
+		self.create_label_center_2(16, 6, self.mc_frame, "RECOVERY")
 		# Binds image inside of label object. (Needed to use the grid layout)
 		self.network_map_image = Label(self.mc_frame, image=temp_image)
 		# Reassigns the label object with the image attribute.
 		self.network_map_image.image = temp_image
 		# Places image into GUI.
-		self.network_map_image.grid(row=15, column=10, rowspan=2, columnspan=4, sticky='nswe')
-		self.button_network_zoom_in.grid(row=13, column=13, sticky="nsew")
-		self.button_network_zoom_out.grid(row=13, column=10, sticky="nsew")
-		self.button_network_map_type.grid(row=15, column=14, sticky="we")
+		self.network_map_image.grid(row=17, column=10, columnspan=4, sticky='nswe')
+		self.button_network_zoom_in.grid(row=16, column=13, sticky="nsew")
+		self.button_network_zoom_out.grid(row=16, column=10, sticky="nsew")
+		self.button_network_map_type.grid(row=17, column=14, sticky="we")
+		self.create_label_center_2(16, 11, self.mc_frame, "ALL NODES")
 
 
 	def populate_mc_tab(self):
@@ -563,45 +557,6 @@ class MC_Tab():
 			self.label_recovery_node.configure(background='yellow')
 
 
-	def callback_update_platform_node_status(self, *args):
-		"""
-		Upon serial data notification that the platform_node's network status has been
-		updated, this method will change the color of the visual representation on
-		the gui to inform the user.
-		Green = Connected.
-		Yellow = Was, but lost.
-		Red = Not connected / lost.
-		@param self - Instance of the class.
-		"""
-
-		# Refer to above documentation for what the numbers mean.
-		if self.node_platform.get() in "0.00":
-			self.label_platform_node.configure(background='red')
-		elif self.node_platform.get() in "1.00":
-			self.label_platform_node.configure(background='green')
-		elif self.node_platform.get() in "2.00":
-			self.label_platform_node.configure(background='yellow')
-
-
-	def callback_update_release_status(self, *args):
-		"""
-		Updates the visual indiciator to tell the user the status of the balloon launch system.
-		Prelaunch = User has yet to give the launch signal.
-		Standby = User has pressed the "release" button. Release signal is now propogating through
-		out the network.
-		Release Confirmed = Auto launch microcontroller has acknowledged release signal.
-		@param self - Instance of the class.
-		"""
-
-		# Refer to above documentation for what the numbers mean.
-		if self.release_status.get() in "0.00":
-			self.label_release_status.configure(background='red', text="Pre-Launch")
-		elif self.release_status.get() in "1.00":
-			self.label_release_status.configure(background='yellow', text="Standby..")
-		elif self.release_status.get() in "2.00":
-			self.label_release_status.configure(background='green', text="Released\nConfirmed")
-
-
 	def callback_update_gui(self, *args):
 		"""
 		Method is run each time the connected microcontrollers send serial data to the gui.
@@ -702,7 +657,7 @@ class MC_Tab():
 				# Updates the appropriate variables.
 				self.craft_time_previous = str(self.craft_time.get())
 				# Updates the visual indicatior.
-				self.radio_last_received_node.set("Payload")
+				self.radio_last_received_node.set("Craft")
 				self.update_craft_rssi(rssi)
 		# Constructs a CSV string to be sent to the rotor.
 		telemetry = str(self.craft_latitude.get()) + "," + str(self.craft_longitude.get()) + "," + str(self.craft_altitude.get() + "\n\r")
