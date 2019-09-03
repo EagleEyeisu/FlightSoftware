@@ -24,12 +24,12 @@ NODE_RECOVERY_ID = 2
 
 # Tkinter frame objects.
 mc_class_reference = None
-payload_class_reference = None
+craft_class_reference = None
 
 # Threaded timer objects.
 timer_mission_control_lora = None
-timer_payload_lora = None
+timer_craft_lora = None
 timer_recovery_lora = None
 timer_mission_control_contact_timer = None
-timer_payload_contact_timer = None
+timer_craft_contact_timer = None
 timer_recovery_contact_timer = None

@@ -31,31 +31,31 @@ class MC_Tab():
 
 		# Network variables.
 		self.node_mission_control = None
-		self.node_payload = None
+		self.node_craft = None
 		self.node_recovery = None
 		self.node_platform = None
 		self.release_status = None
 		self.radio_received = None
 		self.radio_sent = None
-		self.radio_payload_rssi = None
+		self.radio_craft_rssi = None
 		self.radio_recovery_rssi = None
-		self.radio_payload_last_contact = None
+		self.radio_craft_last_contact = None
 		self.radio_recovery_last_contact = None
 		self.radio_last_received_node = None
 		self.radio_received_node_id = None
 
 		# HABET Payload variables.
-		self.payload_time = None
-		self.payload_altitude = None
-		self.payload_latitude = None
-		self.payload_longitude = None
-		self.payload_event = None
-		self.payload_speed = None
-		self.payload_map_image = None
+		self.craft_time = None
+		self.craft_altitude = None
+		self.craft_latitude = None
+		self.craft_longitude = None
+		self.craft_event = None
+		self.craft_speed = None
+		self.craft_map_image = None
 
 		# Mission Control variables.
 		self.mission_control_time = None
-		self.payload_time_previous = ""
+		self.craft_time_previous = ""
 		self.recovery_time_previous = ""
 		self.network_map_image = None
 
@@ -79,29 +79,29 @@ class MC_Tab():
 		self.recovery_latitude = StringVar(self.mc_frame)
 		self.recovery_longitude = StringVar(self.mc_frame)
 		self.node_mission_control = StringVar(self.mc_frame)
-		self.node_payload = StringVar(self.mc_frame)
+		self.node_craft = StringVar(self.mc_frame)
 		self.node_recovery = StringVar(self.mc_frame)
 		self.node_platform = StringVar(self.mc_frame)
 		self.release_status = StringVar(self.mc_frame)
 		self.radio_received = StringVar(self.mc_frame)
 		self.radio_sent = StringVar(self.mc_frame)
-		self.radio_payload_rssi = StringVar(self.mc_frame)
+		self.radio_craft_rssi = StringVar(self.mc_frame)
 		self.radio_recovery_rssi = StringVar(self.mc_frame)
-		self.radio_payload_last_contact = StringVar(self.mc_frame)
+		self.radio_craft_last_contact = StringVar(self.mc_frame)
 		self.radio_recovery_last_contact = StringVar(self.mc_frame)
 		self.radio_last_received_node = StringVar(self.mc_frame)
 		self.radio_received_node_id = StringVar(self.mc_frame)
-		self.payload_time = StringVar(self.mc_frame)
-		self.payload_altitude = StringVar(self.mc_frame)
-		self.payload_latitude = StringVar(self.mc_frame)
-		self.payload_longitude = StringVar(self.mc_frame)
-		self.payload_event = StringVar(self.mc_frame)
-		self.payload_speed = StringVar(self.mc_frame)
+		self.craft_time = StringVar(self.mc_frame)
+		self.craft_altitude = StringVar(self.mc_frame)
+		self.craft_latitude = StringVar(self.mc_frame)
+		self.craft_longitude = StringVar(self.mc_frame)
+		self.craft_event = StringVar(self.mc_frame)
+		self.craft_speed = StringVar(self.mc_frame)
 
 		# Configures tracing for all variables. When these variables are written to,
 		# the corresponding method will run. (Allows for real time display updating)
 		self.node_mission_control.trace("w", self.callback_update_mission_control_node_status)
-		self.node_payload.trace("w", self.callback_update_payload_node_status)
+		self.node_craft.trace("w", self.callback_update_craft_node_status)
 		self.node_recovery.trace("w", self.callback_update_recovery_node_status)
 		self.node_platform.trace("w", self.callback_update_platform_node_status)
 		self.release_status.trace("w", self.callback_update_release_status)
@@ -109,17 +109,17 @@ class MC_Tab():
 		# Initialization of varaible values on GUI startup.
 		self.radio_received.set("-------")
 		self.radio_sent.set("-------")
-		self.radio_payload_rssi.set("-------")
+		self.radio_craft_rssi.set("-------")
 		self.radio_recovery_rssi.set("-------")
-		self.radio_payload_last_contact.set("-------")
+		self.radio_craft_last_contact.set("-------")
 		self.radio_recovery_last_contact.set("-------")
 		self.radio_last_received_node.set("Recovery")
-		self.payload_time.set("-------")
-		self.payload_altitude.set("-------")
-		self.payload_latitude.set("-------")
-		self.payload_longitude.set("-------")
-		self.payload_event.set("-------")
-		self.payload_speed.set("-------")
+		self.craft_time.set("-------")
+		self.craft_altitude.set("-------")
+		self.craft_latitude.set("-------")
+		self.craft_longitude.set("-------")
+		self.craft_event.set("-------")
+		self.craft_speed.set("-------")
 		self.radio_received_node_id.set("-------")
 		self.mission_control_time.set("-------")
 		self.recovery_time.set("-------")
@@ -136,16 +136,16 @@ class MC_Tab():
 		# Creates entry widgets for each variable. (Text windows to be placed in the GUI)
 		self.entry_radio_received = Entry(self.mc_frame, state="readonly", textvariable=self.radio_received, font='Helvtica 11')
 		self.entry_radio_sent = Entry(self.mc_frame, state="readonly", textvariable=self.radio_sent, font='Helvtica 11')
-		self.entry_radio_payload_rssi = Entry(self.mc_frame, state="readonly", textvariable=self.radio_payload_rssi, font='Helvtica 11')
+		self.entry_radio_craft_rssi = Entry(self.mc_frame, state="readonly", textvariable=self.radio_craft_rssi, font='Helvtica 11')
 		self.entry_radio_recovery_rssi = Entry(self.mc_frame, state="readonly", textvariable=self.radio_recovery_rssi, font='Helvtica 11')
-		self.entry_radio_payload_last_contact = Entry(self.mc_frame, state="readonly", textvariable=self.radio_payload_last_contact, font='Helvtica 11')
+		self.entry_radio_craft_last_contact = Entry(self.mc_frame, state="readonly", textvariable=self.radio_craft_last_contact, font='Helvtica 11')
 		self.entry_radio_recovery_last_contact = Entry(self.mc_frame, state="readonly", textvariable=self.radio_recovery_last_contact, font='Helvtica 11')
-		self.entry_payload_time = Entry(self.mc_frame, state="readonly", textvariable=self.payload_time, justify='right', font='Helvtica 11')
-		self.entry_payload_altitude = Entry(self.mc_frame, state="readonly", textvariable=self.payload_altitude, justify='right', font='Helvtica 11')
-		self.entry_payload_latitude = Entry(self.mc_frame, state="readonly", textvariable=self.payload_latitude, justify='right', font='Helvtica 11')
-		self.entry_payload_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.payload_longitude, justify='right', font='Helvtica 11')
-		self.entry_payload_event = Entry(self.mc_frame, state="readonly", textvariable=self.payload_event, justify='right', font='Helvtica 11')
-		self.entry_payload_speed = Entry(self.mc_frame, state="readonly", textvariable=self.payload_speed, justify='right', font='Helvtica 11')
+		self.entry_craft_time = Entry(self.mc_frame, state="readonly", textvariable=self.craft_time, justify='right', font='Helvtica 11')
+		self.entry_craft_altitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_altitude, justify='right', font='Helvtica 11')
+		self.entry_craft_latitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_latitude, justify='right', font='Helvtica 11')
+		self.entry_craft_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_longitude, justify='right', font='Helvtica 11')
+		self.entry_craft_event = Entry(self.mc_frame, state="readonly", textvariable=self.craft_event, justify='right', font='Helvtica 11')
+		self.entry_craft_speed = Entry(self.mc_frame, state="readonly", textvariable=self.craft_speed, justify='right', font='Helvtica 11')
 		self.entry_radio_received_node_id = Entry(self.mc_frame, state="readonly", textvariable=self.radio_received_node_id, justify='center', font='Helvtica 11')
 		self.entry_mission_control_time = Entry(self.mc_frame, state="readonly", textvariable=self.mission_control_time, justify='right', font='Helvtica 11')
 		self.entry_recovery_time = Entry(self.mc_frame, state="readonly", textvariable=self.recovery_time, justify='right', font='Helvtica 11')
@@ -162,9 +162,9 @@ class MC_Tab():
 
 		# Creates button widgets. (Triggers specified callback method.)
 		self.button_platform_launch = Button(self.mc_frame, text="Release\nBalloon", command=self.callback_release_balloon)
-		self.button_payload_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_payload_zoom_in)
-		self.button_payload_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_payload_zoom_out)
-		self.button_payload_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_payload_maptype)
+		self.button_craft_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_craft_zoom_in)
+		self.button_craft_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_craft_zoom_out)
+		self.button_craft_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_craft_maptype)
 		self.button_recovery_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_recovery_zoom_in)
 		self.button_recovery_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_recovery_zoom_out)
 		self.button_recovery_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_recovery_maptype)
@@ -184,8 +184,8 @@ class MC_Tab():
 		# of either buttons, display bars, or other objects on the GUI.
 		self.label_mission_control_node = Label(self.mc_frame, text="GROUND STATION", relief='solid', anchor="center")
 		self.label_mission_control_node.configure(background='red')
-		self.label_payload_node = Label(self.mc_frame, text="PAYLOAD", relief='solid', anchor="center")
-		self.label_payload_node.configure(background='red')
+		self.label_craft_node = Label(self.mc_frame, text="PAYLOAD", relief='solid', anchor="center")
+		self.label_craft_node.configure(background='red')
 		self.label_recovery_node = Label(self.mc_frame,  text="RECOVERY", relief='solid', anchor="center")
 		self.label_recovery_node.configure(background='red')
 		self.label_platform_node = Label(self.mc_frame,  text="PLATFORM", relief='solid', anchor="center")
@@ -206,7 +206,7 @@ class MC_Tab():
 		self.label_release_status.grid(row=3, column=1, columnspan=2, rowspan=2, sticky='nswe')
 		self.create_label_east_2(0, 0, self.mc_frame, "Node Status:")
 		self.label_mission_control_node.grid(row=0, column=1, sticky='nswe')
-		self.label_payload_node.grid(row=1, column=1, sticky='nswe')
+		self.label_craft_node.grid(row=1, column=1, sticky='nswe')
 		self.label_recovery_node.grid(row=0, column=2, sticky='nswe')
 		self.label_platform_node.grid(row=1, column=2, sticky='nswe')
 		self.create_label_east(0, 5, self.mc_frame, "Received:")
@@ -214,9 +214,9 @@ class MC_Tab():
 		self.create_label_east(1, 5, self.mc_frame, "Sent:")
 		self.entry_radio_sent.grid(row=1, column=6, columnspan=9, sticky='we')
 		self.create_label_east(2, 5, self.mc_frame, "RSSI Payload:")
-		self.entry_radio_payload_rssi.grid(row=2, column=6, sticky='we')
+		self.entry_radio_craft_rssi.grid(row=2, column=6, sticky='we')
 		self.create_label_east(2, 8, self.mc_frame, "Last Contact (s):")
-		self.entry_radio_payload_last_contact.grid(row=2, column=9, sticky='w')
+		self.entry_radio_craft_last_contact.grid(row=2, column=9, sticky='w')
 		self.create_label_east(3, 5, self.mc_frame, "RSSI Recovery:")
 		self.entry_radio_recovery_rssi.grid(row=3, column=6, sticky='we')
 		self.create_label_east(3, 8, self.mc_frame, "Last Contact (s):")
@@ -233,7 +233,7 @@ class MC_Tab():
 
 	def layout_nodes(self):
 		"""
-		Binds the sections of widgets related to the payload to the middle
+		Binds the sections of widgets related to the craft to the middle
 		portion of the frame.
 		@param self - Instance of the class.
 		"""
@@ -241,17 +241,17 @@ class MC_Tab():
 		# PAYLOAD
 		self.create_label_center(6, 1, self.mc_frame, "PAYLOAD")
 		self.create_label_center(7, 0, self.mc_frame, "Up Time (s): ")
-		self.entry_payload_time.grid(row=7, column=1, columnspan=2, sticky='we')
+		self.entry_craft_time.grid(row=7, column=1, columnspan=2, sticky='we')
 		self.create_label_center(8, 0, self.mc_frame, "Altitude (m): ")
-		self.entry_payload_altitude.grid(row=8, column=1, columnspan=2, sticky='we')
+		self.entry_craft_altitude.grid(row=8, column=1, columnspan=2, sticky='we')
 		self.create_label_center(9, 0, self.mc_frame, "Latitude:       ")
-		self.entry_payload_latitude.grid(row=9, column=1, columnspan=2, sticky='we')
+		self.entry_craft_latitude.grid(row=9, column=1, columnspan=2, sticky='we')
 		self.create_label_center(10, 0, self.mc_frame, "Longitude:   ")
-		self.entry_payload_longitude.grid(row=10, column=1, columnspan=2, sticky='we')
+		self.entry_craft_longitude.grid(row=10, column=1, columnspan=2, sticky='we')
 		# self.create_label_center(11, 0, self.mc_frame, "Event:            ")
-		# self.entry_payload_event.grid(row=11, column=1, sticky='we')
+		# self.entry_craft_event.grid(row=11, column=1, sticky='we')
 		self.create_label_center(11, 0, self.mc_frame, "Speed:            ")
-		self.entry_payload_speed.grid(row=11, column=1, columnspan=2, sticky='we')
+		self.entry_craft_speed.grid(row=11, column=1, columnspan=2, sticky='we')
 		# RECOVERY
 		self.create_label_center(6, 6, self.mc_frame, "RECOVERY")
 		self.create_label_center(7, 5, self.mc_frame, "Up Time (s): ")
@@ -278,14 +278,14 @@ class MC_Tab():
 		temp_image = PhotoImage(file="gui_maps/offline.png")
 		
 		# Binds image inside of label object. (Needed to use the grid layout)
-		self.payload_map_image = Label(self.mc_frame, image=temp_image)
+		self.craft_map_image = Label(self.mc_frame, image=temp_image)
 		# Reassigns the label object with the image attribute.
-		self.payload_map_image.image = temp_image
+		self.craft_map_image.image = temp_image
 		# Places image into GUI.
-		self.payload_map_image.grid(row=15, column=0, rowspan=2, columnspan=4, sticky='nswe')
-		self.button_payload_zoom_in.grid(row=13, column=3, sticky="nsew")
-		self.button_payload_zoom_out.grid(row=13, column=0, sticky="nsew")
-		self.button_payload_map_type.grid(row=15, column=4, sticky="we")
+		self.craft_map_image.grid(row=15, column=0, rowspan=2, columnspan=4, sticky='nswe')
+		self.button_craft_zoom_in.grid(row=13, column=3, sticky="nsew")
+		self.button_craft_zoom_out.grid(row=13, column=0, sticky="nsew")
+		self.button_craft_map_type.grid(row=15, column=4, sticky="we")
 		# Binds image inside of label object. (Needed to use the grid layout)
 		self.recovery_map_image = Label(self.mc_frame, image=temp_image)
 		# Reassigns the label object with the image attribute.
@@ -326,51 +326,51 @@ class MC_Tab():
 		g.mc_class_reference = self
 
 
-	def callback_payload_zoom_in(self, *args):
+	def callback_craft_zoom_in(self, *args):
 		"""
-		Increases the zoom level of the payload map image. Also requests
+		Increases the zoom level of the craft map image. Also requests
 		& replaces the current map image.
 
 		@param self - Instace of the class.
 		"""
 
 		# Increase the zoom level.
-		maps.payload_zoom = str(int(maps.payload_zoom) + 1)
+		maps.craft_zoom = str(int(maps.craft_zoom) + 1)
 		# Constructs the url needed to get the right image from Static Maps.
-		url = maps.build_url_payload(maps.previous_payload_coords)
+		url = maps.build_url_craft(maps.previous_craft_coords)
 		# Directory information and file name.
-		image_name = "gui_maps/payload_map" + "." + "PNG"
+		image_name = "gui_maps/craft_map" + "." + "PNG"
 		# Pulls down the configured Static Maps image from Google.
 		maps.request_API_image(url, image_name)
-		if self.payload_map_image is not None:
-			self.payload_map_image.destroy()
+		if self.craft_map_image is not None:
+			self.craft_map_image.destroy()
 		# Places the new image into the GUI.
-		self.mc_frame = maps.place_payload(self.mc_frame)
+		self.mc_frame = maps.place_craft(self.mc_frame)
 
 
-	def callback_payload_zoom_out(self, *args):
+	def callback_craft_zoom_out(self, *args):
 		"""
-		Decreases the zoom level of the payload map image. Also requests
+		Decreases the zoom level of the craft map image. Also requests
 		& replaces the current map image.
 
 		@param self - Instace of the class.
 		"""
 
 		# Decreases the zoom level.
-		maps.payload_zoom = str(int(maps.payload_zoom) - 1)
+		maps.craft_zoom = str(int(maps.craft_zoom) - 1)
 		# Constructs the url needed to get the right image from Static Maps.
-		url = maps.build_url_payload(maps.previous_payload_coords)
+		url = maps.build_url_craft(maps.previous_craft_coords)
 		# Directory information and file name.
-		image_name = "gui_maps/payload_map" + "." + "PNG"
+		image_name = "gui_maps/craft_map" + "." + "PNG"
 		# Pulls down the configured Static Maps image from Google.
 		maps.request_API_image(url, image_name)
-		if self.payload_map_image is not None:
-			self.payload_map_image.destroy()
+		if self.craft_map_image is not None:
+			self.craft_map_image.destroy()
 		# Places the new image into the GUI.
-		self.mc_frame = maps.place_payload(self.mc_frame)
+		self.mc_frame = maps.place_craft(self.mc_frame)
 
 
-	def callback_payload_maptype(self, *args):
+	def callback_craft_maptype(self, *args):
 		"""
 		Toggles the maptype of the requested image between "roadmap"
 		& "hybrid" (satellite view w/ roads).
@@ -378,10 +378,10 @@ class MC_Tab():
 		@param self - Instace of the class.
 		"""
 	
-		if maps.payload_maptype is "roadmap":
-			maps.payload_maptype = "hybrid"
+		if maps.craft_maptype is "roadmap":
+			maps.craft_maptype = "hybrid"
 		else:
-			maps.payload_maptype = "roadmap"
+			maps.craft_maptype = "roadmap"
 
 
 	def callback_recovery_zoom_in(self, *args):
@@ -523,9 +523,9 @@ class MC_Tab():
 			self.label_mission_control_node.configure(background='yellow')
 
 
-	def callback_update_payload_node_status(self, *args):
+	def callback_update_craft_node_status(self, *args):
 		"""
-		Upon serial data notification that the payload_node's network status has been
+		Upon serial data notification that the craft_node's network status has been
 		updated, this method will change the color of the visual representation on
 		the gui to inform the user.
 		Green = Connected.
@@ -535,12 +535,12 @@ class MC_Tab():
 		"""
 
 		# Refer to above documentation for what the numbers mean.
-		if self.node_payload.get() in "0.00":
-			self.label_payload_node.configure(background='red')
-		elif self.node_payload.get() in "1.00":
-			self.label_payload_node.configure(background='green')
-		elif self.node_payload.get() in "2.00":
-			self.label_payload_node.configure(background='yellow')
+		if self.node_craft.get() in "0.00":
+			self.label_craft_node.configure(background='red')
+		elif self.node_craft.get() in "1.00":
+			self.label_craft_node.configure(background='green')
+		elif self.node_craft.get() in "2.00":
+			self.label_craft_node.configure(background='yellow')
 
 
 	def callback_update_recovery_node_status(self, *args):
@@ -622,7 +622,7 @@ class MC_Tab():
 				# Splits the received serial data into two respective parts.
 				junk, local_vars, radio_in, radio_out, received_rssi, junk = str(temp_input).split("/")
 				self.parse_mission_control(local_vars)
-				self.parse_payload(radio_in, received_rssi)
+				self.parse_craft(radio_in, received_rssi)
 				self.parse_recovery(radio_in, received_rssi)
 				self.radio_sent.set(radio_out)
 				self.radio_received.set(radio_in)
@@ -659,7 +659,7 @@ class MC_Tab():
 		self.mission_control_time.set(mc_ts)
 
 
-	def parse_payload(self, radio_in, rssi):
+	def parse_craft(self, radio_in, rssi):
 		"""
 		Parses out variables from given string section.
 		Assigns to correct variables.
@@ -669,21 +669,21 @@ class MC_Tab():
 		@param rssi - Relative Signal Strength Index for the received packet.
 		"""
 		
-		# Checksums '$' and non payload variables are thrown out.
+		# Checksums '$' and non craft variables are thrown out.
 		junk, p_ts, p_alt, p_lat, p_lng, p_event, p_speed, junk, junk, junk, junk, node_reset, node_id, junk = str(radio_in).split(",")
 		# Sets parsed values to their corresponding StringVar.
-		self.payload_time.set(p_ts)
-		self.payload_altitude.set(p_alt)
+		self.craft_time.set(p_ts)
+		self.craft_altitude.set(p_alt)
 		t_lat = (float(p_lat) / 10000)
 		t_lng = (float(p_lng) / 10000)
-		self.payload_latitude.set(str(t_lat))
-		self.payload_longitude.set(str(t_lng))
-		self.payload_event.set(p_event)
-		self.payload_speed.set(p_speed)
+		self.craft_latitude.set(str(t_lat))
+		self.craft_longitude.set(str(t_lng))
+		self.craft_event.set(p_event)
+		self.craft_speed.set(p_speed)
 		self.radio_received_node_id.set(str(node_id))
-		# Checks if the packet is from the payload.
+		# Checks if the packet is from the craft.
 		print(self.radio_received_node_id.get())
-		# Checks if the packet was from payload.
+		# Checks if the packet was from craft.
 		if self.radio_received_node_id.get().count("2") is 1:
 			# Say you don't receive the a packet in a while. The mission control
 			# LoRa still sends you its last known packet each time it tries to
@@ -692,30 +692,30 @@ class MC_Tab():
 			# variable value to the proclaimed to be new value. If they are the same, its most
 			# likely the same packet we already saw. If they are different, its 100%
 			# new.
-			if self.payload_time_previous != str(self.payload_time.get()):
+			if self.craft_time_previous != str(self.craft_time.get()):
 				# Node has not power cycled.
 				if node_reset.count("1") is 1:
-					self.node_payload.set("2")
+					self.node_craft.set("2")
 				# Node has power cycled.
 				else:
-					self.node_payload.set("1")
+					self.node_craft.set("1")
 				# Updates the appropriate variables.
-				self.payload_time_previous = str(self.payload_time.get())
+				self.craft_time_previous = str(self.craft_time.get())
 				# Updates the visual indicatior.
 				self.radio_last_received_node.set("Payload")
-				self.update_payload_rssi(rssi)
+				self.update_craft_rssi(rssi)
 		# Constructs a CSV string to be sent to the rotor.
-		telemetry = str(self.payload_latitude.get()) + "," + str(self.payload_longitude.get()) + "," + str(self.payload_altitude.get() + "\n\r")
+		telemetry = str(self.craft_latitude.get()) + "," + str(self.craft_longitude.get()) + "," + str(self.craft_altitude.get() + "\n\r")
 		# Sends data to rotor so it can compute turning angle.
 		send_rotor_telemetry(telemetry)
 		# Configure a map image from Google Static Maps API.
-		new_map_flag = maps.generate_map(self.payload_latitude.get(), self.payload_longitude.get(), "payload")
+		new_map_flag = maps.generate_map(self.craft_latitude.get(), self.craft_longitude.get(), "craft")
 		# If a new map was created (new GPS coords), places that image into the GUI.
 		# maps.
 		if new_map_flag is True:
 			# Reset flag.
 			new_map_flag = False
-			maps.place_payload(self.mc_frame)
+			maps.place_craft(self.mc_frame)
 			maps.place_network(self.mc_frame)
 			
 
@@ -770,44 +770,44 @@ class MC_Tab():
 			maps.place_recovery(self.mc_frame)
 			maps.place_network(self.mc_frame)
 
-	def update_payload_rssi(self, received_rssi):
+	def update_craft_rssi(self, received_rssi):
 		"""
 		Updates GUI's variables holding information about the last received
-		payload packet.
+		craft packet.
 		@param self  - Instance of the class.
 		@param *args - The RSSI of the last received packet.
 		"""
 
 		# Checks if timer is already running.
-		if g.timer_payload_contact_timer is not None:
+		if g.timer_craft_contact_timer is not None:
 			# If so, disable it to resync the 1sec timer.
-			g.timer_payload_contact_timer.cancel()
-		# If so, assign RSSI to the payload variables.
-		self.radio_payload_rssi.set(received_rssi)
+			g.timer_craft_contact_timer.cancel()
+		# If so, assign RSSI to the craft variables.
+		self.radio_craft_rssi.set(received_rssi)
 		# Reset the last contact timer.
-		self.radio_payload_last_contact.set("0")
+		self.radio_craft_last_contact.set("0")
 		# Creates countdown timer that, upon hitting zero runs the associated method.
 		# Units are seconds.
-		g.timer_payload_contact_timer = threading.Timer(1.0, self.timer_increment_payload_last_contact)
+		g.timer_craft_contact_timer = threading.Timer(1.0, self.timer_increment_craft_last_contact)
 		# Starts the countdown timer.
-		g.timer_payload_contact_timer.start()
+		g.timer_craft_contact_timer.start()
 
 
-	def timer_increment_payload_last_contact(self):
+	def timer_increment_craft_last_contact(self):
 		"""
-		Increments the payload node's last contact variable each second.
-		This timer is resynced each time a packet from the payload
+		Increments the craft node's last contact variable each second.
+		This timer is resynced each time a packet from the craft
 		is received.
 		@param self  - Instance of the class.
 		"""
 
 		# Creates countdown timer that, upon hitting zero runs the associated method.
 		# Units are seconds.
-		g.timer_payload_contact_timer = threading.Timer(1.0, self.timer_increment_payload_last_contact)
+		g.timer_craft_contact_timer = threading.Timer(1.0, self.timer_increment_craft_last_contact)
 		# Starts the countdown timer.
-		g.timer_payload_contact_timer.start()
-		# Increments the payload last contact timer on a 1 second interval.
-		self.radio_payload_last_contact.set(str(int(self.radio_payload_last_contact.get()) + 1))
+		g.timer_craft_contact_timer.start()
+		# Increments the craft last contact timer on a 1 second interval.
+		self.radio_craft_last_contact.set(str(int(self.radio_craft_last_contact.get()) + 1))
 
 
 	def update_recovery_rssi(self, received_rssi):
@@ -836,7 +836,7 @@ class MC_Tab():
 	def timer_increment_recovery_last_contact(self):
 		"""
 		Increments the recovery node's last contact variable each second.
-		This timer is resynced each time a packet from the payload
+		This timer is resynced each time a packet from the craft
 		is received.
 		@param self  - Instance of the class.
 		"""

@@ -26,7 +26,7 @@ class GUI_Terminal():
 
 		self.gui_window = None
 		self.mc_frame = None
-		self.payload_frame = None
+		self.craft_frame = None
 
 	def configure_gui_terminal(self):
 		"""
@@ -50,18 +50,18 @@ class GUI_Terminal():
 			mc_tab.populate_mc_tab()
 		elif g.SYSTEM_USER is "recovery":
 			# Creates an instance of the mission control oriented class.
-			payload_tab = Recovery_Tab(self.payload_frame)
+			craft_tab = Recovery_Tab(self.craft_frame)
 			# Class call to populate the mission control frame with its widgets.
-			payload_tab.populate_payload_tab()
+			craft_tab.populate_craft_tab()
 		elif g.SYSTEM_USER is "dev":
 			# Creates an instance of the mission control oriented class.
 			mc_tab = MC_Tab(self.mc_frame)
 			# Class call to populate the mission control frame with its widgets.
 			mc_tab.populate_mc_tab()
 			# Creates an instance of the mission control oriented class.
-			payload_tab = Recovery_Tab(self.payload_frame)
+			craft_tab = Recovery_Tab(self.craft_frame)
 			# Class call to populate the mission control frame with its widgets.
-			payload_tab.populate_payload_tab()
+			craft_tab.populate_craft_tab()
 		# Configures serial communication channels.
 		setup_comms()
 		# Displays window.
@@ -93,7 +93,7 @@ class GUI_Terminal():
 		# Creates an inner frame. (Tab)
 		self.mc_frame = Frame(book)
 		# Creates an inner frame. (Tab)
-		self.payload_frame = Frame(book)
+		self.craft_frame = Frame(book)
 		# The layout of each frame works as a grid system. The next two lines define how many
 		# rows and columsn exist on the frames. These row/column numbers are used to
 		# position buttons and displays around the GUI. Weight of 1 just means no button possess more
@@ -105,18 +105,18 @@ class GUI_Terminal():
 		# rows and columsn exist on the frames. These row/column numbers are used to
 		# position buttons and displays around the GUI. Weight of 1 just means no button possess more
 		# "importance" than other buttons. Just don't change the weight.
-		self.payload_frame.columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), weight=0)
-		self.payload_frame.rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), weight=1)
+		self.craft_frame.columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), weight=0)
+		self.craft_frame.rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19), weight=1)
 		if g.SYSTEM_USER is "mc":
 			# Adds frames to the GUI terminal.
 			book.add(self.mc_frame, text="Mission Control")
 		elif g.SYSTEM_USER is "recovery":
 			# Adds frames to the GUI terminal.
-			book.add(self.payload_frame, text="     Recovery     ")
+			book.add(self.craft_frame, text="     Recovery     ")
 		elif g.SYSTEM_USER is "admin" or "dev":
 			# Adds frames to the GUI terminal.
 			book.add(self.mc_frame, text="Mission Control")
-			book.add(self.payload_frame, text="     Recovery     ")
+			book.add(self.craft_frame, text="     Recovery     ")
 
 
 	def callback_quit_gui(self, *args):
@@ -131,10 +131,10 @@ class GUI_Terminal():
 		# Checks for the existance of specific timer objects.
 		if g.timer_mission_control_lora is not None:
 			g.timer_mission_control_lora.cancel()
-		if g.timer_payload_lora is not None:
-			g.timer_payload_lora.cancel()
-		if g.timer_payload_contact_timer is not None:
-			g.timer_payload_contact_timer.cancel()
+		if g.timer_craft_lora is not None:
+			g.timer_craft_lora.cancel()
+		if g.timer_craft_contact_timer is not None:
+			g.timer_craft_contact_timer.cancel()
 		if g.timer_recovery_contact_timer is not None:
 			g.timer_recovery_contact_timer.cancel()
 		# Shuts down the Tkinter GUI.
