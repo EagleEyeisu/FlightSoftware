@@ -1,34 +1,34 @@
 /****LIBRARIES****/
-
-//NON EAGLE EYE
+//NON HABET
 #include <RH_RF95.h>
 #include <Time.h>
 
-//EAGLE EYE'S
+//HABET MADE
 #include "Globals.h"
 #include "Data.h"
 #include "Radio.h"
 
 
-/*****CONSTRUCTORS*****/ //(Objects that can reference their respective functions & variables)
+/*****CONSTRUCTORS*****/
 DATA Data;
 RADIO Radio;
 
 //Directs the radio object to focus on two specific ports.
-RH_RF95 rf95(8,7);
+RH_RF95 rf95(Radio.RFM95_CS, Radio.RFM95_INT);
 
 
 /**
  * Method initializes the main hardware components.
  */
 void setup(){
-    
-    // Creates a serial communication line between the arduino and the serial port 
-    // found under 'Tools' -> 'Serial Monitor'
+    // Creates a serial communication line between the arduino
+    // and the serial port found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
-    
     // Initializes the Radio.
     Radio.initialize();
+    // Bootup has happened. Set flags.
+    Data.node_reset = 1;
+    Data.system_boot_complete = false;
 }
 
 
@@ -38,15 +38,33 @@ void setup(){
 void loop(){
     // Reads in serial port data if available.
     serial_input();
+    // Monitors if the LoRa just reset and changes values accordingly.
+    system_boot();
     // Ensures the gui is connected prior to starting the microcontroller's tasks.
     if(Data.gui_connection)
     {
         // Updates GUI/user with situational info.
         Data.serial_comms();
-        // Responsible for grabbing all of the craft's current information, 
-        // turning that data into an array that can be sent out via radio.
-        // Also reads in incoming messages.
-        Radio.manager();
+    }
+    // Responsible for grabbing all of the craft's current information,
+    // turning that data into an array that can be sent out via radio.
+    // Also reads in incoming messages.
+    Radio.manager();
+}
+
+
+/**
+ * Flag management during and after boot process.
+ */
+void system_boot()
+{
+    // For the first # seconds of boot.
+    if((millis() - Data.startup_timer >= 3000) && !Data.system_boot_complete)
+    {
+        // System has now been operating for # seconds.
+        Data.node_reset = 0;
+        // Adjust flag.
+        Data.system_boot_complete = true;
     }
 }
 
@@ -64,41 +82,37 @@ void serial_input()
             char t = Serial.read();
             new_input += t;
         }
-        
-        // Creates a character array of the length of the serial input. 
+        // Creates a character array of the length of the serial input.
         char toParse[new_input.length()];
         // Converts said string to character array.
         new_input.toCharArray(toParse, new_input.length());
-        
-        // Checks for the python gui starting up and attemping to establish serial connection
-        // to this microcontroller.
+        // Checks for the python gui starting up and attemping to
+        // establish serial connection to this microcontroller.
         if(toParse[0] == 'P' && Data.gui_connection == false)
         {
             // Responds to the gui with the microcontroller ID tag.
-            Serial.write("MC_LORA");
+            Serial.write("mission_control");
             // Updates connection status.
             Data.gui_connection = true;
             // Blinks LED (on the LoRa) to show communication setup was established.
-            Radio.blink_led_long();
+            blink_led_long();
         }
-        // Checks for correct data format and prior connection status to the gui.
-        else if(toParse[0] == '$' && Data.gui_connection == true)
+        if(toParse[3] == 'L' && Data.gui_connection == true)
         {
-            // '0' at index 3 signifies manual control. 
-            if(toParse[2]=='0')
-            {
-                Radio.Network.authority_mode = Data.get_serial_authority_mode(toParse);
-                Radio.Network.manual_direction = Data.get_serial_direction(toParse);
-                Radio.Network.craft_anchor = Data.get_serial_craft_anchor(toParse);
-                Radio.Network.target_throttle = Data.get_serial_target_throttle(toParse);
-                // Directly sets variables due to operation_mode being an enum state.
-                Data.get_serial_op_mode(toParse);
-            }
-            // '1' at index 3 signifies automatic control. 
-            else if(toParse[2]=='1')
-            {
-                // To be implemented at a later date.
-            }
+            
         }
     }
+}
+
+
+/*
+ * Blinks LED long duration.
+ */
+void blink_led_long()
+{
+    // ON
+    digitalWrite(13, HIGH);
+    delay(2000);
+    // OFF
+    digitalWrite(13, LOW);
 }

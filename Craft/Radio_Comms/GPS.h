@@ -49,9 +49,9 @@ class GPS
 	// Target Longitude for craft.
 	float craft_target_longitude = 0.0;
 	// Current distance to target in meters.
-	float craft_target_distance = 0.0;
+	float craft_distance = 0.0;
 	// Holds the crafts previous target distance.
-	float previous_target_distance = 0.0;
+	float previous_distance = 0.0;
 	// Holds the crafts previous altitude.
 	float previous_altitude = 0.0;
 	// Holds the crafts previous latitude.

@@ -1,5 +1,5 @@
 /**
- * Data.cpp contains the struct that holds all the Crafts situational information.
+ * Data.cpp contains the struct that holds all the Craft's situational information.
  */
 
 #include <Arduino.h>
@@ -13,12 +13,12 @@
  */
 DATA::DATA()
 {
-  
+
 }
 
 
 /**
- * Returns a parsed section of the read in parameter. The parameter 'objective' represents 
+ * Returns a parsed section of the read in parameter. The parameter 'objective' represents
  * the comma's position from the beginning of the character array.
  */
 float DATA::Parse(char message[], int objective)
@@ -32,6 +32,7 @@ float DATA::Parse(char message[], int objective)
 	//                    LORA                                        MISSION CONTROL                       CRAFT ID
 	// Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),craft_anchor,new_throttle,TargetLat,TargetLon, | Signal Origin
 	//
+	// The number of commas that the program needs to pass before it started parsing the data.
 
 	// Used to iterate through the passed in character array.
 	int i = 0;
@@ -45,13 +46,13 @@ float DATA::Parse(char message[], int objective)
   	// Iterators over the entire array.
   	for(i=0; i<120; i++)
   	{
-    	// Checks to see if the current iterator's position is a comma. 
+    	// Checks to see if the current iterator's position is a comma.
     	if(message[i] == ',')
     	{
     		// If so, it iterators the comma counter by 1.
       		comma_counter++;
     	}
-    	// Checks to see if the desired amount of commas has been passed. 
+    	// Checks to see if the desired amount of commas has been passed.
 	    else if(comma_counter == objective)
 	    {
 		    // Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
@@ -83,7 +84,7 @@ float DATA::Parse(char message[], int objective)
 void DATA::serial_comms()
 {
 	// Send useful information back to the python GUI.
-	Data.update_gui();
+	update_gui();
 }
 
 
@@ -92,135 +93,33 @@ void DATA::serial_comms()
  */
 void DATA::update_gui()
 {
-  // Only sends info to update gui every 2 seconds to relieve traffic.
-	if(!Serial.available() && (millis() - Data.serial_timer >= 2000))
+	// Only sends info to update gui every 1/3 second.
+	if(!Serial.available() && (millis() - serial_timer >= 1500))
 	{
+		
 		// Resets / starts timer.
-	    Data.serial_timer = millis();
+	    serial_timer = millis();
 	    // Starts or updates mission control microsecond timer. (Converts to seconds w/ 2 decimal places for easy of use)
-	    Radio.Network.home_ts = millis()/1000.0;
-	    
+	    Radio.mission_control_ts = millis()/1000.0;
     	// Holds outgoing message.
 		String temp_packet = "";
-    	// Gets set true if a packet (TO BE SENT) has been created.
-		bool confirmed_packet = false;
-		// Roll Call config.
-		if(Radio.operation_mode == Radio.ROLLCALL)
-		{
-			confirmed_packet = true;
-			temp_packet += "$";
-			temp_packet += ",";
-      		temp_packet += "R";
-      		temp_packet += ",";
-			temp_packet += Radio.mc_node.node_status;
-			temp_packet += ",";
-			temp_packet += Radio.ee_node.node_status;
-			temp_packet += ",";
-			temp_packet += Radio.relay_node.node_status;
-			temp_packet += ",";
-			temp_packet += "$";
-     temp_packet += "$"; // Weird serial issue where it only sends one of the '$'. To be looked into.
-		}
-		// Normal GUI <-> mission_control Config.
-		else if((Radio.operation_mode == Radio.NORMAL) || (Radio.operation_mode == Radio.STANDBY) || (Radio.operation_mode == Radio.NONE))
-		{
-			confirmed_packet = true;
-			temp_packet += "$";
-			temp_packet += ",";
-			temp_packet += "N";
-			temp_packet += ",";
-      		temp_packet += Radio.Network.craft_ts;
-			temp_packet += ",";
-			temp_packet += Radio.Network.craft_altitude;
-			temp_packet += ",";
-			temp_packet += Radio.Network.craft_latitude;
-			temp_packet += ",";
-			temp_packet += Radio.Network.craft_longitude;
-			temp_packet += ",";
-			temp_packet += Radio.Network.craft_event;
-		    temp_packet += ",";
-		    temp_packet += Radio.Network.craft_id;
-		    temp_packet += ",";
-		    temp_packet += Radio.Network.home_ts;
-			temp_packet += "]";
-			temp_packet += Radio.radio_input;
-			temp_packet += "/";
-			temp_packet += Radio.radio_output;
-			temp_packet += "/";
-			temp_packet += "$";
-      		temp_packet += "$"; // Weird serial issue where it only sends one of the '$'. To be looked into.
-		}
+		temp_packet += "$";
+		temp_packet += "/";
+		temp_packet += Radio.mission_control_ts;
+		temp_packet += "/";
+		temp_packet += Radio.radio_input;
+		temp_packet += "/";
+		temp_packet += Radio.radio_output;
+		temp_packet += "/";
+		temp_packet += Radio.received_rssi;
+		temp_packet += "/";
+		temp_packet += "$";
 
-		if(confirmed_packet){
-			// Converts from String to char array. 
-			char serial_packet[temp_packet.length()];
-			temp_packet.toCharArray(serial_packet, temp_packet.length());
-			// Sends packet via serial to python GUI.
-			Serial.write(serial_packet);
-		}
+		// Defines a char array with the length needed to hold the received packet.
+		char serial_packet[temp_packet.length()+1];
+		// Converts from String to char array.
+		temp_packet.toCharArray(serial_packet, temp_packet.length()+1);
+		// Sends packet via serial to python GUI.
+		Serial.write(serial_packet);
 	}
-}
-
-
-/**
- * Parses serial input and returns the authority mode.
- */
-float DATA::get_serial_authority_mode(char buf[])
-{
-    return (Parse(buf,1));
-}
-
-
-/**
- * Parses serial input and returns the user's manual direction.
- */
-float DATA::get_serial_direction(char buf[])
-{
-    return (Parse(buf,2));
-}
-
-
-/**
- * Parses serial input and returns the anchor status.
- */
-float DATA::get_serial_craft_anchor(char buf[])
-{
-    return (Parse(buf,3));
-}
-
-
-/**
- * Parses serial input and returns the target throttle.
- */
-float DATA::get_serial_target_throttle(char buf[])
-{
-    return (Parse(buf,4));
-}
-
-
-/**
- * Parses serial input and returns the operational mode.
- */
-void DATA::get_serial_op_mode(char buf[])
-{	
-	// Parses out operation_mode representated as integer.
-    int temp_mode = (Parse(buf,5));
-    // Converts integer representation to the appropriate state.
-    if(temp_mode == 0.0)
-    {
-    	Radio.operation_mode = Radio.NONE;
-    }
-    else if(temp_mode == 1.0)
-    {
-    	Radio.operation_mode = Radio.ROLLCALL;
-      Radio.mc_node.node_status = 1.0;
-    }
-    else if(temp_mode == 2.0)
-    {
-    	Radio.operation_mode = Radio.STANDBY;
-    }
-    else if(temp_mode == 3.0)
-    {
-    	Radio.operation_mode = Radio.NORMAL;
-    }
 }
