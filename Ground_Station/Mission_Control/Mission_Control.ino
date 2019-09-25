@@ -1,9 +1,9 @@
 /****LIBRARIES****/
-//NON HABET
+//NON EAGLE EYE
 #include <RH_RF95.h>
 #include <Time.h>
 
-//HABET MADE
+//EAGLE EYE MADE
 #include "Globals.h"
 #include "Data.h"
 #include "Radio.h"

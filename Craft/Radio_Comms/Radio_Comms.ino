@@ -30,7 +30,7 @@ void setup()
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
-    Comm.initialize(); 
+    Comm.initialize();
     // Initializes the Radio.
     Radio.initialize();
     // Bootup has happened. Set flags.

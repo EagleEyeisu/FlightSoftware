@@ -55,7 +55,7 @@ class RADIO
     const byte RFM95_CS = 10;
     // Pins used to blink an LED to signal receival packet.
     const byte LED = 13;
-    // Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
+    // Radio frequency used throught the Eagle Eye Program.
     #define RF95_FREQ 433.0
     // Craft ID (Mission Control LoRa.)
     float node_id = 1.0;

@@ -65,10 +65,10 @@ void MOTOR::manager()
  */
 int MOTOR::convert_throttle()
 {
-  int input = Data.radio_target_throttle;
-  int throttle = input * 10;
-  throttle = throttle + 980;
-  return throttle;
+    int input = Data.radio_target_throttle;
+    int throttle = input * 10;
+    throttle = throttle + 980;
+    return throttle;
 }
 
 
