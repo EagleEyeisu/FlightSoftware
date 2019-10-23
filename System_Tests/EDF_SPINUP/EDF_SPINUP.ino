@@ -55,7 +55,7 @@ void setup()
     if (!SD.begin(chipSelect)) {
         Serial.println("Card failed, or not present");
         // don't do anything more:
-        while (1);
+        //while (1);
     }
     else{
         log_data(4);
@@ -89,7 +89,7 @@ void edf_tests()
     test_active = false;
 
     // Acknowledges HABET's start signal.
-    Serial1.write("Start");
+    Serial1.write("Started");
     // Logs to the SD card that we have started the tests.
     log_data(2);
 
@@ -126,7 +126,7 @@ void edf_tests()
     // Logs to the sd card that we have stopped the tests.
     log_data(3);
     // Tells HABET that tests have concluded.
-    Serial1.write("Stop");
+    Serial1.write("Stopped");
 }
 
 /**
@@ -134,26 +134,32 @@ void edf_tests()
  */
 void check_serial()
 {
-    if(Serial.available())
+    if(Serial1.available())
     {
+        Serial.println("Serial Avail");
         String new_input = "";
-        while(Serial.available())
+        while(Serial1.available())
         {
-            char t = Serial.read();
+            char t = Serial1.read();
             new_input += t;
         }
+        Serial.println(new_input);
         // Creates a character array of the length of the serial input.
         char toParse[new_input.length()];
         // Converts said string to character array.
         new_input.toCharArray(toParse, new_input.length());
         // Checks for the python gui starting up and attemping to
         // establish serial connection to this microcontroller.
-        if(toParse[0] == '$' && test_active == false)
+        Serial.print(toParse);Serial.println(".");
+        if(new_input[0] == '$' && test_active == false)
         {
-            // Responds to the HABET that we started.
-            // Serial.write("Starting.");
             // Updates connection status.
             test_active = true;
+            Serial.println("Got Start");
+        }
+        else if(new_input[0] == 'T')
+        {
+          Serial1.write("Ready");
         }
     }
 }
@@ -175,7 +181,7 @@ void run_test(int max_throttle)
     // Resets the base throttle to <0%. 
     current_throttle = 970;
     // Cycles from 0% to the desired max_throttle. 
-    while(max_throttle > current_throttle)
+    while(max_throttle >= current_throttle)
     {
         // Increments throttle amount.
         current_throttle = current_throttle + increment_amount;
@@ -183,6 +189,7 @@ void run_test(int max_throttle)
         //Serial.println(current_throttle);
         // Writes the new waveform to the ESC. (Increases the speed by ~1%)
         motor.writeMicroseconds(current_throttle);
+        Serial.println(current_throttle);
         // There needs to be a certain delay between increases. 
         delay(INCREMENT_DELAY);
     }
