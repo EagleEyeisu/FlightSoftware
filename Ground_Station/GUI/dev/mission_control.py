@@ -32,19 +32,16 @@ class MC_Tab():
 		# Network variables.
 		self.node_mission_control = None
 		self.node_craft = None
-		self.node_recovery = None
 		self.node_platform = None
 		self.release_status = None
 		self.radio_received = None
 		self.radio_sent = None
 		self.radio_craft_rssi = None
-		self.radio_recovery_rssi = None
 		self.radio_craft_last_contact = None
-		self.radio_recovery_last_contact = None
 		self.radio_last_received_node = None
 		self.radio_received_node_id = None
 
-		# HABET Payload variables.
+		# Eagle Eye Craft variables.
 		self.craft_time = None
 		self.craft_altitude = None
 		self.craft_latitude = None
@@ -56,14 +53,7 @@ class MC_Tab():
 		# Mission Control variables.
 		self.mission_control_time = None
 		self.craft_time_previous = ""
-		self.recovery_time_previous = ""
 		self.network_map_image = None
-
-		# Recovery variables.
-		self.recovery_time = None
-		self.recovery_latitude = None
-		self.recovery_longitude = None
-		self.recovery_map_image = None
 
 
 	def variable_setup(self):
@@ -75,18 +65,12 @@ class MC_Tab():
 		# StringVar variables are strings that update their text in entries when
 		# their value is changed.
 		self.mission_control_time = StringVar(self.mc_frame)
-		self.recovery_time = StringVar(self.mc_frame)
-		self.recovery_latitude = StringVar(self.mc_frame)
-		self.recovery_longitude = StringVar(self.mc_frame)
 		self.node_mission_control = StringVar(self.mc_frame)
 		self.node_craft = StringVar(self.mc_frame)
-		self.node_recovery = StringVar(self.mc_frame)
 		self.radio_received = StringVar(self.mc_frame)
 		self.radio_sent = StringVar(self.mc_frame)
 		self.radio_craft_rssi = StringVar(self.mc_frame)
-		self.radio_recovery_rssi = StringVar(self.mc_frame)
 		self.radio_craft_last_contact = StringVar(self.mc_frame)
-		self.radio_recovery_last_contact = StringVar(self.mc_frame)
 		self.radio_last_received_node = StringVar(self.mc_frame)
 		self.radio_received_node_id = StringVar(self.mc_frame)
 		self.craft_time = StringVar(self.mc_frame)
@@ -100,15 +84,12 @@ class MC_Tab():
 		# the corresponding method will run. (Allows for real time display updating)
 		self.node_mission_control.trace("w", self.callback_update_mission_control_node_status)
 		self.node_craft.trace("w", self.callback_update_craft_node_status)
-		self.node_recovery.trace("w", self.callback_update_recovery_node_status)
 
 		# Initialization of varaible values on GUI startup.
 		self.radio_received.set("-------")
 		self.radio_sent.set("-------")
 		self.radio_craft_rssi.set("-------")
-		self.radio_recovery_rssi.set("-------")
 		self.radio_craft_last_contact.set("-------")
-		self.radio_recovery_last_contact.set("-------")
 		self.radio_last_received_node.set("-------")
 		self.craft_time.set("-------")
 		self.craft_altitude.set("-------")
@@ -118,9 +99,6 @@ class MC_Tab():
 		self.craft_speed.set("-------")
 		self.radio_received_node_id.set("-------")
 		self.mission_control_time.set("-------")
-		self.recovery_time.set("-------")
-		self.recovery_latitude.set("-------")
-		self.recovery_longitude.set("-------")
 
 
 	def create_entry_objects(self):
@@ -133,9 +111,7 @@ class MC_Tab():
 		self.entry_radio_received = Entry(self.mc_frame, state="readonly", textvariable=self.radio_received, font='Helvtica 11')
 		self.entry_radio_sent = Entry(self.mc_frame, state="readonly", textvariable=self.radio_sent, font='Helvtica 11')
 		self.entry_radio_craft_rssi = Entry(self.mc_frame, state="readonly", textvariable=self.radio_craft_rssi, font='Helvtica 11')
-		self.entry_radio_recovery_rssi = Entry(self.mc_frame, state="readonly", textvariable=self.radio_recovery_rssi, font='Helvtica 11')
 		self.entry_radio_craft_last_contact = Entry(self.mc_frame, state="readonly", textvariable=self.radio_craft_last_contact, font='Helvtica 11')
-		self.entry_radio_recovery_last_contact = Entry(self.mc_frame, state="readonly", textvariable=self.radio_recovery_last_contact, font='Helvtica 11')
 		self.entry_craft_time = Entry(self.mc_frame, state="readonly", textvariable=self.craft_time, justify='right', font='Helvtica 11')
 		self.entry_craft_altitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_altitude, justify='right', font='Helvtica 11')
 		self.entry_craft_latitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_latitude, justify='right', font='Helvtica 11')
@@ -144,9 +120,6 @@ class MC_Tab():
 		self.entry_craft_speed = Entry(self.mc_frame, state="readonly", textvariable=self.craft_speed, justify='right', font='Helvtica 11')
 		self.entry_radio_received_node_id = Entry(self.mc_frame, state="readonly", textvariable=self.radio_received_node_id, justify='center', font='Helvtica 11')
 		self.entry_mission_control_time = Entry(self.mc_frame, state="readonly", textvariable=self.mission_control_time, justify='right', font='Helvtica 11')
-		self.entry_recovery_time = Entry(self.mc_frame, state="readonly", textvariable=self.recovery_time, justify='right', font='Helvtica 11')
-		self.entry_recovery_latitude = Entry(self.mc_frame, state="readonly", textvariable=self.recovery_latitude, justify='right', font='Helvtica 11')
-		self.entry_recovery_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.recovery_longitude, justify='right', font='Helvtica 11')
 		self.entry_radio_last_received_node = Entry(self.mc_frame, state="readonly", justify='center', textvariable=self.radio_last_received_node, font='Helvetica 18 bold')
 
 
@@ -160,9 +133,6 @@ class MC_Tab():
 		self.button_craft_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_craft_zoom_in)
 		self.button_craft_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_craft_zoom_out)
 		self.button_craft_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_craft_maptype)
-		self.button_recovery_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_recovery_zoom_in)
-		self.button_recovery_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_recovery_zoom_out)
-		self.button_recovery_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_recovery_maptype)
 		self.button_network_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_network_zoom_in)
 		self.button_network_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_network_zoom_out)
 		self.button_network_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_network_maptype)
@@ -181,8 +151,6 @@ class MC_Tab():
 		self.label_mission_control_node.configure(background='red')
 		self.label_craft_node = Label(self.mc_frame, text="CRAFT", relief='solid', anchor="center")
 		self.label_craft_node.configure(background='red')
-		self.label_recovery_node = Label(self.mc_frame,  text="RECOVERY", relief='solid', anchor="center")
-		self.label_recovery_node.configure(background='red')
 
 
 	def layout_network(self):
@@ -196,7 +164,6 @@ class MC_Tab():
 		self.create_label_east_2(1, 0, self.mc_frame, "Node Status:")
 		self.label_mission_control_node.grid(row=0, column=1, rowspan=2, sticky='nswe')
 		self.label_craft_node.grid(row=2, column=1, rowspan=2, sticky='nswe')
-		self.label_recovery_node.grid(row=0, column=2, rowspan=2, sticky='nswe')
 		self.create_label_east(0, 5, self.mc_frame, "Received:")
 		self.entry_radio_received.grid(row=0, column=6, columnspan=9, sticky='we')
 		self.create_label_east(1, 5, self.mc_frame, "Sent:")
@@ -205,11 +172,6 @@ class MC_Tab():
 		self.entry_radio_craft_rssi.grid(row=2, column=6, sticky='we')
 		self.create_label_east(2, 8, self.mc_frame, "Last Contact (s):")
 		self.entry_radio_craft_last_contact.grid(row=2, column=9, sticky='w')
-		self.create_label_east(3, 5, self.mc_frame, "RSSI Recovery:")
-		self.entry_radio_recovery_rssi.grid(row=3, column=6, sticky='we')
-		self.create_label_east(3, 8, self.mc_frame, "Last Contact (s):")
-		self.entry_radio_recovery_last_contact.grid(row=3, column=9, sticky='w')
-		self.create_label_center_2(2, 12, self.mc_frame, "Last Packet Received From")
 		self.entry_radio_last_received_node.grid(row=3, column=12, rowspan=2, columnspan=2, sticky='nsew')
 
 		# Terminal divider. KEEP AT THE BOTTOM OF THIS METHOD.
@@ -242,15 +204,6 @@ class MC_Tab():
 		self.entry_craft_speed.grid(row=11, column=1, columnspan=2, sticky='we')
 
 
-
-		# RECOVERY
-		self.create_label_center(6, 11, self.mc_frame, "RECOVERY")
-		self.create_label_center(7, 10, self.mc_frame, "Up Time (s): ")
-		self.entry_recovery_time.grid(row=7, column=11, columnspan=2, sticky='we')
-		self.create_label_center(8, 10, self.mc_frame, "Latitude:       ")
-		self.entry_recovery_latitude.grid(row=8, column=11, columnspan=2, sticky='we')
-		self.create_label_center(9, 10, self.mc_frame, "Longitude:   ")
-		self.entry_recovery_longitude.grid(row=9, column=11, columnspan=2, sticky='we')
 		# MISSION CONTROL
 		self.create_label_center(11, 11, self.mc_frame, "GROUND")
 		self.create_label_center(12, 10, self.mc_frame, "Up Time (s):   ")
@@ -276,18 +229,9 @@ class MC_Tab():
 		self.craft_map_image.grid(row=17, column=0, columnspan=4, sticky='nswe')
 		self.button_craft_zoom_in.grid(row=16, column=3, sticky="nsew")
 		self.button_craft_zoom_out.grid(row=16, column=0, sticky="nsew")
-		self.button_craft_map_type.grid(row=17, column=4, sticky="we")
-		self.create_label_center_2(16, 1, self.mc_frame, "CRAFT")
-		# Binds image inside of label object. (Needed to use the grid layout)
-		self.recovery_map_image = Label(self.mc_frame, image=temp_image)
-		# Reassigns the label object with the image attribute.
-		self.recovery_map_image.image = temp_image
-		# Places image into GUI.
-		self.recovery_map_image.grid(row=17, column=5, columnspan=4, sticky='nswe')
-		self.button_recovery_zoom_in.grid(row=16, column=8, sticky="nsew")
-		self.button_recovery_zoom_out.grid(row=16, column=5, sticky="nsew")
-		self.button_recovery_map_type.grid(row=17, column=9, sticky="we")
-		self.create_label_center_2(16, 6, self.mc_frame, "RECOVERY")
+		self.button_craft_map_type.grid(row=16, column=1, columnspan=2)
+		self.create_label_center_2(15, 1, self.mc_frame, "CRAFT")
+
 		# Binds image inside of label object. (Needed to use the grid layout)
 		self.network_map_image = Label(self.mc_frame, image=temp_image)
 		# Reassigns the label object with the image attribute.
@@ -296,8 +240,8 @@ class MC_Tab():
 		self.network_map_image.grid(row=17, column=10, columnspan=4, sticky='nswe')
 		self.button_network_zoom_in.grid(row=16, column=13, sticky="nsew")
 		self.button_network_zoom_out.grid(row=16, column=10, sticky="nsew")
-		self.button_network_map_type.grid(row=17, column=14, sticky="we")
-		self.create_label_center_2(16, 11, self.mc_frame, "ALL NODES")
+		self.button_network_map_type.grid(row=16, column=11, columnspan=2)
+		self.create_label_center_2(15, 11, self.mc_frame, "ALL NODES")
 
 
 	def populate_mc_tab(self):
@@ -376,65 +320,6 @@ class MC_Tab():
 			maps.craft_maptype = "hybrid"
 		else:
 			maps.craft_maptype = "roadmap"
-
-
-	def callback_recovery_zoom_in(self, *args):
-		"""
-		Increases the zoom level of the recovery map image. Also requests
-		& replaces the current map image.
-
-		@param self - Instace of the class.
-		"""
-
-		# Increase the zoom level.
-		maps.recovery_zoom = str(int(maps.recovery_zoom) + 1)
-		# Constructs the url needed to get the right image from Static Maps.
-		url = maps.build_url_recovery(maps.previous_recovery_coords)
-		# Directory information and file name.
-		image_name = "gui_maps/recovery_map" + "." + "PNG"
-		# Pulls down the configured Static Maps image from Google.
-		maps.request_API_image(url, image_name)
-		if self.recovery_map_image is not None:
-			self.recovery_map_image.destroy()
-		# Places the new image into the GUI.
-		self.mc_frame = maps.place_recovery(self.mc_frame)
-
-
-	def callback_recovery_zoom_out(self, *args):
-		"""
-		Decreases the zoom level of the recovery map image. Also requests
-		& replaces the current map image.
-
-		@param self - Instace of the class.
-		"""
-
-		# Decreases the zoom level.
-		maps.recovery_zoom = str(int(maps.recovery_zoom) - 1)
-		# Constructs the url needed to get the right image from Static Maps.
-		url = maps.build_url_recovery(maps.previous_recovery_coords)
-		# Directory information and file name.
-		image_name = "gui_maps/recovery_map" + "." + "PNG"
-		# Pulls down the configured Static Maps image from Google.
-		maps.request_API_image(url, image_name)
-		# Places the new image into the GUI.
-		if self.recovery_map_image is not None:
-			self.recovery_map_image.destroy()
-		# Places the new image into the GUI.
-		self.mc_frame = maps.place_recovery(self.mc_frame)
-
-
-	def callback_recovery_maptype(self, *args):
-		"""
-		Toggles the maptype of the requested image between "roadmap"
-		& "hybrid" (satellite view w/ roads).
-
-		@param self - Instace of the class.
-		"""
-	
-		if maps.recovery_maptype is "roadmap":
-			maps.recovery_maptype = "hybrid"
-		else:
-			maps.recovery_maptype = "roadmap"
 
 
 	def callback_network_zoom_in(self, *args):
@@ -537,26 +422,6 @@ class MC_Tab():
 			self.label_craft_node.configure(background='yellow')
 
 
-	def callback_update_recovery_node_status(self, *args):
-		"""
-		Upon serial data notification that the relay_node's network status has been
-		updated, this method will change the color of the visual representation on
-		the gui to inform the user.
-		Green = Connected.
-		Yellow = Was, but lost.
-		Red = Not connected / lost.
-		@param self - Instance of the class.
-		"""
-
-		# Refer to above documentation for what the numbers mean.
-		if self.node_recovery.get() in "0.00":
-			self.label_recovery_node.configure(background='red')
-		elif self.node_recovery.get() in "1.00":
-			self.label_recovery_node.configure(background='green')
-		elif self.node_recovery.get() in "2.00":
-			self.label_recovery_node.configure(background='yellow')
-
-
 	def callback_update_gui(self, *args):
 		"""
 		Method is run each time the connected microcontrollers send serial data to the gui.
@@ -578,7 +443,6 @@ class MC_Tab():
 				junk, local_vars, radio_in, radio_out, received_rssi, junk = str(temp_input).split("/")
 				self.parse_mission_control(local_vars)
 				self.parse_craft(radio_in, received_rssi)
-				self.parse_recovery(radio_in, received_rssi)
 				self.radio_sent.set(radio_out)
 				self.radio_received.set(radio_in)
 				# Prints input.
@@ -664,7 +528,7 @@ class MC_Tab():
 		# Sends data to rotor so it can compute turning angle.
 		send_rotor_telemetry(telemetry)
 		# Configure a map image from Google Static Maps API.
-		new_map_flag = maps.generate_map(self.craft_latitude.get(), self.craft_longitude.get(), "craft")
+		new_map_flag = maps.generate_map(self.craft_latitude.get(), self.craft_longitude.get())
 		# If a new map was created (new GPS coords), places that image into the GUI.
 		# maps.
 		if new_map_flag is True:
@@ -673,57 +537,6 @@ class MC_Tab():
 			maps.place_craft(self.mc_frame)
 			maps.place_network(self.mc_frame)
 			
-
-	def parse_recovery(self, radio_in, rssi):
-		"""
-		Parses out variables from given string section.
-		Assigns to correct variables.
-		
-		@param self - Instance of the class.
-		@param radio_in - Packet received via radio.
-		@param rssi - Relative Signal Strength Index for the received packet.
-		"""
-		
-		# Checksums '$' and non recovery variables are thrown out.
-		junk, junk, junk, junk, junk, junk, junk, junk, r_ts, r_lat, r_lng, node_reset, node_id, junk = str(radio_in).split(",")
-		# Sets parsed values to their corresponding StringVar.
-		self.recovery_time.set(r_ts)
-		t_lat = (float(r_lat) / 10000)
-		t_lng = (float(r_lng) / 10000)
-		self.recovery_latitude.set(t_lat)
-		self.recovery_longitude.set(t_lng)
-		self.radio_received_node_id.set(str(node_id))
-		# Checks if the packet is from recovery.
-		if self.radio_received_node_id.get().count("3") is 1:
-			# Say you don't receive the a packet in a while. The mission control
-			# LoRa still sends you its last known packet each time it tries to
-			# update the gui (roughly 1.5 seconds). To prevent the gui from thinking
-			# each "gui update" is brand new information, we compare a previous
-			# variable value to the proclaimed to be new value. If they are the same, its most
-			# likely the same packet we already saw. If they are different, its 100%
-			# new.
-			if self.recovery_time_previous != str(self.recovery_time.get()):
-				print(node_reset)
-				# Node has not power cycled. (1.00)
-				if node_reset.count("1") is 1:
-					self.node_recovery.set("2")
-				# Node has power cycled. (0.00)
-				else:
-					self.node_recovery.set("1")
-				# Updates the appropriate variables.
-				self.recovery_time_previous = str(self.recovery_time.get())
-				# Updates the visual indicatior.
-				self.radio_last_received_node.set("Recovery")
-				self.update_recovery_rssi(rssi)
-		# Configure a map image from Google Static Maps API.
-		new_map_flag = maps.generate_map(self.recovery_latitude.get(), self.recovery_longitude.get(), "recovery")
-		# If a new map was created (new GPS coords), places that image into the GUI.
-		# maps.
-		if new_map_flag is True:
-			# Reset flag.
-			new_map_flag = False
-			maps.place_recovery(self.mc_frame)
-			maps.place_network(self.mc_frame)
 
 	def update_craft_rssi(self, received_rssi):
 		"""
@@ -765,46 +578,6 @@ class MC_Tab():
 		self.radio_craft_last_contact.set(str(int(self.radio_craft_last_contact.get()) + 1))
 
 
-	def update_recovery_rssi(self, received_rssi):
-		"""
-		Updates GUI's variables holding information about the last received
-		recovery packet.
-		@param self  - Instance of the class.
-		@param *args - The RSSI of the last received packet.
-		"""
-
-		# Checks if timer is already running.
-		if g.timer_recovery_contact_timer is not None:
-			# If so, disable it to resync the 1sec timer.
-			g.timer_recovery_contact_timer.cancel()
-		# If so, assign RSSI to the recovery variables.
-		self.radio_recovery_rssi.set(received_rssi)
-		# Reset the last contact timer.
-		self.radio_recovery_last_contact.set("0")
-		# Creates countdown timer that, upon hitting zero runs the associated method.
-		# Units are seconds.
-		g.timer_recovery_contact_timer = threading.Timer(1.0, self.timer_increment_recovery_last_contact)
-		# Starts the countdown timer.
-		g.timer_recovery_contact_timer.start()
-
-
-	def timer_increment_recovery_last_contact(self):
-		"""
-		Increments the recovery node's last contact variable each second.
-		This timer is resynced each time a packet from the craft
-		is received.
-		@param self  - Instance of the class.
-		"""
-
-		# Creates countdown timer that, upon hitting zero runs the associated method.
-		# Units are seconds.
-		g.timer_recovery_contact_timer = threading.Timer(1.0, self.timer_increment_recovery_last_contact)
-		# Starts the countdown timer.
-		g.timer_recovery_contact_timer.start()
-		# Increments the recovery last contact timer on a 1 second interval.
-		self.radio_recovery_last_contact.set(str(int(self.radio_recovery_last_contact.get()) + 1))
-
-
 	def callback_release_balloon(self):
 		"""
 		Triggered by the press of SEND button next to the display_changed_commands entry.
@@ -813,18 +586,18 @@ class MC_Tab():
 
 		try:
 			# Checks for non-null connection to mission control's lora microcontroller.
-			if g.PORT_MISSION_CONTROL_LORA is not None:
+			if g.PORT_MISSION_CONTROL_RADIO is not None:
 				# Manual creation of a serial packet to send to the mission control microcontroller.
 				injection_packet = self.create_injection_packet("L")
 				# If non-null, send transmission via serial port.
-				send(g.PORT_MISSION_CONTROL_LORA.get_port(), injection_packet)
+				send(g.PORT_MISSION_CONTROL_RADIO.get_port(), injection_packet)
 				self.release_status.set("1")
 			else:
-				print("No connection to mission control's LoRa\n")
+				print("No connection to mission control's Radio\n")
 		# Null connection.
 		except Exception as e:
 			# Prints general error statement. (Used to tell which method errored out)
-			print("Invalid connection to mission control's LoRa.")
+			print("Invalid connection to mission control's Radio.")
 			print("Exception: " + str(e))
 
 

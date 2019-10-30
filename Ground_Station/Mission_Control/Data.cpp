@@ -98,10 +98,10 @@ void DATA::update_gui()
 	{
 		
 		// Resets / starts timer.
-	    serial_timer = millis();
-	    // Starts or updates mission control microsecond timer. (Converts to seconds w/ 2 decimal places for easy of use)
-	    Radio.mission_control_ts = millis()/1000.0;
-    	// Holds outgoing message.
+	  serial_timer = millis();
+	  // Starts or updates mission control microsecond timer. (Converts to seconds w/ 2 decimal places for easy of use)
+	  Radio.mission_control_ts = millis()/1000.0;
+    // Holds outgoing message.
 		String temp_packet = "";
 		temp_packet += "$";
 		temp_packet += "/";

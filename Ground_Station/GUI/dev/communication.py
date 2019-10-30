@@ -124,10 +124,6 @@ def validate_ports(ports):
 					# Creates a serial object instance with the temporary serial object.
 					# Class defined at bottom of file.
 					g.PORT_MISSION_CONTROL_LORA = serial_object(ser, response, port_description)
-				if response in "recovery":
-					# Creates a serial object instance with the temporary serial object.
-					# Class defined at bottom of file.
-					g.PORT_RECOVERY_LORA = serial_object(ser, response, port_description)
 				# Unknown microcontroller connection.
 				else:
 					# Updates status to reflect parsing failure.
@@ -151,32 +147,23 @@ def config_scheduler():
 
 	try:
 		# Checks for valid connection to the mission_control's Arduino LoRa.
-		if g.PORT_MISSION_CONTROL_LORA is not None:
+		if g.PORT_MISSION_CONTROL_RADIO is not None:
 			# Terminal verbose message.
-			print("Scheduling task for mc LoRa.\n")
+			print("Scheduling task for mc radio micro controller.\n")
 			# Creates countdown timer that, upon hitting zero runs the associated method.
 			# Units are seconds.
 			g.timer_mission_control_lora = threading.Timer(0.9, mission_control_receive)
 			# Starts the countdown timer.
 			g.timer_mission_control_lora.start()
 		# Checks for valid connection to the craft's Arduino LoRa.
-		if g.PORT_PAYLOAD_LORA is not None:
+		if g.PORT_CRAFT_RADIO is not None:
 			# Terminal verbose message.
-			print("Scheduling task for craft LoRa.\n")
+			print("Scheduling task for craft radio micro controller.\n")
 			# Creates countdown timer that, upon hitting zero runs the associated method.
 			# Units are seconds.
 			g.timer_craft_lora = threading.Timer(0.9, craft_receive)
 			# Starts the countdown timer.
 			g.timer_craft_lora.start()
-		# Checks for valid connection to the recovery vehicle's Arduino LoRa.
-		if g.PORT_RECOVERY_LORA is not None:
-			# Terminal verbose message.
-			print("Scheduling task for recovery LoRa.\n")
-			# Creates countdown timer that, upon hitting zero runs the associated method.
-			# Units are seconds.
-			g.timer_recovery_lora = threading.Timer(0.9, recovery_lora_receive)
-			# Starts the countdown timer.
-			g.timer_recovery_lora.start()
 	# Prints exception handler.
 	except Exception as e:
 		# Terminal verbose message.
@@ -218,11 +205,11 @@ def mission_control_receive():
 	# Creates countdown timer that, upon hitting zero runs the associated method.
 	# Units are seconds. Timer terminates upon hitting zero so we need to
 	# recreat this timer each time.
-	g.timer_mission_control_lora = threading.Timer(0.3, mission_control_receive)
+	g.timer_mission_control_radio = threading.Timer(0.3, mission_control_receive)
 	# Starts the countdown timer.
-	g.timer_mission_control_lora.start()
+	g.timer_mission_control_radio.start()
 	# Pulls mission_control's serial port object down to a local instanced variable.
-	ser = g.PORT_MISSION_CONTROL_LORA.get_port()
+	ser = g.PORT_MISSION_CONTROL_RADIO.get_port()
 	try:
 		# Checks for a incoming data.
 		if(ser.in_waiting != 0):
@@ -231,16 +218,16 @@ def mission_control_receive():
 			# Debug info.
 			#print("Received from " + str(ser.port) + ". Input: " + message + "\n")
 			# Return data.
-			g.PORT_MISSION_CONTROL_LORA.set_input(str(message))
+			g.PORT_MISSION_CONTROL_RADIO.set_input(str(message))
 		return
 	# Prints exception handler.
 	except Exception as e:
 		# Terminates the timer object.
-		g.timer_mission_control_lora.cancel()
+		g.timer_mission_control_radio.cancel()
 		# Terminal verbose message to show the exact error that occurred.
 		print("Exception: " + str(e))
 		# Returns the error state message.
-		g.PORT_MISSION_CONTROL_LORA.set_input("Serial Error")
+		g.PORT_MISSION_CONTROL_RADIO.set_input("Serial Error")
 		return
 
 
@@ -249,11 +236,11 @@ def craft_receive():
 
 	# Creates countdown timer that, upon hitting zero runs the associated method.
 	# Units are seconds.
-	g.timer_craft_lora = threading.Timer(0.3, craft_receive)
+	g.timer_craft_radio = threading.Timer(0.3, craft_receive)
 	# Starts the countdown timer.
-	g.timer_craft_lora.start()
+	g.timer_craft_radio.start()
 	# Pulls the serial data from the craft LoRa port object down to a local instanced variable.
-	ser = g.PORT_PAYLOAD_LORA.get_port()
+	ser = g.PORT_PAYLOAD_RADIO.get_port()
 	try:
 		# Checks for a incoming data.
 		if(ser.in_waiting != 0):
@@ -262,46 +249,17 @@ def craft_receive():
 			# Debug info.
 			#print("Received from " + str(ser.port) + ". Input: " + message + "\n")
 			# Return data.
-			g.PORT_PAYLOAD_LORA.set_input(str(message))
+			g.PORT_PAYLOAD_RADIO.set_input(str(message))
 		return
 	# Print exception handler.
 	except Exception as e:
 		# Terminates the timer object.
-		g.timer_craft_lora.cancel()
+		g.timer_craft_radio.cancel()
 		# Terminal verbose message to show the exact error that occurred.
 		print("Exception: " + str(e))
 		# Returns the error state message.
-		g.PORT_PAYLOAD_LORA.set_input("Serial Error")
+		g.PORT_PAYLOAD_RADIO.set_input("Serial Error")
 		return
-
-def recovery_lora_receive():
-	""" Responsible for reading in data on the given serial (USB) port. """
-
-	# Creates countdown timer that, upon hitting zero runs the associated method.
-	# Units are seconds.
-	g.timer_recovery_lora = threading.Timer(0.3, recovery_receive)
-	# Starts the countdown timer.
-	g.timer_recovery_lora.start()
-	# Pulls the serial data from the craft LoRa port object down to a local instanced variable.
-	ser = g.PORT_RECOVERY_LORA.get_port()
-	try:
-		# Checks for a incoming data.
-		if(ser.in_waiting != 0):
-			# Reads in and decodes incoming serial data.
-			message = ser.readline().decode()
-			# Debug info.
-			#print("Received from " + str(ser.port) + ". Input: " + message + "\n")
-			# Return data.
-			g.PORT_RECOVERY_LORA.set_input(str(message))
-		return
-	# Print exception handler.
-	except Exception as e:
-		# Terminates the timer object.
-		g.timer_recovery_lora.cancel()
-		# Terminal verbose message to show the exact error that occurred.
-		print("Exception: " + str(e))
-		# Returns the error state message.
-		g.PORT_RECOVERY_LORA.set_input("Serial Error")
 
 
 def send(ser, message):
@@ -377,8 +335,6 @@ class serial_object():
 		# method will be ran in the mission_control.py file.
 		if name in "mission_control":
 			self.input.trace("w", g.mc_class_reference.callback_update_gui)
-		elif name in "recovery":
-			self.input.trace("w", g.craft_class_reference.callback_update_gui)
 
 	def get_context(self):
 		"""
