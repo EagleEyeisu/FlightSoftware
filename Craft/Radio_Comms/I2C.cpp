@@ -202,7 +202,7 @@ void I2C::create_packet()
         	i2c_packet += ',';
         	i2c_packet += Gps.craft_target_longitude * 10000.0;
         	i2c_packet += ',';
-        	i2c_packet += Gps.craft_target_distance;
+        	i2c_packet += Gps.craft_distance;
         	i2c_packet += ',';
         }
         // 2 = N packet. (Network commands)

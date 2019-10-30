@@ -74,7 +74,6 @@ float RADIO::get_radio_timestamp(char buf[], String selector)
         return (Data.Parse(buf, 8));
     }
 }
-}
 
 
 /**
@@ -163,7 +162,7 @@ void RADIO::initialize()
         // If invalid connection, the program will stall and pulse the onbaord led.
         while (1)
         {
-            Radio.blink_error_led();
+            Data.blink_error_led();
         }
     }
     // Checks the radio objects tuned frequency. 
@@ -172,7 +171,7 @@ void RADIO::initialize()
         // If invalid connection, the program will stall and pulse the onbaord led.
         while (1)
         {
-            Radio.blink_error_led();
+            Data.blink_error_led();
         }
     }
     // Sets the max power to be used to in the amplification of the signal being sent out.
@@ -211,29 +210,29 @@ String RADIO::construct_network_packet()
     String temp = "";
     temp += "$";
     temp += ",";
-    temp += Network.craft_ts;
+    temp += craft_ts;
     temp += ",";
-    temp += Network.craft_altitude;
+    temp += craft_altitude;
     temp += ",";
-    temp += Network.craft_latitude * 10000;
+    temp += craft_latitude * 10000;
     temp += ",";
-    temp += Network.craft_longitude * 10000;
+    temp += craft_longitude * 10000;
     temp += ",";
-    temp += Network.craft_event;
+    temp += craft_event;
     temp += ",";
-    temp += Network.home_ts;
+    temp += mission_control_ts;
     temp += ",";
-    temp += Network.craft_anchor;
+    temp += craft_anchor;
     temp += ",";
-    temp += Network.target_latitude * 10000;
+    temp += target_latitude * 10000;
     temp += ",";
-    temp += Network.target_longitude * 10000;
+    temp += target_longitude * 10000;
     temp += ",";
-    temp += Network.target_throttle;
+    temp += target_throttle;
     temp += ",";
-    temp += Network.craft_id;
+    temp += craft_id;
     temp += ",";
-    temp += Network.manual_direction;
+    temp += manual_direction;
     temp += ",";
     temp += "$";
     radio_output = "";
@@ -307,23 +306,11 @@ void RADIO::radio_receive()
                     // If the incoming signal has more up-to-date versions, we overwrite our saved version with
                     // the new ones.
                     mission_control_ts = temp_ts;
-                    Network.craft_anchor = Radio.get_radio_craft_anchor(to_parse);
-                    Network.target_latitude = Radio.get_radio_target_latitude(to_parse);
-                    Network.target_longitude = Radio.get_radio_target_longitude(to_parse);
-                    Network.target_throttle = Radio.get_radio_target_throttle(to_parse);
-                    Network.manual_direction = Radio.get_radio_manual_direction(to_parse);
-                }
-                temp_ts = 0.0;
-                // Reads in the time stamp for Recovery's last broadcast.
-                temp_ts = get_radio_timestamp(to_parse, "recovery");
-                // Compares the currently brought in time stamp to the one stored onboad.
-                if(temp_ts > recovery_ts)
-                {
-                    // If the incoming signal has more up-to-date versions, we overwrite our saved version with
-                    // the new ones.
-                    recovery_ts = temp_ts;
-                    recovery_latitude = get_radio_recovery_latitude(to_parse);
-                    recovery_longitude = get_radio_recovery_longitude(to_parse);
+                    craft_anchor = Radio.get_radio_craft_anchor(to_parse);
+                    target_latitude = Radio.get_radio_target_latitude(to_parse);
+                    target_longitude = Radio.get_radio_target_longitude(to_parse);
+                    target_throttle = Radio.get_radio_target_throttle(to_parse);
+                    manual_direction = Radio.get_radio_manual_direction(to_parse);
                 }
                 // Reads in the value associated with the reset.
                 received_reset = get_radio_node_reset(to_parse);
@@ -341,18 +328,10 @@ void RADIO::radio_receive()
                         // this node continues to pull in new data.
                         mission_control_ts = 0.0;
                     }
-                    // Recovery.
-                    else if(2.9 < received_id && received_id < 3.1)
-                    {
-                        // Recovery LoRa has powercycled. 
-                        // Clear its time stamp variable to ensure that the 
-                        // this node continues to pull in new data.
-                        recovery_ts = 0.0;
-                    }
                 }
             }
         }
-	}
+	  }
 }
 
 

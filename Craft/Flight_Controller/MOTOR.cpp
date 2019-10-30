@@ -84,7 +84,7 @@ void MOTOR::manual_flight()
     // 2 - Left.
     // 3 - Right.
     // 4 - Up.
-    int command = Data.radio_manual_direction;
+    int command = Data.manual_direction;
 
     /**
      * Outer series of conditionals are focused on orienting the craft. Not propelling it.

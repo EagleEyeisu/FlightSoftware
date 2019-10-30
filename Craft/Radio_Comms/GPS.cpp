@@ -6,7 +6,6 @@
 #include <Arduino.h>
 #include "GPS.h"
 #include "DATA.h"
-#include <SoftwareSerial.h>
 #include <TinyGPSPlus.h>
 #include "Globals.h"
 #include <math.h>
@@ -118,12 +117,12 @@ void GPS::store_data()
     craft_longitude = gps.location.lng();
     craft_satillite_count = gps.satellites.value();
     craft_speed = gps.speed.mps(); 
-    craft_target_distance = calculate_target_distance();
+    craft_distance = calculate_target_distance();
     // Replaces the old backup values with the new values.
     previous_altitude = craft_altitude;
     previous_latitude = craft_latitude;
     previous_longitude = craft_longitude;
-    previous_target_distance = target_distance;
+    previous_distance = craft_distance;
 }
 
 
@@ -135,8 +134,8 @@ float GPS::calculate_target_distance()
 
     float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), 
                                                          gps.location.lng(), 
-                                                         target_latitude, 
-                                                         target_longitude);
+                                                         craft_target_latitude, 
+                                                         craft_target_longitude);
     return distance;
 }
 
@@ -152,5 +151,5 @@ void GPS::revert_gps_data()
     craft_latitude = previous_latitude;
     craft_longitude = previous_longitude;
     craft_speed = 0.0;
-    target_distance = previous_target_distance;
+    craft_distance = previous_distance;
 }

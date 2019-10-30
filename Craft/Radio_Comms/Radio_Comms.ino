@@ -29,20 +29,24 @@ void setup()
     // Creates a serial communication line between the arduino and the serial port 
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
+    Serial.println("Here");
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
     Comm.initialize();
+    Serial.println("Here1");
     // Initializes the Radio.
     Radio.initialize();
+    Serial.println("Here2");
     // Bootup has happened. Set flags.
     Data.node_reset = 1;
     Data.system_boot_complete = false;
     // Configures LEDs and the sd card.
-    // Data.initialize();
+    Data.initialize();
+    Serial.println("Here3");
     // Configure LEDs.
-    pinMode(Data.OPERATIONAL_LED, OUTPUT);
-    pinMode(Data.ERROR_LED, OUTPUT);
-    pinMode(Data.RECEIVE_LED, OUTPUT);
-    digitalWrite(Data.ERROR_LED, LOW);
+    //pinMode(Data.OPERATIONAL_LED, OUTPUT);
+    //pinMode(Data.ERROR_LED, OUTPUT);
+    //pinMode(Data.RECEIVE_LED, OUTPUT);
+    //digitalWrite(Data.ERROR_LED, LOW);
 }
 
 
@@ -52,9 +56,9 @@ void setup()
 void loop()
 {
     // Monitors for a powercycle.
-    system_boot();
+    //system_boot();
     // Turns OPERATIONAL_LED on/off.
-    system_led();
+    //system_led();
     // Reads in a new NMEA sentence.
     Gps.manager();
     // Communicates with the Mega to check for certain events happening

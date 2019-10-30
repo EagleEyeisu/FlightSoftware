@@ -12,37 +12,37 @@
 class DATA
 {
   	public:
-	// Constructor
-	DATA();
-	// Configures flags and LEDs.
+	  // Constructor
+	  DATA();
+	  // Configures flags and LEDs.
     void initialize();
     // Manages the bootup process and status leds.
     void manager();
-	// Log the data to the sd card.
+	  // Log the data to the sd card.
     void log_data();
-	// Parses passed in message by using commas as the identifiers.
-	float Parse(char message[], int objective);
-	// Responsible for pulling current sensor data from peripherals.
+	  // Parses passed in message by using commas as the identifiers.
+	  float Parse(char message[], int objective);
+	  // Responsible for pulling current sensor data from peripherals.
     void update_data();
     // Retrieves the flight controller's pressure value.
-    float get_i2c_mega_pressure(char buf[]);
+    float get_i2c_fltctrl_pressure(char buf[]);
     // Retrieves the flight controller's altitude value (calculated by pressure).
-    float get_i2c_mega_altitude(char buf[]);
+    float get_i2c_fltctrl_altitude(char buf[]);
     // Retrieves the flight controller's temperature value (external temp).
-    float get_i2c_mega_temp(char buf[]);
+    float get_i2c_fltctrl_temp(char buf[]);
     // Retrieves the flight controller's roll value.
-    float get_i2c_mega_roll(char buf[]);
+    float get_i2c_fltctrl_roll(char buf[]);
     // Retrieves the flight controller's pitch value.
-    float get_i2c_mega_pitch(char buf[]);
+    float get_i2c_fltctrl_pitch(char buf[]);
     // Retrieves the flight controller's yaw value.
-    float get_i2c_mega_yaw(char buf[]);
+    float get_i2c_fltctrl_yaw(char buf[]);
     // Retrieves the flight controller's target heading angle.
     float get_i2c_target_heading(char buf[]);
     // Retrieves the flight controller's current heading angle.
     float get_i2c_current_heading(char buf[]);
     // Retrieves the flight controller's craft state.
     float get_i2c_craft_state(char buf[]);
-	// Pulses external receive led.
+	  // Pulses external receive led.
     void blink_receive_led();
     // Pulses external sending led.
     void blink_send_led();
@@ -66,16 +66,16 @@ class DATA
     // External temperature of craft.
     float fltctrl_external_temperature = 0.0;
     // Current angle to the target.
-	float target_heading = 0.0;
-	// Current bearing for craft.
-	float craft_heading = 0.0;
-	// Movement state of the craft. This is what the craft is currently doing
-	// and not nessecarily what it wants to do.
-	float craft_state = 0.0;
+	  float target_heading = 0.0;
+	  // Current bearing for craft.
+	  float craft_heading = 0.0;
+	  // Movement state of the craft. This is what the craft is currently doing
+	  // and not nessecarily what it wants to do.
+	  float craft_state = 0.0;
 
     /*----- Radio Comms variables -----*/
 
-	// LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
+	  // LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
   	float craft_event = 0.0;
     // Set High for # (defined below) seconds on startup to tell other nodes in the system
     // that an unexpected power cycle has occurred and they need to clear 

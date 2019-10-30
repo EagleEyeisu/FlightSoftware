@@ -31,17 +31,27 @@ class RADIO
     // Parses and returns the radio Target Longitude.
     float get_radio_target_longitude(char buf[]);
     // Returns the transmission's time stamp.
-    float get_radio_timestamp(char buf[], int selector);
+    float get_radio_timestamp(char buf[], String selector);
     // Returns the craft's anchor status.
     float get_radio_manual_direction(char buf[]);
+    // Returns the transmission's reset flag.
+    float get_radio_node_reset(char buf[]);
+    // Returns the transmission's craft ID.
+    float get_radio_node_id(char buf[]);
     // Runs initialzation script for the Radio.
     void initialize();
     // Passively watches for incoming radio transmissions from Mission Control and other crafts.
     void manager();
     // Receives incoming transmission.
     void radio_receive();
+    // Constructs a netowrk packet.
+    String construct_network_packet();
     // Sends the desired signal out over the radio antenna.
-    void broadcast();
+    void broadcast(String packet);
+    // Checks if packet is valid or invalid. Error detection.
+    bool validate_checksum();
+    // Blinks the LED on the LoRa uC (quick blink).
+    void blink_led();
 
 
   	/*---------------------------------Variables---------------------------------*/ 
@@ -56,7 +66,7 @@ class RADIO
     const byte NODE_ID = 2;
     // Pins used to blink an LED to signal a radio packet has been received.
     const byte LED = 13;
-    // Radio frequency used throught the Eagle Eye Program. CHECK WITH HABET BEFORE EACH FLIGHT!!!!!
+    // Radio frequency used throught the Eagle Eye Program.
     #define RF95_FREQ 433.0
     // Holds the ID of the craft that just broadcasted.  
     float received_id = 0.0;
@@ -64,6 +74,8 @@ class RADIO
     String radio_input = "";
     // Holds the current sent radio signal.
     String radio_output = "";
+    // Holds the reset bit used to clear the timestamp of the associated node.
+    float received_reset = 0.0;
     /**
      * These variables are modified by the network admin operating the mission_control node. 
      */
@@ -84,7 +96,7 @@ class RADIO
      * These variables are overseen by Mission Control.
      */
     // Mission Control's ms Time stamp.
-    float home_ts = 0.0;
+    float mission_control_ts = 0.0;
     // This variable is the on / off switch for the craft as far as operational movement goes.
     // Having this be on the off state (0.0) does not stop data collection, only servo and 
     // motor movement. 
@@ -113,9 +125,10 @@ class RADIO
     // or if we have a direct line of communication with each node.
     float craft_id = 0.0;
 
-  // Used in the computation of the radio system. 
-  unsigned long broadcast_timer = 0;
-  
+    // Used in the computation of the radio system. 
+    unsigned long broadcast_timer = 0;
+    // Each device has # milliseconds to talk.
+    float network_node_delay = 1500.0;
 };
 
 #endif

@@ -44,7 +44,7 @@ void DATA::initialize()
 void DATA::manager()
 {
     // Stores data to sd card.
-    // log_data();
+    log_data();
 }
 
 
@@ -177,7 +177,7 @@ void DATA::update_data()
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
 			target_heading = Data.get_i2c_target_heading(to_parse);
-			current_heading = Data.get_i2c_current_heading(to_parse);
+			craft_heading = Data.get_i2c_current_heading(to_parse);
 			craft_state = Data.get_i2c_craft_state(to_parse);
 		}
 	}
@@ -263,7 +263,7 @@ void DATA::log_data()
     sd_timer = millis();
     // Open & Save.
     File sd_card;
-    sd_card = SD.open("Payload_Data", FILE_WRITE);
+    sd_card = SD.open("Radio_Traffic", FILE_WRITE);
     if(sd_card)
     {
       sd_card.print("Radio In: ");

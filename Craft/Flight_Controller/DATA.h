@@ -77,17 +77,17 @@ class DATA
     /*------------------------Mega Information------------------------*/
 
     // Altitude of the craft.
-    float ftlctrl_altitude = 0.0;
+    float fltctrl_altitude = 0.0;
     // Roll value of the craft.
-    float ftlctrl_roll = 0.0;
+    float fltctrl_roll = 0.0;
     // Pitch value of the craft.
-    float ftlctrl_pitch = 0.0;
+    float fltctrl_pitch = 0.0;
     // Yaw value of the craft.
-    float ftlctrl_yaw = 0.0;
+    float fltctrl_yaw = 0.0;
     // External atmosphereic pressure.
-    float ftlctrl_pressure = 0.0;
+    float fltctrl_pressure = 0.0;
     // External temperature of craft.
-    float ftlctrl_external_temperature = 0.0;
+    float fltctrl_external_temperature = 0.0;
 
 
     /*------------------------LoRa Information------------------------*/
