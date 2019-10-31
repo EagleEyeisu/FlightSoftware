@@ -43,8 +43,8 @@ void DATA::initialize()
  */
 void DATA::manager()
 {
-    // Stores data to sd card.
-    log_data();
+	// Stores data to sd card.
+	log_data();
 }
 
 
@@ -55,7 +55,7 @@ void DATA::manager()
  */
 float DATA::get_i2c_fltctrl_pressure(char buf[])
 {
- 	return Data.Parse(buf,2);
+	return Data.Parse(buf,2);
 }
 
 

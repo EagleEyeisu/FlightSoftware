@@ -82,7 +82,6 @@ void broadcast(String packet)
     rf95.waitPacketSent();
 }
 
-
 /**
  * Responsible for reading in signals over the radio antenna.
  */

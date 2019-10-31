@@ -103,7 +103,7 @@ float DATA::get_i2c_target_distance(char buf[])
 
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
- */ 
+ */
 float DATA::get_i2c_authority_mode(char buf[])
 {
 	return Data.Parse(buf,2);

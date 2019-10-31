@@ -69,10 +69,6 @@ float RADIO::get_radio_timestamp(char buf[], String selector)
     {
         return (Data.Parse(buf, 7));
     }
-    else if(selector == "recovery")
-    {
-        return (Data.Parse(buf, 8));
-    }
 }
 
 

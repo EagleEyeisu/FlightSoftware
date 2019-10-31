@@ -12,17 +12,17 @@
 class DATA
 {
   	public:
-	  // Constructor
-	  DATA();
-	  // Configures flags and LEDs.
+    // Constructor
+    DATA();
+    // Configures flags and LEDs.
     void initialize();
     // Manages the bootup process and status leds.
     void manager();
-	  // Log the data to the sd card.
+    // Log the data to the sd card.
     void log_data();
-	  // Parses passed in message by using commas as the identifiers.
-	  float Parse(char message[], int objective);
-	  // Responsible for pulling current sensor data from peripherals.
+    // Parses passed in message by using commas as the identifiers.
+    float Parse(char message[], int objective);
+    // Responsible for pulling current sensor data from peripherals.
     void update_data();
     // Retrieves the flight controller's pressure value.
     float get_i2c_fltctrl_pressure(char buf[]);
@@ -42,18 +42,18 @@ class DATA
     float get_i2c_current_heading(char buf[]);
     // Retrieves the flight controller's craft state.
     float get_i2c_craft_state(char buf[]);
-	  // Pulses external receive led.
+    // Pulses external receive led.
     void blink_receive_led();
     // Pulses external sending led.
     void blink_send_led();
     // Pulses onboard error led.
     void blink_error_led();
 	
-	/*---------------------------------Variables---------------------------------*/
+    /*--------------------------------Variables---------------------------------*/
 
     /*----- Flight Controller variables -----*/
 
-	// Altitude of the craft.
+    // Altitude of the craft.
     float fltctrl_altitude = 0.0;
     // Roll value of the craft.
     float fltctrl_roll = 0.0;
@@ -66,16 +66,16 @@ class DATA
     // External temperature of craft.
     float fltctrl_external_temperature = 0.0;
     // Current angle to the target.
-	  float target_heading = 0.0;
-	  // Current bearing for craft.
-	  float craft_heading = 0.0;
-	  // Movement state of the craft. This is what the craft is currently doing
-	  // and not nessecarily what it wants to do.
-	  float craft_state = 0.0;
+    float target_heading = 0.0;
+    // Current bearing for craft.
+    float craft_heading = 0.0;
+    // Movement state of the craft. This is what the craft is currently doing
+    // and not nessecarily what it wants to do.
+    float craft_state = 0.0;
 
     /*----- Radio Comms variables -----*/
 
-	  // LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
+    // LoRa Event. This is assigned as needed throughout the program. Signals a specific event.
   	float craft_event = 0.0;
     // Set High for # (defined below) seconds on startup to tell other nodes in the system
     // that an unexpected power cycle has occurred and they need to clear 
