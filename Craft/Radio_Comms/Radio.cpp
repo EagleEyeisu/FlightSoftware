@@ -159,6 +159,7 @@ void RADIO::initialize()
         while (1)
         {
             Data.blink_error_led();
+            Serial.println("Error Init");
         }
     }
     // Checks the radio objects tuned frequency. 
@@ -168,6 +169,7 @@ void RADIO::initialize()
         while (1)
         {
             Data.blink_error_led();
+            Serial.println("Error Frequency");
         }
     }
     // Sets the max power to be used to in the amplification of the signal being sent out.

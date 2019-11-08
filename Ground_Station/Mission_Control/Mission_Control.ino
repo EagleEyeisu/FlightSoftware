@@ -50,6 +50,7 @@ void loop(){
     // turning that data into an array that can be sent out via radio.
     // Also reads in incoming messages.
     Radio.manager();
+    Serial.println("Here");
 }
 
 

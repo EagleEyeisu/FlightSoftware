@@ -208,8 +208,8 @@ String RADIO::construct_network_packet()
 */
 void RADIO::broadcast(String packet)
 {
-  //Serial.print("Out Pkt: ");
-  //Serial.println(radio_output);
+  Serial.print("Out Pkt: ");
+  Serial.println(radio_output);
   // Converts from String to char array.
   char transmission[packet.length() + 1];
   packet.toCharArray(transmission, packet.length() + 1);

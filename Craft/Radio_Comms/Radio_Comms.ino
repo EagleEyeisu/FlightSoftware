@@ -1,6 +1,7 @@
 /****LIBRARIES****/
 #include <RH_RF95.h>
 #include <TinyGPSPlus.h>
+#include <Arduino.h>
 
 #include "Globals.h"
 #include "DATA.h"
@@ -29,19 +30,15 @@ void setup()
     // Creates a serial communication line between the arduino and the serial port 
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
-    Serial.println("Here");
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
     Comm.initialize();
-    Serial.println("Here1");
     // Initializes the Radio.
     Radio.initialize();
-    Serial.println("Here2");
     // Bootup has happened. Set flags.
-    Data.node_reset = 1;
-    Data.system_boot_complete = false;
+    //Data.node_reset = 1;
+    //Data.system_boot_complete = false;
     // Configures LEDs and the sd card.
     Data.initialize();
-    Serial.println("Here3");
     // Configure LEDs.
     //pinMode(Data.OPERATIONAL_LED, OUTPUT);
     //pinMode(Data.ERROR_LED, OUTPUT);
@@ -55,6 +52,8 @@ void setup()
  */
 void loop()
 {
+    // Verbosity Check. 
+    Serial.println("...");
     // Monitors for a powercycle.
     //system_boot();
     // Turns OPERATIONAL_LED on/off.
@@ -69,7 +68,7 @@ void loop()
     // Also reads incoming network packets.
     Radio.manager();
     // Responsible for the health of the system and logging data to onboard storage.
-    Data.manager();
+    //Data.manager();
 }
 
 
@@ -101,13 +100,13 @@ void system_led()
         if(Data.external_led)
         {
             Data.external_led = false;
-            digitalWrite(Data.OPERATIONAL_LED, LOW);
+            //digitalWrite(Data.OPERATIONAL_LED, LOW);
         }
         // Turns external LED on.
         else
         {
             Data.external_led = true;
-            digitalWrite(Data.OPERATIONAL_LED, HIGH);
+            //digitalWrite(Data.OPERATIONAL_LED, HIGH);
         }
     }
 }

@@ -59,7 +59,7 @@ void I2C::manager()
  */
 void receiveEvent(int howMany)
 {
-	Comm.i2c_my_turn = true;
+	  Comm.i2c_my_turn = true;
     // Resets the input string to null.
     Comm.i2c_input_buffer = "";
     // Resets formatting variables to false.
@@ -107,7 +107,7 @@ void receiveEvent(int howMany)
                     // Appends character to string.
                     Comm.i2c_input_buffer += temp;
                 }
-		    }
+		      }
     	}
     	// Not correct format. Read in it and throw it away.
     	else
@@ -127,7 +127,7 @@ void receiveEvent(int howMany)
     {
         // Updates packet flag to true.
         Comm.flag_complete_packet = true;
-        Serial.println("Valid Packet.");
+        Serial.println("\nValid Packet.");
         Serial.println(Comm.i2c_input_buffer);
     }
     // Formatting was incorrect. Invalid packet.

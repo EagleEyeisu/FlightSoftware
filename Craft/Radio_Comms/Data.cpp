@@ -33,6 +33,7 @@ void DATA::initialize()
         while(1)
         {
             blink_error_led(); 
+            Serial.println("SD Failed");
         }
     }
 }
@@ -282,10 +283,10 @@ void DATA::log_data()
 void DATA::blink_receive_led()
 {
     // ON
-    digitalWrite(RECEIVE_LED, HIGH);
+    //digitalWrite(RECEIVE_LED, HIGH);
     delay(100);
     // OFF
-    digitalWrite(RECEIVE_LED, LOW);
+    //digitalWrite(RECEIVE_LED, LOW);
 }
 
 
@@ -295,10 +296,10 @@ void DATA::blink_receive_led()
 void DATA::blink_send_led()
 {
     // ON
-    analogWrite(SEND_LED, HIGH);
+    //analogWrite(SEND_LED, HIGH);
     delay(100);
     // OFF
-    analogWrite(SEND_LED, LOW);
+    //analogWrite(SEND_LED, LOW);
 }
 
 
@@ -308,8 +309,8 @@ void DATA::blink_send_led()
 void DATA::blink_error_led()
 {
     // ON
-    digitalWrite(ERROR_LED, HIGH);
+    //digitalWrite(ERROR_LED, HIGH);
     delay(100);
     // OFF
-    digitalWrite(ERROR_LED, LOW);
+    //digitalWrite(ERROR_LED, LOW);
 }

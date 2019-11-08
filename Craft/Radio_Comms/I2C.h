@@ -9,23 +9,23 @@
 
 class I2C
 {
-	public:
-	// Constructor
-	I2C();
-  // Reads in a individual byte from the I2C port.
+    public:
+    // Constructor
+    I2C();
+    // Reads in a individual byte from the I2C port.
     void receiveEvent(int howMany); 
-	// Runs initialzation script for the I2C protocol.
-	void initialize();
-	// Processes all outgoing packets.
-	void manager();
+    // Runs initialzation script for the I2C protocol.
+    void initialize();
+    // Processes all outgoing packets.
+    void manager();
     // Builds byte array to be sent to MEGA.
     void create_packet();
-	// Sends byte array to MEGA.
-	void send_packet();
-
-	/*---------------------------------Variables---------------------------------*/
-	
-	// Inter-Intergrated Circuit (I^2C) packet.
+    // Sends byte array to MEGA.
+    void send_packet();
+    
+    /*---------------------------------Variables---------------------------------*/
+    
+    // Inter-Intergrated Circuit (I^2C) packet.
     String i2c_input_buffer;
     // Inter-Intergrated Circuit (I^2C) packet.
     String i2c_packet = "";
