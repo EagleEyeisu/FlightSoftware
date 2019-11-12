@@ -6,7 +6,7 @@
 #include "DATA.h"
 #include "IMU.h"
 #include "THERMO.h"
-#include "I2C.h"
+#include "UART.h"
 #include "MOTOR.h"
 #include "Globals.h"
 #include <Arduino.h>
@@ -23,12 +23,12 @@ DATA::DATA()
 }
 
 
-/*--------------------I2C CRAFT PACKET (C)--------------------*/
+/*--------------------UART CRAFT PACKET (C)--------------------*/
 
 /**
  *  Retrieves the craft Altitude of the craft.
  */
-float DATA::get_i2c_craft_altitude(char buf[])
+float DATA::get_uart_craft_altitude(char buf[])
 {
  	return Data.Parse(buf,2);
 }
@@ -37,7 +37,7 @@ float DATA::get_i2c_craft_altitude(char buf[])
 /**
  *  Retrieves the craft Latitude of the craft.
  */
-float DATA::get_i2c_craft_latitude(char buf[])
+float DATA::get_uart_craft_latitude(char buf[])
 {
  	return Data.Parse(buf,3);
 }
@@ -46,7 +46,7 @@ float DATA::get_i2c_craft_latitude(char buf[])
 /**
  *  Retrieves the craft Longituede of the craft.
  */
-float DATA::get_i2c_craft_longitude(char buf[])
+float DATA::get_uart_craft_longitude(char buf[])
 {
  	return Data.Parse(buf,4);
 }
@@ -55,18 +55,18 @@ float DATA::get_i2c_craft_longitude(char buf[])
 /**
  *  Retrieves the speed (meters per second) of the craft.
  */ 
-float DATA::get_i2c_craft_speed(char buf[])
+float DATA::get_uart_craft_speed(char buf[])
 {
  	return Data.Parse(buf,5);
 }
 
 
-/*--------------------I2C TARGET PACKET (T)--------------------*/
+/*--------------------UART TARGET PACKET (T)--------------------*/
 
 /**
  *  Retrieves the Altitude of the target destination.
  */
-float DATA::get_i2c_target_altitude(char buf[])
+float DATA::get_uart_target_altitude(char buf[])
 {
  	return Data.Parse(buf,2);
 }
@@ -75,7 +75,7 @@ float DATA::get_i2c_target_altitude(char buf[])
 /**
  *  Retrieves the Latitude of the target destination.
  */
-float DATA::get_i2c_target_latitude(char buf[])
+float DATA::get_uart_target_latitude(char buf[])
 {
  	return Data.Parse(buf,3);
 }
@@ -84,7 +84,7 @@ float DATA::get_i2c_target_latitude(char buf[])
 /**
  *  Retrieves the Longitude of the target destination.
  */
-float DATA::get_i2c_target_longitude(char buf[])
+float DATA::get_uart_target_longitude(char buf[])
 {
  	return Data.Parse(buf,4);
 }
@@ -93,18 +93,18 @@ float DATA::get_i2c_target_longitude(char buf[])
 /**
  *  Retrieves the distance to the target destination.
  */
-float DATA::get_i2c_target_distance(char buf[])
+float DATA::get_uart_target_distance(char buf[])
 {
  	return Data.Parse(buf,5);
 }
 
 
-/*--------------------I2C NETWORK PACKET (N)--------------------*/
+/*--------------------UART NETWORK PACKET (N)--------------------*/
 
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */
-float DATA::get_i2c_authority_mode(char buf[])
+float DATA::get_uart_authority_mode(char buf[])
 {
 	return Data.Parse(buf,2);
 }
@@ -113,7 +113,7 @@ float DATA::get_i2c_authority_mode(char buf[])
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */
-float DATA::get_i2c_target_throttle(char buf[])
+float DATA::get_uart_target_throttle(char buf[])
 {
   return Data.Parse(buf,3);
 }
@@ -122,7 +122,7 @@ float DATA::get_i2c_target_throttle(char buf[])
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */
-float DATA::get_i2c_manual_command(char buf[])
+float DATA::get_uart_manual_command(char buf[])
 {
 	return Data.Parse(buf,4);
 }
@@ -131,7 +131,7 @@ float DATA::get_i2c_manual_command(char buf[])
 /**
  * Retrieves the flight mode of the craft. (Manual or autopilot)
  */
-float DATA::get_i2c_craft_anchor(char buf[])
+float DATA::get_uart_craft_anchor(char buf[])
 {
 	return Data.Parse(buf,5);
 }
@@ -148,41 +148,41 @@ void DATA::update_data()
 	  fltctrl_pitch = Imu.get_pitch();
 	  fltctrl_yaw = Imu.get_yaw();
   	
-    // Data that is coming into the flight controller via i2c. Checks for a complete
+    // Data that is coming into the flight controller via UART. Checks for a complete
     // packet flag. If true, the packet is valid and ready to be parsed.
     if(Comm.flag_complete_packet)
     {
         // Converts the string packet into a character array.
         // (Makes it easier to work with).
-        char to_parse[Comm.i2c_input_buffer.length()];
+        char to_parse[Comm.uart_input_buffer.length()];
         // Indexed at 0 so we need to add 1 at the end of the length.
-        Comm.i2c_input_buffer.toCharArray(to_parse,Comm.i2c_input_buffer.length()+1);
-        // Checks for i2c packet type of craft data.
+        Comm.uart_input_buffer.toCharArray(to_parse,Comm.uart_input_buffer.length()+1);
+        // Checks for UART packet type of craft data.
         if(to_parse[2] == 'C')
         {
             // Methods located in Data.cpp. Parses appropriate values from packet.
-            radio_craft_altitude = Data.get_i2c_craft_altitude(to_parse);
-            radio_craft_latitude = Data.get_i2c_craft_latitude(to_parse) / 10000.0;
-            radio_craft_longitude = Data.get_i2c_craft_longitude(to_parse) / 10000.0;
-            radio_craft_speed = Data.get_i2c_craft_speed(to_parse);
+            radio_craft_altitude = Data.get_uart_craft_altitude(to_parse);
+            radio_craft_latitude = Data.get_uart_craft_latitude(to_parse) / 10000.0;
+            radio_craft_longitude = Data.get_uart_craft_longitude(to_parse) / 10000.0;
+            radio_craft_speed = Data.get_uart_craft_speed(to_parse);
         }
-        // Checks for i2c packet type of Target data.
+        // Checks for UART packet type of Target data.
         else if(to_parse[2] == 'T')
         {
             // Methods located in Data.cpp. Parses appropriate values from packet.
-            radio_target_altitude = Data.get_i2c_target_altitude(to_parse);
-            radio_target_latitude = Data.get_i2c_target_latitude(to_parse) / 10000.0;
-            radio_target_longitude = Data.get_i2c_target_longitude(to_parse) / 10000.0;
-            radio_target_distance = Data.get_i2c_target_distance(to_parse);
+            radio_target_altitude = Data.get_uart_target_altitude(to_parse);
+            radio_target_latitude = Data.get_uart_target_latitude(to_parse) / 10000.0;
+            radio_target_longitude = Data.get_uart_target_longitude(to_parse) / 10000.0;
+            radio_target_distance = Data.get_uart_target_distance(to_parse);
         }
-        // Checks for i2c packet type of Network data.
+        // Checks for UART packet type of Network data.
         else if(to_parse[2] == 'N')
         {
             // Methods located in Data.cpp. Parses appropriate values from packet.
-            authority_mode = Data.get_i2c_authority_mode(to_parse); 
-            radio_target_throttle = Data.get_i2c_target_throttle(to_parse);
-            manual_direction = Data.get_i2c_manual_command(to_parse);
-            anchor_status = Data.get_i2c_craft_anchor(to_parse);
+            authority_mode = Data.get_uart_authority_mode(to_parse); 
+            radio_target_throttle = Data.get_uart_target_throttle(to_parse);
+            manual_direction = Data.get_uart_manual_command(to_parse);
+            anchor_status = Data.get_uart_craft_anchor(to_parse);
         }
     }
 }
@@ -249,7 +249,7 @@ float DATA::Parse(char message[], int objective)
 	//                    LORA                                        MISSION CONTROL                       CRAFT ID
 	// Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),craft_anchor,new_throttle,TargetLat,TargetLon, | Signal Origin
 	//
-	// Example I2C Transmission-----------------------------------------------------------------------------------------
+	// Example UART Transmission-----------------------------------------------------------------------------------------
 	//
 	//                                   CONTROLLER ACCESS NETWORK PROTOCOL PACKET
 	// $,GPSAltitude, Latitude, Longitude, TargetAlt, TargetLat, TargetLon, TargetDistance, Speed, Time,$

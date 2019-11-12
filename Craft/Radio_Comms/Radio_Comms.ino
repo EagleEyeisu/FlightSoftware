@@ -6,13 +6,13 @@
 #include "Globals.h"
 #include "DATA.h"
 #include "GPS.h"
-#include "I2C.h"
+#include "UART.h"
 #include "RADIO.h"
 
 /*****CONSTRUCTORS*****/
 DATA Data;
 GPS Gps;
-I2C Comm;
+UART Comm;
 RADIO Radio;
 
 // Directs the radio object to focus on two specific ports.

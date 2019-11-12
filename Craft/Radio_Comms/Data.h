@@ -25,23 +25,23 @@ class DATA
     // Responsible for pulling current sensor data from peripherals.
     void update_data();
     // Retrieves the flight controller's pressure value.
-    float get_i2c_fltctrl_pressure(char buf[]);
+    float get_uart_fltctrl_pressure(char buf[]);
     // Retrieves the flight controller's altitude value (calculated by pressure).
-    float get_i2c_fltctrl_altitude(char buf[]);
+    float get_uart_fltctrl_altitude(char buf[]);
     // Retrieves the flight controller's temperature value (external temp).
-    float get_i2c_fltctrl_temp(char buf[]);
+    float get_uart_fltctrl_temp(char buf[]);
     // Retrieves the flight controller's roll value.
-    float get_i2c_fltctrl_roll(char buf[]);
+    float get_uart_fltctrl_roll(char buf[]);
     // Retrieves the flight controller's pitch value.
-    float get_i2c_fltctrl_pitch(char buf[]);
+    float get_uart_fltctrl_pitch(char buf[]);
     // Retrieves the flight controller's yaw value.
-    float get_i2c_fltctrl_yaw(char buf[]);
+    float get_uart_fltctrl_yaw(char buf[]);
     // Retrieves the flight controller's target heading angle.
-    float get_i2c_target_heading(char buf[]);
+    float get_uart_target_heading(char buf[]);
     // Retrieves the flight controller's current heading angle.
-    float get_i2c_current_heading(char buf[]);
+    float get_uart_current_heading(char buf[]);
     // Retrieves the flight controller's craft state.
-    float get_i2c_craft_state(char buf[]);
+    float get_uart_craft_state(char buf[]);
     // Pulses external receive led.
     void blink_receive_led();
     // Pulses external sending led.

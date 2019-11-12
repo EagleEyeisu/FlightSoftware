@@ -1,11 +1,11 @@
 /****LIBRARIES****/
 #include <Adafruit_MAX31855.h>
-#include <Adafruit_BMP085_U.h>
 #include <Adafruit_LSM9DS0.h>
 #include <Adafruit_Sensor.h>
+#include <SoftwareSerial.h>
 
 #include "DATA.h"
-#include "I2C.h"
+#include "UART.h"
 #include "IMU.h"
 #include "MOTOR.h"
 #include "THERMO.h"
@@ -13,7 +13,7 @@
 
 /*****CONSTRUCTORS*****/ 
 DATA Data;
-I2C Comm;
+UART Comm;
 IMU Imu;
 THERMO Thermo;
 MOTOR Movement;
@@ -21,11 +21,11 @@ MOTOR Movement;
 // Object used to pull and store the Thermocouple's information.
 Adafruit_MAX31855 thermocouple(5, 4, 3);
 // Object used to pull and store information from the IMU.
-// Use I2C, ID #1000
+// Use UART, ID #1000
 Adafruit_LSM9DS0 lsm(1000);
-// Object used to communicate and pull information from the BMP085. (Pressure Sensor)
-Adafruit_BMP085_Unified bmp = Adafruit_BMP085_Unified(10085);
-
+// Defines a serial line (uart rx tx) over a pair of digital pins.
+// (RX,TX)
+SoftwareSerial ss(13, 12);
 
 /**
  * INITIALIZES ALL REQUIRED PERIPHIALS AND DEPENDENCIES.

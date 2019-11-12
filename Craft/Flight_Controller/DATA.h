@@ -18,30 +18,30 @@ class DATA
     void update_data();
     // Prints all info to the screen in the organized fasion. 
     void to_screen();
-    // Reads in the altitude via i2c.
-    float get_i2c_craft_altitude(char buf[]);
-    // Reads in the latitude via i2c.
-    float get_i2c_craft_latitude(char buf[]);
-    // Reads in the longitude via i2c.
-    float get_i2c_craft_longitude(char buf[]);
-    // Reads in the taret altitude via i2c.
-    float get_i2c_target_altitude(char buf[]);
-    // Reads in the target latitude via i2c.
-    float get_i2c_target_latitude(char buf[]);
-    // Reads in the taret longitude via i2c.
-    float get_i2c_target_longitude(char buf[]);
-    // Reads in the taret distance via i2c.
-    float get_i2c_target_distance(char buf[]);
-    // Reads in the speed via i2c.
-    float get_i2c_craft_speed(char buf[]);
+    // Reads in the altitude via UART.
+    float get_uart_craft_altitude(char buf[]);
+    // Reads in the latitude via UART.
+    float get_uart_craft_latitude(char buf[]);
+    // Reads in the longitude via UART.
+    float get_uart_craft_longitude(char buf[]);
+    // Reads in the taret altitude via UART.
+    float get_uart_target_altitude(char buf[]);
+    // Reads in the target latitude via UART.
+    float get_uart_target_latitude(char buf[]);
+    // Reads in the taret longitude via UART.
+    float get_uart_target_longitude(char buf[]);
+    // Reads in the taret distance via UART.
+    float get_uart_target_distance(char buf[]);
+    // Reads in the speed via UART.
+    float get_uart_craft_speed(char buf[]);
     // Reads in the flight mode of the craft.
-    float get_i2c_authority_mode(char buf[]);
+    float get_uart_authority_mode(char buf[]);
     // Reads in the manual flight mode's directional flight command.
-    float get_i2c_manual_command(char buf[]);
+    float get_uart_manual_command(char buf[]);
     // Reads in the craft's anchor state.
-    float get_i2c_craft_anchor(char buf[]);
+    float get_uart_craft_anchor(char buf[]);
     // Reads in the craft's throttle variable.
-    float get_i2c_target_throttle(char buf[]);
+    float get_uart_target_throttle(char buf[]);
 
 
     /*---------------------------------Variables---------------------------------*/

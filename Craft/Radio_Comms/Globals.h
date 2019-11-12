@@ -3,7 +3,7 @@
 
 extern class DATA Data;
 extern class GPS Gps;
-extern class I2C Comm;
+extern class UART Comm;
 extern class RADIO Radio;
 
 extern class RH_RF95 rf95;

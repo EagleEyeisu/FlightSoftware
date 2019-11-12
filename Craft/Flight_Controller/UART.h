@@ -1,20 +1,20 @@
 /**
- * I2C.h declares and holds the variables and frunctions used for I2C.
+ * UART.h declares and holds the variables and frunctions used for UART.
  */
 
-#ifndef I2C_h
-#define I2C_h
+#ifndef UART_h
+#define UART_h
 
 #include <Arduino.h>
 
-class I2C 
+class UART 
 {
     public:
     // Constructor. 
-    I2C();
-    // Reads in a individual byte from the I2C port.
-    void receiveEvent(int howMany);
-    // Runs initialzation script for the I2C protocol.
+    UART();
+    // Reads in a individual byte from the UART port.
+    void receive_packet();
+    // Runs initialzation script for the UART protocol.
     void initialize();
     // Processes all outgoing packets.
     void manager();
@@ -28,22 +28,22 @@ class I2C
     /*---------------------------------Variables---------------------------------*/
 
     // Inter-Intergrated Circuit (I^2C) packet.
-    String i2c_input_buffer;
+    String uart_input_buffer;
     // Inter-Intergrated Circuit (I^2C) packet.
-    String i2c_packet = "";
-    // Status of having a complete i2c packet to parse.
+    String uart_packet = "";
+    // Status of having a complete UART packet to parse.
     bool flag_complete_packet = false;
     // Selects between the (INSERT DESCRIPTORS HERE).
-    int i2c_selector = 1;
-    // Controls who has access to send over the i2c line.
-    bool i2c_my_turn;
+    int uart_selector = 1;
+    // Controls who has access to send over the UART line.
+    bool uart_my_turn;
     // Makes sure the packet type is only set once per turn to maintain
     // the cyclical order.
-    bool i2c_packet_set = false;
+    bool uart_packet_set = false;
     // Timer.
-    unsigned long i2c_timer = 0;
+    unsigned long uart_timer = 0;
     // Counter variable used in monitoring for deadlock occurances.
-    int i2c_deadlock_counter = 0;
+    int uart_deadlock_counter = 0;
 };
 
 #endif

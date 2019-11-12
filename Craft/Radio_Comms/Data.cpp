@@ -7,7 +7,7 @@
 #include "Data.h"
 #include "Radio.h"
 #include "GPS.h"
-#include "I2C.h"
+#include "UART.h"
 #include <stdlib.h>
 #include "Globals.h"
 
@@ -49,12 +49,12 @@ void DATA::manager()
 }
 
 
-/*--------------------I2C NETWORK PACKET (W)--------------------*/
+/*--------------------UART NETWORK PACKET (W)--------------------*/
 
 /**
  * Retrieves the flight controller's pressure value.
  */
-float DATA::get_i2c_fltctrl_pressure(char buf[])
+float DATA::get_uart_fltctrl_pressure(char buf[])
 {
 	return Data.Parse(buf,2);
 }
@@ -63,7 +63,7 @@ float DATA::get_i2c_fltctrl_pressure(char buf[])
 /**
  * Retrieves the flight controller's altitude value (calculated by pressure).
  */
-float DATA::get_i2c_fltctrl_altitude(char buf[])
+float DATA::get_uart_fltctrl_altitude(char buf[])
 {
  	return Data.Parse(buf,3);
 }
@@ -72,18 +72,18 @@ float DATA::get_i2c_fltctrl_altitude(char buf[])
 /**
  * Retrieves the flight controller's temperature value (external temp).
  */
-float DATA::get_i2c_fltctrl_temp(char buf[])
+float DATA::get_uart_fltctrl_temp(char buf[])
 {
  	return Data.Parse(buf,4);
 }
 
 
-/*--------------------I2C NETWORK PACKET (G)--------------------*/
+/*--------------------UART NETWORK PACKET (G)--------------------*/
 
 /**
  * Retrieves the flight controller's roll value.
  */
-float DATA::get_i2c_fltctrl_roll(char buf[])
+float DATA::get_uart_fltctrl_roll(char buf[])
 {
  	return Data.Parse(buf,2);
 }
@@ -92,7 +92,7 @@ float DATA::get_i2c_fltctrl_roll(char buf[])
 /**
  * Retrieves the flight controller's pitch value.
  */
-float DATA::get_i2c_fltctrl_pitch(char buf[])
+float DATA::get_uart_fltctrl_pitch(char buf[])
 {
  	return Data.Parse(buf,3);
 }
@@ -101,18 +101,18 @@ float DATA::get_i2c_fltctrl_pitch(char buf[])
 /**
  * Retrieves the flight controller's yaw value.
  */
-float DATA::get_i2c_fltctrl_yaw(char buf[])
+float DATA::get_uart_fltctrl_yaw(char buf[])
 {
  	return Data.Parse(buf,4);
 }
 
 
-/*--------------------I2C NETWORK PACKET (P)--------------------*/
+/*--------------------UART NETWORK PACKET (P)--------------------*/
 
 /**
  * Retrieves the flight controller's target heading angle.
  */
-float DATA::get_i2c_target_heading(char buf[])
+float DATA::get_uart_target_heading(char buf[])
 {
  	return Data.Parse(buf,2);
 }
@@ -121,7 +121,7 @@ float DATA::get_i2c_target_heading(char buf[])
 /**
  * Retrieves the flight controller's current heading angle.
  */
-float DATA::get_i2c_current_heading(char buf[])
+float DATA::get_uart_current_heading(char buf[])
 {
  	return Data.Parse(buf,3);
 }
@@ -137,7 +137,7 @@ float DATA::get_i2c_current_heading(char buf[])
  * 4 : UP
  * 5 : BREAK
  */
-float DATA::get_i2c_craft_state(char buf[])
+float DATA::get_uart_craft_state(char buf[])
 {
  	return Data.Parse(buf,4);
 }
@@ -148,38 +148,38 @@ float DATA::get_i2c_craft_state(char buf[])
  */
 void DATA::update_data()
 {
-	// Data that is coming into the MEGA via i2c. Checks for a complete
+	// Data that is coming into the MEGA via UART. Checks for a complete
 	// packet flag. If true, the packet is valid and ready to be parsed.
 	if(Comm.flag_complete_packet)
 	{
 		// Converts the string packet into a character array.
 		// (Makes it easier to work with).
-		char to_parse[Comm.i2c_input_buffer.length()];
+		char to_parse[Comm.uart_input_buffer.length()];
 		// Indexed at 0 so we need to add 1 at the end of the length.
-    	Comm.i2c_input_buffer.toCharArray(to_parse,Comm.i2c_input_buffer.length()+1);
-    	// Checks for i2c packet type of Weather data.
+    	Comm.uart_input_buffer.toCharArray(to_parse,Comm.uart_input_buffer.length()+1);
+    	// Checks for UART packet type of Weather data.
 		if(to_parse[2] == 'W')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			fltctrl_pressure = Data.get_i2c_fltctrl_pressure(to_parse);
-			fltctrl_altitude = Data.get_i2c_fltctrl_altitude(to_parse);
-			fltctrl_external_temperature = Data.get_i2c_fltctrl_temp(to_parse);
+			fltctrl_pressure = Data.get_uart_fltctrl_pressure(to_parse);
+			fltctrl_altitude = Data.get_uart_fltctrl_altitude(to_parse);
+			fltctrl_external_temperature = Data.get_uart_fltctrl_temp(to_parse);
 		}
-		// Checks for i2c packet type of Gryo data.
+		// Checks for UART packet type of Gryo data.
 		else if(to_parse[2] == 'G')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			fltctrl_roll = Data.get_i2c_fltctrl_roll(to_parse);
-			fltctrl_pitch = Data.get_i2c_fltctrl_pitch(to_parse);
-			fltctrl_yaw = Data.get_i2c_fltctrl_yaw(to_parse);
+			fltctrl_roll = Data.get_uart_fltctrl_roll(to_parse);
+			fltctrl_pitch = Data.get_uart_fltctrl_pitch(to_parse);
+			fltctrl_yaw = Data.get_uart_fltctrl_yaw(to_parse);
 		}
-		// Checks for i2c packet type of Positioning data.
+		// Checks for UART packet type of Positioning data.
 		else if(to_parse[2] == 'P')
 		{
 			// Methods located in Data.cpp. Parses appropriate values from packet.
-			target_heading = Data.get_i2c_target_heading(to_parse);
-			craft_heading = Data.get_i2c_current_heading(to_parse);
-			craft_state = Data.get_i2c_craft_state(to_parse);
+			target_heading = Data.get_uart_target_heading(to_parse);
+			craft_heading = Data.get_uart_current_heading(to_parse);
+			craft_state = Data.get_uart_craft_state(to_parse);
 		}
 	}
 }
@@ -200,7 +200,7 @@ float DATA::Parse(char message[], int objective)
 	//                    LORA                                        MISSION CONTROL                       CRAFT ID
 	// Time(ms),Altitude,Latitude,Longitude,LE, | Time(ms),Start_Stop,new_throttle,TargetLat,TargetLon, | Signal Origin
 	//
-	// Example I2C Transmission
+	// Example UART Transmission
 	//
 	//                                  CONTROLLER ACCESS NETWORK PROTOCOL PACKET
 	// $,GPSAltitude, Latitude, Longitude, TargetLat, TargetLon, Roll, Pitch, Yaw, Speed, TargetDistance, Time,$

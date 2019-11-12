@@ -1,20 +1,20 @@
 /**
- * I2C.h 
+ * UART.h 
  */
 
-#ifndef I2C_h 
-#define I2C_h
+#ifndef UART_h 
+#define UART_h
 
 #include <Arduino.h>
 
-class I2C
+class UART
 {
     public:
     // Constructor
-    I2C();
-    // Reads in a individual byte from the I2C port.
+    UART();
+    // Reads in a individual byte from the UART port.
     void receiveEvent(int howMany);
-    // Runs initialzation script for the I2C protocol.
+    // Runs initialzation script for the UART protocol.
     void initialize();
     // Processes all outgoing packets.
     void manager();
@@ -26,19 +26,19 @@ class I2C
     /*---------------------------------Variables---------------------------------*/
     
     // Inter-Intergrated Circuit (I^2C) packet.
-    String i2c_input_buffer;
+    String uart_input_buffer;
     // Inter-Intergrated Circuit (I^2C) packet.
-    String i2c_packet = "";
-    // Status of having a complete i2c packet to parse.
+    String uart_packet = "";
+    // Status of having a complete UART packet to parse.
     bool flag_complete_packet = false;
     // Selects between the Craft data(1), Target data(2), and network data(3).
-    int i2c_selector = 1;
-    // Controls who has access to send over the i2c line.
-    bool i2c_my_turn;
+    int uart_selector = 1;
+    // Controls who has access to send over the UART line.
+    bool uart_my_turn;
     // Makes sure the packet type is only set once per turn to maintain
     // the cyclical order.
-    bool i2c_packet_set;
+    bool uart_packet_set;
     // Timer.
-    unsigned long i2c_timer = 0;
+    unsigned long uart_timer = 0;
 };
 #endif
