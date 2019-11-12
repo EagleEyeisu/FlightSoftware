@@ -32,8 +32,8 @@ void I2C::initialize()
   	// Sets the address for the current micro controller.
   	// Flight Controller - 0
   	// Radio - 8
-  	Wire.begin(0);
-   	Wire.onReceive(receiveEvent);
+  	Wire.begin();
+    Wire.onReceive(receiveEvent);
    	// Initializes the system to have the LoRa start.
     Comm.i2c_my_turn = true;
 }
@@ -86,81 +86,56 @@ void receiveEvent(int howMany)
     Comm.i2c_my_turn = true;
     // Resets the input string to null.
     Comm.i2c_input_buffer = "";
-    // Resets formatting variables to false.
-    bool start_flag = false;
-    bool end_flag = false;
-    bool junk_flag = false;
     // Checks if there is available i2c input.
     if(Wire.available())
     {
-      // Reads in first ascii int and casts to char.
-    	char temp = Wire.read();
-    	// First char should be the dollar sign. 
-    	// If so, continute. If not, junk it.
-    	if(temp == '$')
-    	{
-    		// Appends character to string.
-    		Comm.i2c_input_buffer += temp;
-    		// Signals the format was correct in the beginning.
-    		start_flag = true;
-    		// Cycles until there is no input.
-    		while(Wire.available())
-		    {
-		    	// Reads in next ascii int and casts to char.
-		    	char temp = Wire.read();
-		    	// Checks for the final '$'. If so, stops recording the rest.
-		    	// Prevents duplicating.
-		    	if(temp == '$' && junk_flag == false)
-		    	{
-		    		// Appends character to string.
-		    		Comm.i2c_input_buffer += temp;
-		    		// Ending format was correct.
-		    		end_flag = true;
-		    		// Signals to throw away the rest of the packet is there's more input.
-		    		junk_flag = true;
-		    	}
-		    	// End '$' has already been seen. Throw away the rest.
-		    	else if (junk_flag == true)
-		    	{	
-		    		// Reads in i2c input and kills it.
-		    		char junk = temp;
-		    	}
+        // Reads in first ascii int and casts to char.
+        char temp = Wire.read();
+        // First char should be the dollar sign. 
+        // If so, continute. If not, junk it.
+        if(temp == '$')
+        {
+            // Appends character to string.
+            Comm.i2c_input_buffer += temp;
+            // Cycles until there is no input.
+            while(Wire.available())
+            {
+                // Reads in next ascii int and casts to char.
+                temp = Wire.read();
+                // Checks for the final '$'. If so, stops recording the rest.
+                // Prevents duplicating.
+                if(temp == '$')
+                {
+                    // Appends character to string.
+                    Comm.i2c_input_buffer += temp;
+                    while(Wire.available())
+                    {
+                        // Throws away bad I2C data.
+                        char junk = Wire.read();
+                    }
+                    Comm.flag_complete_packet = true;
+                    Serial.println("Valid");
+                    return;
+                }
                 // Middle of the packet data. Add to buffer.
                 else
                 {
                     // Appends character to string.
                     Comm.i2c_input_buffer += temp;
                 }
-		    }
-    	}
-    	// Not correct format. Read in it and throw it away.
-    	else
-    	{
-    		// Cycles until there is no input.
-    		while(Wire.available())
-		    {
-		    	// Reads in i2c input and kills it.
-		    	char junk = Wire.read();
-		    }
-    	}
-    }
-    // Checks for proper formatting. Forces the program to wait for a valid i2c packet
-    // prior to trying to parse the data.
-    if(start_flag && end_flag)
-    {
-        // Updates packet flag to true.
-        Comm.flag_complete_packet = true;
-        Serial.println("Valid Packet.");
-        Serial.println(Comm.i2c_input_buffer);
-    }
-    // Formatting was incorrect. Invalid packet.
-    else
-    {
-        // Packet is screwed up. Alerts the system not to try to pull data from
-        // this packet.
-        Comm.flag_complete_packet = false;
-        Serial.println("Incorrect Packet.");
-    }
+            }
+        }
+        // Not correct format. Read in it and throw it away.
+        else
+        {
+            // Cycles until there is no input.
+            while(Wire.available())
+            {
+                // Throws away bad I2C data.
+                char junk = Wire.read();
+            }
+        }
+    } 
 }
 
 
@@ -199,9 +174,9 @@ void I2C::create_packet()
             i2c_packet += ',';
             i2c_packet += 'W';
             i2c_packet += ',';
-            i2c_packet += Data.fltctrl_pressure;
+            i2c_packet += "0.00";
             i2c_packet += ',';
-            i2c_packet += Data.fltctrl_altitude;
+            i2c_packet += "0.00";
             i2c_packet += ',';
             i2c_packet += Data.fltctrl_external_temperature;
             i2c_packet += ',';

@@ -29,13 +29,13 @@ I2C::I2C()
  */
 void I2C::initialize()
 {
-	// Predeclaration of method that will be set as a interrupt.
+    // Predeclaration of method that will be set as a interrupt.
     void receiveEvent(int howMany);
-	// Sets the address for the current micro controller.
-	// Flight Controller - 0
-	// Radio - 8
-	Wire.begin(8);
-	Wire.onReceive(receiveEvent);
+    // Sets the address for the current micro controller.
+    // Flight Controller - 0
+    // Radio - 8
+    Wire.begin(8);
+    Wire.onReceive(receiveEvent);
     // Initializes the system to have the LoRa start.
     Comm.i2c_my_turn = false;
     Comm.i2c_packet_set = false;
@@ -47,10 +47,14 @@ void I2C::initialize()
  */
 void I2C::manager()
 {
-    // Clears and refills the network packet to be sent to the Mega.
-    create_packet();
-    // Sends the packet over to the Mega. 
-    send_packet();
+    // Checks for turn to send.
+    if(Comm.i2c_my_turn == true)
+    {
+        // Clears and refills the network packet to be sent to the Mega.
+        Comm.create_packet();
+        // Sends the packet over to the Mega. 
+        Comm.send_packet();
+    }
 }
 
 
@@ -59,85 +63,55 @@ void I2C::manager()
  */
 void receiveEvent(int howMany)
 {
-	  Comm.i2c_my_turn = true;
+    Comm.i2c_my_turn = true;
     // Resets the input string to null.
     Comm.i2c_input_buffer = "";
-    // Resets formatting variables to false.
-    bool start_flag = false;
-    bool end_flag = false;
-    bool junk_flag = false;
     // Checks if there is available i2c input.
     if(Wire.available())
     {
-    	// Reads in first ascii int and casts to char.
-    	char temp = Wire.read();
-    	// First char should be the dollar sign. 
-    	// If so, continute. If not, junk it.
-    	if(temp == '$')
-    	{
-    		// Appends character to string.
-    		Comm.i2c_input_buffer += temp;
-    		// Signals the format was correct in the beginning.
-    		start_flag = true;
-    		// Cycles until there is no input.
-    		while(Wire.available())
-		    {
-		    	// Reads in next ascii int and casts to char.
-		    	char temp = Wire.read();
-		    	// Checks for the final '$'. If so, stops recording the rest.
-		    	// Prevents duplicating.
-		    	if(temp == '$' && junk_flag == false)
-		    	{
-		    		// Appends character to string.
-		    		Comm.i2c_input_buffer += temp;
-		    		// Ending format was correct.
-		    		end_flag = true;
-		    		// Signals to throw away the rest of the packet is there's more input.
-		    		junk_flag = true;
-		    	}
-		    	// End '$' has already been seen. Throw away the rest.
-		    	else if (junk_flag == true)
-		    	{	
-		    		// Throws away bad I2C data.
-		    		char junk = temp;
-		    	}
-                // Middle of the packet data. Add to buffer.
-                else
+        // Reads in first ascii int and casts to char.
+        char temp = Wire.read();
+        // First char should be the dollar sign. 
+        // If so, continute. If not, junk it.
+        if(temp == '$')
+        {
+            // Appends character to string.
+            Comm.i2c_input_buffer += temp;
+            // Cycles until there is no input.
+            while(Wire.available())
+            {
+                // Reads in next ascii int and casts to char.
+                temp = Wire.read();
+                // Checks for the final '$'. If so, stops recording the rest.
+                // Prevents duplicating.
+                if(temp == '$')
                 {
                     // Appends character to string.
                     Comm.i2c_input_buffer += temp;
+                    while(Wire.available())
+                    {
+                        // Throws away bad I2C data.
+                        char junk = Wire.read();
+                    }
+                    Comm.flag_complete_packet = true;
+                    Serial.println("Valid");
+                    return;
                 }
-		      }
-    	}
-    	// Not correct format. Read in it and throw it away.
-    	else
-    	{
-    		// Cycles until there is no input.
-    		while(Wire.available())
-		    {
-		    	// Throws away bad I2C data.
-		    	char junk = Wire.read();
-		    }
-    	}
-    }
-
-    // Checks for proper formatting. Forces the program to wait for a valid i2c packet
-    // prior to trying to parse the data.
-    if(start_flag && end_flag)
-    {
-        // Updates packet flag to true.
-        Comm.flag_complete_packet = true;
-        Serial.println("\nValid Packet.");
-        Serial.println(Comm.i2c_input_buffer);
-    }
-    // Formatting was incorrect. Invalid packet.
-    else
-    {
-        // Packet is screwed up. Alerts the system not to try to pull data from
-        // this packet.
-        Comm.flag_complete_packet = false;
-        Serial.println("Incorrect Packet.");
-    }
+                // Otherwise appends character to string.
+                Comm.i2c_input_buffer += temp;
+            }
+        }
+        // Incorrect format. Read in it and throw it away.
+        else
+        {
+            // Cycles until there is no input.
+            while(Wire.available())
+            {
+                // Throws away bad I2C data.
+                char junk = Wire.read();
+            }
+        }
+    } 
 }
 
 
@@ -157,7 +131,7 @@ void I2C::create_packet()
     *   1        2                3                 5              5
     */
 
-    Serial.print("Packet check: "); Serial.println(Comm.i2c_packet_set);
+    //Serial.print("Packet check: "); Serial.println(Comm.i2c_packet_set);
     if(Comm.i2c_packet_set == false)
     {
         // Creates a temporary string to hold all need information.
@@ -235,29 +209,21 @@ void I2C::create_packet()
  * Sends byte over I2C Connection.
  */
 void I2C::send_packet()
-{
-    // Every 1 second, the lora is allowed to send i2c data.
-    if((millis() - i2c_timer > 50) && (Comm.i2c_my_turn == true))
-    {
-        // Resets timer.
-        i2c_timer = millis();
-        // Iterator
-        int character_iterator = 0;
-        // Assigns address of the receiving board.
-        Wire.beginTransmission(0);
-        // Sends the message.
-        while(character_iterator < i2c_packet.length())
-        {
-            Wire.write(i2c_packet[character_iterator]);
-            character_iterator++;
-        }
-        Serial.print("Sent: ");
-        Serial.println(i2c_packet);
-        // Closes the transmission.
-        Wire.endTransmission();
-        // No longer my turn.
-        Comm.i2c_my_turn = false;
-        // Allows the next i2c packet to cycle to the next packet type.
-        Comm.i2c_packet_set = false;
-    }
+{  
+      // Iterator
+      int character_iterator = 0;
+      // Assigns address of the receiving board.
+      Wire.beginTransmission(0);
+      // Sends the message.
+      while(character_iterator < i2c_packet.length())
+      {
+          Wire.write(i2c_packet[character_iterator]);
+          character_iterator++;
+      }
+      Serial.print("Sent: ");
+      Serial.println(i2c_packet);
+      // No longer my turn.
+      Comm.i2c_my_turn = false;
+      // Allows the next i2c packet to cycle to the next packet type.
+      Comm.i2c_packet_set = false;
 }

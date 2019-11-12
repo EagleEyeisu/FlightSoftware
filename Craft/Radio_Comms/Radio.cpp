@@ -236,8 +236,8 @@ String RADIO::construct_network_packet()
     radio_output = "";
     // Copy contents.
     radio_output = temp;
-    Serial.print("Radio Out: ");
-    Serial.println(radio_output);
+    //Serial.print("Radio Out: ");
+    //Serial.println(radio_output);
     return temp;
 }
 
@@ -283,8 +283,8 @@ void RADIO::radio_receive()
             char to_parse[str.length()];
             str.toCharArray(to_parse,str.length());
             // Debugging to the Serial Monitor.
-            Serial.print("Radio In: ");
-            Serial.println(radio_input);
+            //Serial.print("Radio In: ");
+            //Serial.println(radio_input);
 
             // Checks for a valid packet. Only parses contents if valid to prevent
             // data corruption.

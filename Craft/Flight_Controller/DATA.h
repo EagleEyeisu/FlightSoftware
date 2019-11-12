@@ -18,10 +18,6 @@ class DATA
     void update_data();
     // Prints all info to the screen in the organized fasion. 
     void to_screen();
-    // Reads in external pressure and calculates altitude.
-    float calculate_barometer_altitude();
-    // Captures a barometric pressure sample and sets the pressure variable.
-    void set_pressure();
     // Reads in the altitude via i2c.
     float get_i2c_craft_altitude(char buf[]);
     // Reads in the latitude via i2c.
@@ -46,8 +42,6 @@ class DATA
     float get_i2c_craft_anchor(char buf[]);
     // Reads in the craft's throttle variable.
     float get_i2c_target_throttle(char buf[]);
-    // Runs initialzation script for the barometer.
-    void initialize();
 
 
     /*---------------------------------Variables---------------------------------*/
@@ -76,16 +70,12 @@ class DATA
 
     /*------------------------Mega Information------------------------*/
 
-    // Altitude of the craft.
-    float fltctrl_altitude = 0.0;
     // Roll value of the craft.
     float fltctrl_roll = 0.0;
     // Pitch value of the craft.
     float fltctrl_pitch = 0.0;
     // Yaw value of the craft.
     float fltctrl_yaw = 0.0;
-    // External atmosphereic pressure.
-    float fltctrl_pressure = 0.0;
     // External temperature of craft.
     float fltctrl_external_temperature = 0.0;
 

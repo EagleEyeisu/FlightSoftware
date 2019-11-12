@@ -9,7 +9,6 @@
 #include "I2C.h"
 #include "RADIO.h"
 
-
 /*****CONSTRUCTORS*****/
 DATA Data;
 GPS Gps;
@@ -30,6 +29,7 @@ void setup()
     // Creates a serial communication line between the arduino and the serial port 
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
+    Serial.println("Power On");
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
     Comm.initialize();
     // Initializes the Radio.
@@ -53,7 +53,7 @@ void setup()
 void loop()
 {
     // Verbosity Check. 
-    Serial.println("...");
+    //Serial.println("...");
     // Monitors for a powercycle.
     //system_boot();
     // Turns OPERATIONAL_LED on/off.
@@ -68,7 +68,7 @@ void loop()
     // Also reads incoming network packets.
     Radio.manager();
     // Responsible for the health of the system and logging data to onboard storage.
-    //Data.manager();
+    Data.manager();
 }
 
 

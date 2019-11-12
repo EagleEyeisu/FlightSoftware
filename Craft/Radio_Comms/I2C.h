@@ -13,7 +13,7 @@ class I2C
     // Constructor
     I2C();
     // Reads in a individual byte from the I2C port.
-    void receiveEvent(int howMany); 
+    void receiveEvent(int howMany);
     // Runs initialzation script for the I2C protocol.
     void initialize();
     // Processes all outgoing packets.

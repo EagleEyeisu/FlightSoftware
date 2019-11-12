@@ -17,7 +17,7 @@ I2C Comm;
 IMU Imu;
 THERMO Thermo;
 MOTOR Movement;
- 
+
 // Object used to pull and store the Thermocouple's information.
 Adafruit_MAX31855 thermocouple(5, 4, 3);
 // Object used to pull and store information from the IMU.
@@ -36,7 +36,7 @@ void setup()
     // found under 'Tools' -> 'Serial Monitor'
     Serial.begin(115200);
     // Initializes the Pressure Sensor.
-    Data.initialize();
+    //Data.initialize();
     // Initializes the Inter-Intergrated Circuit (I^2C) protocol.
     Comm.initialize();
     // Initializes the Inertial Measurement Unit (IMU).

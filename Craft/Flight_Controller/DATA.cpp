@@ -143,8 +143,6 @@ float DATA::get_i2c_craft_anchor(char buf[])
 void DATA::update_data()
 {
 	  // Data that is native to the flight controller.
-  	set_pressure();
-	  fltctrl_altitude = Data.calculate_barometer_altitude();
 	  fltctrl_external_temperature = Thermo.get_external_temperature();
 	  fltctrl_roll = Imu.get_roll();
 	  fltctrl_pitch = Imu.get_pitch();
@@ -190,19 +188,6 @@ void DATA::update_data()
 }
 
 
-/**
- * Captures a barometric pressure sample and sets the pressure variable.
- */
-void DATA::set_pressure()
-{
-    // Object used to store the store the data pulled from the BMP085.
-    sensors_event_t event;
-    // Creates new 'event' with the most craft pressure sensor data.
-    bmp.getEvent(&event);
-    fltctrl_pressure = event.pressure;
-}
-
-
 void DATA::to_screen()
 {
   	if(new_data == YES)
@@ -213,9 +198,7 @@ void DATA::to_screen()
         Serial.println("-----------------------------------------------------------------------------");
         Serial.println("|                                MEGA DATA                                  |");
         Serial.println("|                                                                           |");
-        Serial.print(  "|  Altitude:     "); Serial.print(fltctrl_altitude,2); 			        Serial.print(" m");  Serial.println("\t\t\t\t\t\t    |");
         Serial.print(  "|  Temperature:  "); Serial.print(fltctrl_external_temperature);    Serial.print(" C");  Serial.println("\t\t\t\t\t\t    |");
-        Serial.print(  "|  Pressure:     "); Serial.print(fltctrl_pressure);   			        Serial.print(" hPa");Serial.println("\t\t\t\t\t\t    |");
         Serial.print(  "|  Roll:         "); Serial.print(fltctrl_roll);                    Serial.println("\t\t\t\t\t\t\t    |");
         Serial.print(  "|  Pitch:        "); Serial.print(fltctrl_pitch);                   Serial.println("\t\t\t\t\t\t\t    |");
         Serial.print(  "|  Yaw:          "); Serial.print(fltctrl_yaw);                     Serial.println("\t\t\t\t\t\t\t    |");
@@ -315,73 +298,4 @@ float DATA::Parse(char message[], int objective)
 	float temp = atof(parsed_section);
 	// Returns the desired parsed section in number (float) form.
 	return temp;
-}
-
-
-/**
- * Derives Crafts altitude based on current atmosphereic pressure.
- * DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD TO BY JARED.
- */
-float DATA::calculate_barometer_altitude()
-{
-	// Converts the incoming pressure (hPa) into (mPa).
-	float pressure = fltctrl_pressure / 10.0;
-	// Altitude value produced from the equations below.
-  	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD TO BY JARED.
-	float result;
-	// These variables represent parts of the equation. Think of it like this...
-	// (following symbols are not representative of what happens below)   
-	//
-	//            left_top +- right_top
-	//            -------------------     (left_top and right_top combined = top_total)
-	//                  bottom
-	float left_top;
-	float right_top;
-	float bottom;
-	float top_total;
-	// ABOVE 25,000m
-  	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD BY JARED.
-	if (pressure < 2.55)
-  	{                         
-		left_top = -47454.8;
-		right_top = pow(pressure, 0.087812) - 1.65374;
-		bottom = pow(pressure, 0.087812);
-		top_total = left_top * right_top;
-		result = (top_total / bottom);
-	}
-	// Between 25,000m and 11,000m
-  	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD BY JARED.
-	else if(67.05 > pressure && pressure > 2.55)
-  	{
-		right_top = -6369.43;
-		left_top = log(pressure) - 4.85016;
-		result =  left_top * right_top;
-	}
-	// BELOW 11,000m (Pressure > 67.05)
-  	// DO NOT ALTER THIS METHOD UNLESS EXPLICITLY TOLD BY JARED.
-	else
-  	{
-		left_top = 44397.5;
-		right_top = 18437 * pow(pressure, 0.190259);
-		result = left_top - right_top;
-	}
-	return result;
-}
-
-
-/**
- * Tests connection to Barometer.
- */
-void DATA::initialize()
-{
-    if(!bmp.begin())
-    {
-        Serial.println("PROBLEM WITH PRESSURE SENSOR.");
-        while(1);
-    }
-    //Valid connection, program proceeds as planned.
-    else
-    {
-        Serial.println("Pressure Sensor Online.");
-    }
 }
