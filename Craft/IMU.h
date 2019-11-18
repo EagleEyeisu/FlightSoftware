@@ -32,6 +32,12 @@ class IMU
 
     /*---------------------------------Variables---------------------------------*/
 
+    // Roll value of the craft.
+    float roll = 0.0;
+    // Pitch value of the craft.
+    float pitch = 0.0;
+    // Yaw value of the craft.
+    float yaw = 0.0;
     // Current angle to the target.
     float target_heading = 0.0;
     // Current bearing for craft.
@@ -45,10 +51,9 @@ class IMU
     // Booleans to determine right/left turning action.
     bool turn_right = false;
     bool turn_left = false;
-    // Booleans to determine upward/downward motion action.
-    bool move_up = false;
-    // Booleans to determine forward motion action.
-    bool move_forward = true;  
+    // Booleans to determine forward/backward motion action.
+    bool move_forward = false;  
+    bool move_backward = false;  
 };
 
 #endif

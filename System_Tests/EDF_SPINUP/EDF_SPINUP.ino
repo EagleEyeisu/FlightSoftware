@@ -13,8 +13,8 @@ int increment_amount = 10;
 // Delay time between consecutive pulses to the motors.
 // Unit = milliseconds
 #define INCREMENT_DELAY 320
-// PWM pin that goes to the esc.
-#define MOTOR_PIN 11
+// PWM pin that goes to the ESC.
+#define MOTOR_PIN A1
 // Software object that will interact with the Electronic Speed Controller. (We treat this as the EDF itself)
 Servo motor;
 // Throttle value of the craft at any given point in time.
@@ -55,7 +55,7 @@ void setup()
     if (!SD.begin(chipSelect)) {
         Serial.println("Card failed, or not present");
         // don't do anything more:
-        //while (1);
+        while (1);
     }
     else{
         log_data(4);
@@ -77,17 +77,27 @@ void loop()
     {
         edf_tests();
     }
+    // Used when setting up motor. Not during live tests.
+    //polarity_check();
+    //delay(100000);
 }
 
+
+/**
+ * Used to test polarity of the EDF. Runs @ 1% for 5 seconds. 
+ */
+void polarity_check()
+{
+    increment_amount = 10; // 1% throttle increment
+    run_test(990); // 5%
+    delay(15000); // 15 second delay
+}
 
 /**
  * Runs through the various throttle tests.
  */
 void edf_tests()
 {
-    // Ensures the test won't run more than once.
-    test_active = false;
-
     // Acknowledges HABET's start signal.
     Serial1.write("Started");
     // Logs to the SD card that we have started the tests.
@@ -121,12 +131,13 @@ void edf_tests()
     /***** Test 6 *****/
     increment_amount = 50; // 5% throttle increment
     run_test(1490); // 50%
-    delay(15000); // 15 second delay
+    delay(5000); // 5 second delay
 
     // Logs to the sd card that we have stopped the tests.
     log_data(3);
     // Tells HABET that tests have concluded.
     Serial1.write("Stopped");
+    test_active = false;
 }
 
 /**

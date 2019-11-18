@@ -4,9 +4,10 @@
  */
 
 #include <Arduino.h>
+#include <RH_RF95.h>
 #include "Radio.h"
 #include "Data.h"
-#include <RH_RF95.h>
+#include "GPS.h"
 #include "Globals.h"
 
 /**
@@ -182,17 +183,17 @@ void RADIO::initialize()
  */
 void RADIO::manager()
 {
-  // Reads in radio transmission if available.
-  radio_receive();
-  // Each of the crafts have # seconds to broadcast.
-  if(millis() - broadcast_timer > network_node_delay)
-  {
-  	// Resets the counter. This disables broadcasting again until # seconds have passed.
-    broadcast_timer = millis();
-    String packet = construct_network_packet();
-  	// Sends the transmission via radio.
-  	broadcast(packet);
-  }
+    // Reads in radio transmission if available.
+    radio_receive();
+    // Each of the crafts have # seconds to broadcast.
+    if(millis() - broadcast_timer > network_node_delay)
+    {
+        // Resets the counter. This disables broadcasting again until # seconds have passed.
+        broadcast_timer = millis();
+        String packet = construct_network_packet();
+        // Sends the transmission via radio.
+        broadcast(packet);
+    }
 }
 
 
@@ -201,7 +202,7 @@ void RADIO::manager()
  */
 String RADIO::construct_network_packet()
 {
-  // Updates the time object to hold the most current operation time.
+    // Updates the time object to hold the most current operation time.
     craft_ts = millis()/1000.0;
     // Casting all float values to a character array with commas saved in between values
     // so the character array can be parsed when received by another craft.
@@ -210,27 +211,27 @@ String RADIO::construct_network_packet()
     temp += ",";
     temp += craft_ts;
     temp += ",";
-    temp += craft_altitude;
+    temp += Gps.gps_altitude;
     temp += ",";
-    temp += craft_latitude * 10000;
+    temp += Gps.gps_latitude * 10000;
     temp += ",";
-    temp += craft_longitude * 10000;
+    temp += Gps.gps_longitude * 10000;
     temp += ",";
-    temp += craft_event;
+    temp += Data.craft_event;
     temp += ",";
     temp += mission_control_ts;
     temp += ",";
-    temp += craft_anchor;
+    temp += Data.anchor_status;
     temp += ",";
-    temp += target_latitude * 10000;
+    temp += Gps.target_latitude * 10000;
     temp += ",";
-    temp += target_longitude * 10000;
+    temp += Gps.target_longitude * 10000;
     temp += ",";
     temp += target_throttle;
     temp += ",";
     temp += craft_id;
     temp += ",";
-    temp += manual_direction;
+    temp += Data.manual_direction;
     temp += ",";
     temp += "$";
     radio_output = "";
@@ -255,7 +256,7 @@ void RADIO::broadcast(String packet)
     // Pauses all operations until the micro controll has guaranteed the transmission of the
     // signal.
     rf95.waitPacketSent();
-    Data.blink_send_led();
+    //Data.blink_send_led();
 }
 
 
@@ -304,11 +305,11 @@ void RADIO::radio_receive()
                     // If the incoming signal has more up-to-date versions, we overwrite our saved version with
                     // the new ones.
                     mission_control_ts = temp_ts;
-                    craft_anchor = Radio.get_radio_craft_anchor(to_parse);
-                    target_latitude = Radio.get_radio_target_latitude(to_parse);
-                    target_longitude = Radio.get_radio_target_longitude(to_parse);
+                    Data.anchor_status = Radio.get_radio_craft_anchor(to_parse);
+                    Gps.target_latitude = Radio.get_radio_target_latitude(to_parse);
+                    Gps.target_longitude = Radio.get_radio_target_longitude(to_parse);
                     target_throttle = Radio.get_radio_target_throttle(to_parse);
-                    manual_direction = Radio.get_radio_manual_direction(to_parse);
+                    Data.manual_direction = Radio.get_radio_manual_direction(to_parse);
                 }
                 // Reads in the value associated with the reset.
                 received_reset = get_radio_node_reset(to_parse);

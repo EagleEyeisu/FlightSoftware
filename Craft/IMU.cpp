@@ -7,15 +7,17 @@
  */
 
 
-#include "IMU.h"
-#include "DATA.h"
-#include "MOTOR.h"
-#include "Globals.h"
 #include <Adafruit_LSM9DS0.h>
 #include <Adafruit_Simple_AHRS.h>
 #include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <math.h>
+
+#include "IMU.h"
+#include "GPS.h"
+#include "DATA.h"
+#include "MOTOR.h"
+#include "Globals.h"
 
 
 /**
@@ -35,8 +37,12 @@ void IMU::initialize()
     // If invalid connection, the program will stall and print an error message.
     if(!lsm.begin())
     {
-	   Serial.print("PROBLEM WITH 9DOF");
-	   while(1);
+	    // If invalid connection, the program will stall and pulse the onbaord led.
+        while (1)
+        {
+            Data.blink_error_led();
+            Serial.println("IMU Init Error");
+        }
     }
     // Sets specific calibration values. DO NOT CHANGE.
     lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
@@ -51,13 +57,8 @@ void IMU::initialize()
  */
 void IMU::manager()
 {
-
-    // THIS IS WHERE I NEED TO IMPLEMENT CHECK FOR MANUAL OR AUTO.
-
     // Calculates the angle between the crafts current heading and the target.
     calculate_target_heading();
-    // Checks the difference between where we want to be and where we actual are in terms of altitude.
-    check_altitude_tolerance();
     // Calculates the distance in meters from the craft to the target location.
     check_distance_tolerance();
 }
@@ -121,10 +122,10 @@ float IMU::get_yaw()
 void IMU::calculate_target_heading()
 {
     // Pulls in data to be used in calculations.
-    float lat1 = Data.radio_craft_latitude;
-    float lon1 = Data.radio_craft_longitude;
-    float lat2 = Data.radio_target_latitude;
-    float lon2 = Data.radio_target_longitude;
+    float lat1 = Gps.gps_latitude;
+    float lon1 = Gps.gps_longitude;
+    float lat2 = Gps.target_latitude;
+    float lon2 = Gps.target_longitude;
     // Math. (Ask Christopher Johannsen if problem occurs)
     float x = cos(lat1)*sin(lat2) - sin(lat1)*cos(lat2)*cos(lon2-lon1);
     float y = sin(lon2-lon1) * cos(lat2); 
@@ -160,28 +161,12 @@ void IMU::calculate_target_heading()
 }
 
 /**
- * Sets certain booleans true depending on the crafts orientation.
- */
-void IMU::check_altitude_tolerance()
-{
-    float altitude_difference = Data.radio_target_altitude - Data.radio_craft_altitude;
-    if(altitude_difference > target_altitude_tolerance)
-    {
-        move_up = true;
-    }
-    else
-    {
-        move_up = false;
-    }
-}
-
-/**
  * Checks the distance from the craft to the destination.
  */
 void IMU::check_distance_tolerance()
 {
     // Checks if distance is within tolerance.
-    if(Data.radio_target_distance > target_distance_tolerance)
+    if(Gps.gps_distance > target_distance_tolerance)
     {
         // If not, move the craft forward.
         move_forward = true;

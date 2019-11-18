@@ -76,47 +76,23 @@ class RADIO
     String radio_output = "";
     // Holds the reset bit used to clear the timestamp of the associated node.
     float received_reset = 0.0;
-    /**
-     * These variables are modified by the network admin operating the mission_control node. 
-     */
-    // Automatic or Manual control of craft. 
-    // 0 - Manual
-    // 1 - Auto
-    float authority_mode = 0.0;
-    /**
-     * This set of varaibles are accessed and overseen by the Eagle Eye craft.
-     */
-    // Each of these is defined in the Data.h struct. Refer to its documentation as needed.
-    float craft_ts = 0.0;
-    float craft_altitude = 0.0;
-    float craft_latitude = 0.0;
-    float craft_longitude = 0.0;
-    float craft_event = 0.0;
+    
     /**
      * These variables are overseen by Mission Control.
      */
     // Mission Control's ms Time stamp.
     float mission_control_ts = 0.0;
-    // This variable is the on / off switch for the craft as far as operational movement goes.
-    // Having this be on the off state (0.0) does not stop data collection, only servo and 
-    // motor movement. 
-    float craft_anchor = 0.0;
-    // User inputted target latitude for the craft. 
-    float target_latitude = 0.0;
-    // User inputted target longitude for the craft. 
-    float target_longitude = 0.0;
-    // Holds the craft's target throttle position. This is not what the craft is currently at, 
-    // but what we want the craft's to have its upper limit be. For example, it will not be 
-    // at a constant 40% if we set it to '40.0', but it will be able to iterate up and down from
-    // that percentage of thrust. 
+    // Craft's target throttle position. This is not what the craft is currently at, 
+    // but what we want the craft's to have as its upper limit be. For example, it will not be 
+    // at a constant 40% if we set it to '40.0', but it will be able to iterate up to that percentage
+    // of thrust.
     float target_throttle = 0.0;
-    // Movement of craft dicated by the driver while in manual mode. Independent of throttle.
-    // 0 - Stopped
-    // 1 - Forward
-    // 2 - Left
-    // 3 - Right
-    // 4 - Up
-    float manual_direction = 0.0;
+
+    /**
+     * Overseen by the Eagle Eye craft.
+     */
+    // Epoch timer used to time stamp packets in the network. 
+    float craft_ts = 0.0;
     /**
      * This varaible is updated by each craft right before the array is broadcasted.
      */

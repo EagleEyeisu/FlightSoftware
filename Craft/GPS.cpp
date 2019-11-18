@@ -2,13 +2,14 @@
  * GPS.cpp is repsonsible for capturing telemetry data.
  */
 
- 
+
 #include <Arduino.h>
+#include <TinyGPSPlus.h>
+#include <math.h>
+ 
 #include "GPS.h"
 #include "DATA.h"
-#include <TinyGPSPlus.h>
 #include "Globals.h"
-#include <math.h>
 
 
 /**
@@ -58,10 +59,10 @@ void GPS::manager()
 bool GPS::fixation_monitor()
 {
     // Check for a GPS fix. (Does it have a signal from the satellites)
-    if(gps.satellites.value() != 0 && fix_status == false)
+    if(gps.satellites.value() != 0 && gps_fix == false)
     {
         // GPS fix has been aquired.
-        fix_status = true;
+        gps_fix = true;
         // Trigger onboard event detection.
         Data.craft_event = 1.0;
     }
@@ -74,11 +75,11 @@ bool GPS::fixation_monitor()
             // Triggers onboard event detection.
             Data.craft_event = 2.0;
             // Updates the fix status.
-            fix_status = false;
+            gps_fix = false;
         }
     }
     // True = connected, False otherwise.
-    return fix_status;
+    return gps_fix;
 }
 
 
@@ -111,18 +112,18 @@ void GPS::retrieve_gps_data()
 void GPS::store_data()
 {
     // Updates all struct variables with the most current sensor data.
-    sprintf(craft_gps_time, "%02d:%02d:%02d ", gps.time.hour(), gps.time.minute(), gps.time.second());
-    craft_altitude = gps.altitude.meters();
-    craft_latitude = gps.location.lat();
-    craft_longitude = gps.location.lng();
-    craft_satillite_count = gps.satellites.value();
-    craft_speed = gps.speed.mps(); 
-    craft_distance = calculate_target_distance();
+    sprintf(gps_time, "%02d:%02d:%02d ", gps.time.hour(), gps.time.minute(), gps.time.second());
+    gps_altitude = gps.altitude.meters();
+    gps_latitude = gps.location.lat();
+    gps_longitude = gps.location.lng();
+    gps_satillite_count = gps.satellites.value();
+    gps_speed = gps.speed.mps(); 
+    gps_distance = calculate_target_distance();
     // Replaces the old backup values with the new values.
-    previous_altitude = craft_altitude;
-    previous_latitude = craft_latitude;
-    previous_longitude = craft_longitude;
-    previous_distance = craft_distance;
+    previous_altitude = gps_altitude;
+    previous_latitude = gps_latitude;
+    previous_longitude = gps_longitude;
+    previous_distance = gps_distance;
 }
 
 
@@ -134,8 +135,8 @@ float GPS::calculate_target_distance()
 
     float distance = (float)TinyGPSPlus::distanceBetween(gps.location.lat(), 
                                                          gps.location.lng(), 
-                                                         craft_target_latitude, 
-                                                         craft_target_longitude);
+                                                         target_latitude, 
+                                                         target_longitude);
     return distance;
 }
 
@@ -147,9 +148,9 @@ float GPS::calculate_target_distance()
 void GPS::revert_gps_data()
 {
     // Reverts values to that of the previous cycle.
-    craft_altitude = previous_altitude;
-    craft_latitude = previous_latitude;
-    craft_longitude = previous_longitude;
-    craft_speed = 0.0;
-    craft_distance = previous_distance;
+    gps_altitude = previous_altitude;
+    gps_latitude = previous_latitude;
+    gps_longitude = previous_longitude;
+    gps_speed = 0.0;
+    gps_distance = previous_distance;
 }
