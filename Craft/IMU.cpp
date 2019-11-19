@@ -40,7 +40,6 @@ void IMU::initialize()
 	    // If invalid connection, the program will stall and pulse the onbaord led.
         while (1)
         {
-            Data.blink_error_led();
             Serial.println("IMU Init Error");
         }
     }
@@ -48,7 +47,6 @@ void IMU::initialize()
     lsm.setupAccel(lsm.LSM9DS0_ACCELRANGE_16G);
     lsm.setupMag(lsm.LSM9DS0_MAGGAIN_2GAUSS);
     lsm.setupGyro(lsm.LSM9DS0_GYROSCALE_245DPS);
-	
 }
 
 

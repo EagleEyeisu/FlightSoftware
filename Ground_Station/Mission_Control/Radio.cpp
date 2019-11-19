@@ -24,84 +24,82 @@ RADIO::RADIO()
       craft         -> 1
       mission_control -> 6
 */
-float RADIO::get_radio_timestamp(char buf[], String selector)
+float RADIO::get_radio_timestamp(String selector)
 {
   if (selector == "craft")
   {
-    return (Data.Parse(buf, 1));
+    return (Data.Parse(1));
   }
   else if (selector == "mc")
   {
-    return (Data.Parse(buf, 7));
-  }
-  else if (selector == "recovery")
-  {
-    return (Data.Parse(buf, 8));
+    return (Data.Parse(6));
   }
 
 }
 
 
 /**
-   Parses and returns the radio transmission's altitude.
-*/
-float RADIO::get_radio_craft_altitude(char buf[])
+ * Returns the packet's roll data.
+ */
+float RADIO::get_radio_roll()
 {
-  return (Data.Parse(buf, 2));
+    return (Data.Parse(2));
 }
 
 
 /**
-   Parses and returns the radio transmission's latitude.
-*/
-float RADIO::get_radio_craft_latitude(char buf[])
+ * Returns the packet's pitch data.
+ */
+float RADIO::get_radio_pitch()
 {
-  return (Data.Parse(buf, 3)) / 10000.0;
+    return (Data.Parse(3));
 }
 
 
 /**
-   Parses and returns the radio transmission's longitude.
-*/
-float RADIO::get_radio_craft_longitude(char buf[])
+ * Returns the packet's yaw data.
+ */
+float RADIO::get_radio_yaw()
 {
-  return (Data.Parse(buf, 4)) / 10000.0;
+    return (Data.Parse(4));
 }
 
 
 /**
-   Parses and returns the radio transmission's craft Event.
-*/
-float RADIO::get_radio_craft_event(char buf[])
+ * Returns the packet's craft_state data.
+ */
+float RADIO::get_radio_craft_state()
 {
-  return (Data.Parse(buf, 5));
+    return (Data.Parse(5));
 }
 
 
 /**
-   Parses and returns the radio transmission's craft Event.
-*/
-float RADIO::get_radio_craft_speed(char buf[])
+ * Parses and returns the radio transmission's manual direction command.
+ */
+float RADIO::get_radio_manual_direction()
 {
-  return (Data.Parse(buf, 6));
+    return (Data.Parse(7));
 }
 
 
 /**
-   Parses and returns the radio transmission's reset bit.
-*/
-float RADIO::get_radio_node_reset(char buf[])
+ * Parses and returns the radio transmission's anchor variable.
+ * 0.0 -> pause
+ * 1.0 -> running
+ */
+float RADIO::get_radio_craft_anchor()
 {
-  return (Data.Parse(buf, 11));
+    return (Data.Parse(8));
 }
 
 
 /**
-   Parses and returns the radio transmission's Craft ID.
-*/
-float RADIO::get_radio_node_id(char buf[])
+ * Parses and returns the radio transmission's target throttle variable.
+ */
+float RADIO::get_radio_target_throttle()
 {
-  return (Data.Parse(buf, 12));
+    return (Data.Parse(9));
 }
 
 
@@ -110,8 +108,6 @@ float RADIO::get_radio_node_id(char buf[])
 */
 void RADIO::initialize()
 {
-  // Assigns pin 13 to have an output power connection to the LoRa's onboard LED.
-  pinMode(LED, OUTPUT);
   // Assigns pin to have an output singal connection to the LoRa's radio port.
   pinMode(RFM95_RST, OUTPUT);
   // Sends a high signal to the radio port for intialization.
@@ -128,7 +124,7 @@ void RADIO::initialize()
     // If invalid connection, the program will stall and pulse the onbaord led.
     while (1)
     {
-      blink_led();
+       Serial.println("Radio: Error Init");
     }
   }
   // Checks the radio objects tuned frequency.
@@ -137,7 +133,7 @@ void RADIO::initialize()
     // If invalid connection, the program will stall and pulse the onbaord led.
     while (1)
     {
-      blink_led();
+      Serial.println("Radio: Error Frequency");
     }
   }
   // Sets the max power to be used to in the amplification of the signal being sent out.
@@ -179,21 +175,21 @@ String RADIO::construct_network_packet()
   temp += ",";
   temp += craft_ts;
   temp += ",";
-  temp += craft_altitude;
+  temp += roll;
   temp += ",";
-  temp += craft_latitude * 10000;
+  temp += pitch;
   temp += ",";
-  temp += craft_longitude * 10000;
+  temp += yaw;
   temp += ",";
-  temp += craft_event;
-  temp += ",";
-  temp += craft_speed;
+  temp += craft_state;
   temp += ",";
   temp += mission_control_ts;
   temp += ",";
-  temp += Data.node_reset;
+  temp += manual_direction;
   temp += ",";
-  temp += node_id;
+  temp += anchor_status;
+  temp += ",";
+  temp += target_throttle;
   temp += ",";
   temp += "$";
   radio_output = "";
@@ -208,7 +204,7 @@ String RADIO::construct_network_packet()
 */
 void RADIO::broadcast(String packet)
 {
-  Serial.print("Out Pkt: ");
+  Serial.print("Radio O: ");
   Serial.println(radio_output);
   // Converts from String to char array.
   char transmission[packet.length() + 1];
@@ -238,60 +234,31 @@ void RADIO::radio_receive()
     {
       // Used to display the received data in the GUI.
       radio_input = (char*)buf;
-      blink_led();
+      Serial.print("Radio I: "); Serial.println(radio_input);
       // Conversion from uint8_t to string. The purpose of this is to be able to convert to an
       // unsigned char array for parsing.
       String str = (char*)buf;
       char to_parse[str.length()];
       str.toCharArray(to_parse, str.length());
-
-      // Checks for a valid packet. Only parses contents if valid to prevent
+      // Checks for a valid packet. Only parses contents if the packet valid to prevent
       // data corruption.
       if (validate_checksum())
       {
-        // This whole section is comparing the currently held varaibles from the last radio update
-        // to that of the newly received signal. Updates the LoRa's owned variables and copies
-        // down the other nodes' varaibles. If the time LoRa currently holds the most updated values
-        // for another node (LoRa's time stamp is higher than the new signal's), it replaces those vars.
-
-        // Reads in the time stamp for Mission Control's last broadcast.
-        float temp_ts = get_radio_timestamp(to_parse, "craft");
+        // Reads in the time stamp for craft's last broadcast.
+        float temp_ts = get_radio_timestamp("craft");
         // Compares the currently brought in time stamp to the one stored onboad.
         if (temp_ts > craft_ts)
         {
           // If the incoming signal has more up-to-date versions, we overwrite our saved version with
           // the new ones.
           craft_ts = temp_ts;
-          craft_altitude = get_radio_craft_altitude(to_parse);
-          craft_latitude = get_radio_craft_latitude(to_parse);
-          craft_longitude = get_radio_craft_longitude(to_parse);
-          craft_event = get_radio_craft_event(to_parse);
-          craft_speed = get_radio_craft_speed(to_parse);
+          roll = get_radio_roll();
+          pitch = get_radio_pitch();
+          yaw = get_radio_yaw();
+          craft_state = get_radio_craft_state();
         }
         // Pulls the RSSI from the signal. (Received Signal Strength Indicator)
         received_rssi = rf95.lastRssi();
-        // Reads in the value associated with the reset.
-        received_reset = get_radio_node_reset(to_parse);
-        // Reads in Craft ID to see where signal came from.
-        received_id = get_radio_node_id(to_parse);
-        //Serial.println("\n\n------------------------------------------------------------------------");
-        //Serial.print("In Pkt:  "); Serial.println(radio_input);
-        //Serial.print("R value: "); Serial.println(received_reset);
-        // Checks for a value of 1 (reset needs to happen).
-        if (received_reset)
-        {
-          //Serial.print("Reset: ");
-          // Check which node reset bit is bound to.
-          // Payload.
-          if (1.9 < received_id && received_id < 2.1)
-          {
-            Serial.println("Craft Reset");
-            // Payload LoRa has powercycled.
-            // Clear its time stamp variable to ensure that the
-            // this node continues to pull in new data.
-            craft_ts = 0.0;
-          }
-        }
       }
     }
   }
@@ -319,17 +286,4 @@ bool RADIO::validate_checksum()
     // attempting to parse its contents.
     return false;
   }
-}
-
-
-/*
-   Blinks LED.
-*/
-void RADIO::blink_led()
-{
-  // ON
-  digitalWrite(LED, HIGH);
-  delay(50);
-  // OFF
-  digitalWrite(LED, LOW);
 }

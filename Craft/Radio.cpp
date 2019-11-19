@@ -8,6 +8,8 @@
 #include "Radio.h"
 #include "Data.h"
 #include "GPS.h"
+#include "IMU.h"
+#include "MOTOR.h"
 #include "Globals.h"
 
 /**
@@ -20,56 +22,29 @@ RADIO::RADIO()
 
 
 /**
- * Parses and returns the radio transmission's altitude.
- */
-float RADIO::get_radio_craft_altitude(char buf[])
-{
-    return (Data.Parse(buf,1));
-}
-
-
-/**
- * Parses and returns the radio transmission's latitude.
- */
-float RADIO::get_radio_craft_latitude(char buf[])
-{
-    return (Data.Parse(buf,2)) / 10000.0;
-}
-
-
-/**
- * Parses and returns the radio transmission's longitude.
- */
-float RADIO::get_radio_craft_longitude(char buf[])
-{
-    return (Data.Parse(buf,3)) / 10000.0;
-}
-
-
-/**
- * Parses and returns the radio transmission's craft Event.
- */
-float RADIO::get_radio_craft_event(char buf[])
-{
-    return (Data.Parse(buf,4));
-}
-
-
-/**
  * Parses and returns the radio transmission's Time Stamp (ms).
- *    Craft         -> 0
- *    mission control (mc) -> #
+ *    Craft         -> 1
+ *    mission control (mc) -> 6
  */
-float RADIO::get_radio_timestamp(char buf[], String selector)
+float RADIO::get_radio_timestamp(String selector)
 {
     if(selector == "craft")
     {
-        return (Data.Parse(buf, 1));
+        return (Data.Parse(1));
     }
     else if(selector == "mc")
     {
-        return (Data.Parse(buf, 7));
+        return (Data.Parse(6));
     }
+}
+
+
+/**
+ * Parses and returns the radio transmission's manual direction command.
+ */
+float RADIO::get_radio_manual_direction()
+{
+    return (Data.Parse(7));
 }
 
 
@@ -78,63 +53,18 @@ float RADIO::get_radio_timestamp(char buf[], String selector)
  * 0.0 -> pause
  * 1.0 -> running
  */
-float RADIO::get_radio_craft_anchor(char buf[])
+float RADIO::get_radio_craft_anchor()
 {
-    return (Data.Parse(buf,6));
+    return (Data.Parse(8));
 }
 
 
 /**
  * Parses and returns the radio transmission's target throttle variable.
  */
-float RADIO::get_radio_target_throttle(char buf[])
+float RADIO::get_radio_target_throttle()
 {
-    return (Data.Parse(buf,7));
-}
-
-
-/**
- * Parses and returns the radio Target Latitude.
- */
-float RADIO::get_radio_target_latitude(char buf[])
-{
-    return (Data.Parse(buf,8)) / 10000.0;
-}
-
-
-/**
- * Parses and returns the radio Target Longitude.
- */
-float RADIO::get_radio_target_longitude(char buf[])
-{
-    return (Data.Parse(buf,9)) / 10000.0;
-}
-
-
-/**
- * Parses and returns the radio transmission's craft Event.
- */
-float RADIO::get_radio_node_reset(char buf[])
-{
-    return (Data.Parse(buf, 11));
-}
-
-
-/**
- * Parses and returns the radio transmission's Craft ID.
- */
-float RADIO::get_radio_node_id(char buf[])
-{
-    return (Data.Parse(buf,10));
-}
-
-
-/**
- * Parses and returns the radio transmission's manual direction command.
- */
-float RADIO::get_radio_manual_direction(char buf[])
-{
-    return (Data.Parse(buf,11));
+    return (Data.Parse(9));
 }
 
 
@@ -159,8 +89,7 @@ void RADIO::initialize()
         // If invalid connection, the program will stall and pulse the onbaord led.
         while (1)
         {
-            Data.blink_error_led();
-            Serial.println("Error Init");
+            Serial.println("Radio: Error Init");
         }
     }
     // Checks the radio objects tuned frequency. 
@@ -169,8 +98,7 @@ void RADIO::initialize()
         // If invalid connection, the program will stall and pulse the onbaord led.
         while (1)
         {
-            Data.blink_error_led();
-            Serial.println("Error Frequency");
+            Serial.println("Radio: Error Frequency");
         }
     }
     // Sets the max power to be used to in the amplification of the signal being sent out.
@@ -211,34 +139,26 @@ String RADIO::construct_network_packet()
     temp += ",";
     temp += craft_ts;
     temp += ",";
-    temp += Gps.gps_altitude;
+    temp += Imu.roll;
     temp += ",";
-    temp += Gps.gps_latitude * 10000;
+    temp += Imu.pitch;
     temp += ",";
-    temp += Gps.gps_longitude * 10000;
+    temp += Imu.yaw;
     temp += ",";
-    temp += Data.craft_event;
+    temp += Movement.craft_state;
     temp += ",";
     temp += mission_control_ts;
     temp += ",";
+    temp += Data.manual_direction;
+    temp += ",";
     temp += Data.anchor_status;
     temp += ",";
-    temp += Gps.target_latitude * 10000;
-    temp += ",";
-    temp += Gps.target_longitude * 10000;
-    temp += ",";
     temp += target_throttle;
-    temp += ",";
-    temp += craft_id;
-    temp += ",";
-    temp += Data.manual_direction;
     temp += ",";
     temp += "$";
     radio_output = "";
     // Copy contents.
     radio_output = temp;
-    //Serial.print("Radio Out: ");
-    //Serial.println(radio_output);
     return temp;
 }
 
@@ -256,7 +176,6 @@ void RADIO::broadcast(String packet)
     // Pauses all operations until the micro controll has guaranteed the transmission of the
     // signal.
     rf95.waitPacketSent();
-    //Data.blink_send_led();
 }
 
 
@@ -277,56 +196,26 @@ void RADIO::radio_receive()
         {
             // Used to display the received data in the GUI.
             radio_input = (char*)buf;
-            Data.blink_receive_led();
             // Conversion from uint8_t to string. The purpose of this is to be able to convert to an
             // unsigned char array for parsing.
             String str = (char*)buf;
             char to_parse[str.length()];
             str.toCharArray(to_parse,str.length());
-            // Debugging to the Serial Monitor.
-            //Serial.print("Radio In: ");
-            //Serial.println(radio_input);
-
             // Checks for a valid packet. Only parses contents if valid to prevent
             // data corruption.
             if(Radio.validate_checksum())
             {
-                // This whole section is comparing the currently held varaibles from the last radio update
-                // to that of the newly received signal. Updates the craft's owned variables and copies
-                // down the other nodes varaibles. If the timestamp indicates that this craft currently
-                // holds the most updated values for another node (ie: LoRa's time stamp is higher than the
-                // new signal's), it replaces those variables+
-
                 // Reads in the time stamp for Mission Control's last broadcast.
-                float temp_ts = get_radio_timestamp(to_parse, "mc");
+                float temp_ts = get_radio_timestamp("mc");
                 // Compares the currently brought in time stamp to the one stored onboad.
                 if(temp_ts > mission_control_ts)
                 {
                     // If the incoming signal has more up-to-date versions, we overwrite our saved version with
                     // the new ones.
                     mission_control_ts = temp_ts;
-                    Data.anchor_status = Radio.get_radio_craft_anchor(to_parse);
-                    Gps.target_latitude = Radio.get_radio_target_latitude(to_parse);
-                    Gps.target_longitude = Radio.get_radio_target_longitude(to_parse);
-                    target_throttle = Radio.get_radio_target_throttle(to_parse);
-                    Data.manual_direction = Radio.get_radio_manual_direction(to_parse);
-                }
-                // Reads in the value associated with the reset.
-                received_reset = get_radio_node_reset(to_parse);
-                // Reads in Craft ID to see where signal came from.
-                received_id = get_radio_node_id(to_parse);
-                // Checks for a value of 1 (reset needs to happen).
-                if(received_reset)
-                {
-                    // Check which node reset bit is bound to.
-                    // Mission Control.
-                    if(0.9 < received_id && received_id < 1.1)
-                    {
-                        // Mission Control LoRa has powercycled. 
-                        // Clear its time stamp variable to ensure that the 
-                        // this node continues to pull in new data.
-                        mission_control_ts = 0.0;
-                    }
+                    Data.manual_direction = Radio.get_radio_manual_direction();
+                    Data.anchor_status = Radio.get_radio_craft_anchor();
+                    target_throttle = Radio.get_radio_target_throttle();
                 }
             }
         }

@@ -12,26 +12,30 @@ class RADIO
     public:
     // Constructor
     RADIO();
-    // Returns the transmission's time stamp.
-    float get_radio_timestamp(char buf[], String selector);
-    // Returns the transmission's craft's altitude.
-    float get_radio_craft_altitude(char buf[]);
-    // Returns the transmission's Latitude.
-    float get_radio_craft_latitude(char buf[]);
-    // Returns the transmission's longitude.
-    float get_radio_craft_longitude(char buf[]);
-    // Returns the transmission's craft event.
-    float get_radio_craft_event(char buf[]);
-    // Returns the transmission's craft speed.
-    float get_radio_craft_speed(char buf[]);
-    // Returns the transmission's recovery latitude.
-    float get_radio_recovery_latitude(char buf[]);
-    // Returns the transmission's recovery longitude.
-    float get_radio_recovery_longitude(char buf[]);
-    // Returns the transmission's reset flag.
-    float get_radio_node_reset(char buf[]);
-    // Returns the transmission's craft ID.
-    float get_radio_node_id(char buf[]);
+
+    /*----------------------------Method Declarations----------------------------*/
+    
+    /*------------------------------Packet Retreival-----------------------------*/
+    // Returns packet time stamp.
+    float get_radio_timestamp(String selector);
+    // Returns craft's roll data.
+    float get_radio_roll();
+    // Returns craft's pitch data.
+    float get_radio_pitch();
+    // Returns craft's yaw data.
+    float get_radio_yaw();
+    // Returns craft's current movement state.
+    float get_radio_craft_state();
+    // Returns the craft's anchor status.
+    float get_radio_manual_direction();
+    // Returns the transmission's craft anchor variable.
+    float get_radio_craft_anchor();
+    // Returns the transmission's target throttle variable.
+    float get_radio_target_throttle();
+
+    
+    /*------------------------------General Methods------------------------------*/
+    
     // Runs initialzation script for the Radio.
     void initialize();
     // Passively watches for incoming radio transmissions from Mission Control and other crafts.
@@ -44,21 +48,27 @@ class RADIO
     void radio_receive();
     // Checks if packet is valid or invalid. Error detection.
     bool validate_checksum();
-    // Blinks the LED on the LoRa uC (quick blink).
-    void blink_led();
 
     /*---------------------------------Variables---------------------------------*/
 
-    // Reset pin onboard the radio.
+    /*-------------------------------System Config-------------------------------*/
+    
+    // Connection pins to radio.
     const byte RFM95_RST = 11;
     const byte RFM95_INT = 6;
     const byte RFM95_CS = 10;
-    // Pins used to blink an LED to signal receival packet.
-    const byte LED = 13;
     // Radio frequency used throught the Eagle Eye Program.
     #define RF95_FREQ 433.0
     // Craft ID (Mission Control LoRa.)
     float node_id = 1.0;
+    // Holds the delay amount between this nodes broadcast window.
+    float network_node_delay = 1000.0;
+    // Timer is used to for the 10 second interval that the craft will broadcast when in normal.
+    // operating mode. This value is in milliseconds.
+    unsigned long broadcast_timer = 0;
+
+    /*-------------------------------Network Meta Data-------------------------------*/
+    
     // Holds the ID of the craft that just broadcasted. THIS IS ANOTHER NODE, NOT MISSION CONTROL.
     float received_id = 0.0;
     // Holds the reset bit used to clear the timestamp of the associated node.
@@ -70,41 +80,30 @@ class RADIO
     // Holds the most recent received singal's rssi value.
     float received_rssi = 0.0;
 
-
-	/**
-	 * This set of varaibles are accessed and overseen by the HABET Payload.
-	 */
-
-     // Each of these is defined in the Data.h file. Refer to its documentation as needed.
-	float craft_ts = 0.0;
-	float craft_altitude = 0.0;
-	float craft_latitude = 0.0;
-	float craft_longitude = 0.0;
-	float craft_event = 0.0;
-    float craft_speed = 0.0;
-
-    /**
-     * These variables are overseen by Recovery.
-     */
-
-    // Recovery's ms Time stamp.
-    float recovery_ts = 0.0;
-    float recovery_latitude = 0.0;
-    float recovery_longitude = 0.0;
-
-	/**
-	 * These variables are overseen by Mission Control.
-	 */
-
-    // Mission Control's ms Time stamp.
+    /*-------------------------------Packet Data-------------------------------*/
+    
+    // Time stamp since craft's epoch.
+    float craft_ts = 0.0;
+    // Gyro data of craft.
+    float roll = 0.0;
+    float pitch = 0.0;
+    float yaw = 0.0;
+    // What the craft is doing. (Moving forward, turning right etc..).
+    float craft_state = 0.0;
+    
+    // Time stamp since mission control's epoch.
     float mission_control_ts = 0.0;
-
-    // Holds the delay amount between this nodes broadcast window.
-    // Configured in Radio.rollcall().
-    float network_node_delay = 1500.0;
-    // Timer is used to for the 10 second interval that the craft will broadcast when in normal.
-    // operating mode. This value is in milliseconds.
-    unsigned long broadcast_timer = 0;
+    // What we want the craft to do.
+    // 0 - Stopped
+    // 1 - Forward
+    // 2 - Backward
+    // 3 - Left
+    // 4 - Right
+    float manual_direction = 0.0;
+    // Anchor status of the craft. (Works as an E Brake)
+    float anchor_status = 0.0;
+    // Max throttle of craft's edfs.
+    float target_throttle = 0.0;
 };
 
 #endif

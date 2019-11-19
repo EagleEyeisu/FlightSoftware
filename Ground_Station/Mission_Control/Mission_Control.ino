@@ -36,6 +36,8 @@ void setup(){
  * MAIN PROGRAM CODE.
  */
 void loop(){
+    //Verbosity message.
+    //Serial.println("...");
     // Reads in serial port data if available.
     serial_input();
     // Monitors if the LoRa just reset and changes values accordingly.
@@ -50,7 +52,6 @@ void loop(){
     // turning that data into an array that can be sent out via radio.
     // Also reads in incoming messages.
     Radio.manager();
-    Serial.println("Here");
 }
 
 
@@ -96,7 +97,7 @@ void serial_input()
             // Updates connection status.
             Data.gui_connection = true;
             // Blinks LED (on the LoRa) to show communication setup was established.
-            blink_led_long();
+            //blink_led_long();
         }
         if(toParse[3] == 'L' && Data.gui_connection == true)
         {

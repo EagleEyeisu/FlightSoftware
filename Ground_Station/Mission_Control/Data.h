@@ -20,7 +20,7 @@ class DATA
     // Reads in input from the GUI via serial. 
     void serial_input();
     // Parses passed in message by using commas as the identifiers.
-    float Parse(char message[], int objective);
+    float Parse(int objective);
     // Parses serial input and returns the operation state of the network.
     void get_serial_op_mode(char buf[]);
 
@@ -41,7 +41,7 @@ class DATA
     bool system_boot_complete = false;
     // When true, this will trigger the special "release" packet to be sent to the
     // platform node.
-    bool platform_launch = false;
+    bool platform_launch = false;    
 };
 
 #endif
