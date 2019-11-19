@@ -32,26 +32,29 @@ class MC_Tab():
 		# Network variables.
 		self.node_mission_control = None
 		self.node_craft = None
-		self.node_platform = None
-		self.release_status = None
 		self.radio_received = None
 		self.radio_sent = None
-		self.radio_craft_rssi = None
-		self.radio_craft_last_contact = None
-		self.radio_last_received_node = None
-		self.radio_received_node_id = None
+		self.radio_rssi = None
+		self.radio_last_contact = None
 
 		# Eagle Eye Craft variables.
 		self.craft_time = None
-		self.craft_altitude = None
-		self.craft_latitude = None
-		self.craft_longitude = None
-		self.craft_event = None
-		self.craft_speed = None
-		self.craft_map_image = None
+        self.craft_altitude = None
+        self.craft_latitude = None
+        self.craft_longitude = None
+        self.craft_event = None
+        self.craft_speed = None
+        self.craft_roll = None
+        self.craft_pitch = None
+        self.craft_yaw = None
+        self.craft_state = None
+        self.craft_map_image = None
 
 		# Mission Control variables.
 		self.mission_control_time = None
+        self.manual_direction = None
+        self.craft_anchor = None
+        self.target_throttle = None
 		self.craft_time_previous = ""
 		self.network_map_image = None
 
@@ -66,19 +69,24 @@ class MC_Tab():
 		# their value is changed.
 		self.mission_control_time = StringVar(self.mc_frame)
 		self.node_mission_control = StringVar(self.mc_frame)
+        self.manual_direction = StringVar(self.mc_frame)
+        self.craft_anchor = StringVar(self.mc_frame)
+        self.target_throttle = StringVar(self.mc_frame)
 		self.node_craft = StringVar(self.mc_frame)
 		self.radio_received = StringVar(self.mc_frame)
 		self.radio_sent = StringVar(self.mc_frame)
-		self.radio_craft_rssi = StringVar(self.mc_frame)
-		self.radio_craft_last_contact = StringVar(self.mc_frame)
-		self.radio_last_received_node = StringVar(self.mc_frame)
-		self.radio_received_node_id = StringVar(self.mc_frame)
+		self.radio_rssi = StringVar(self.mc_frame)
+		self.radio_last_contact = StringVar(self.mc_frame)
 		self.craft_time = StringVar(self.mc_frame)
 		self.craft_altitude = StringVar(self.mc_frame)
 		self.craft_latitude = StringVar(self.mc_frame)
 		self.craft_longitude = StringVar(self.mc_frame)
 		self.craft_event = StringVar(self.mc_frame)
 		self.craft_speed = StringVar(self.mc_frame)
+        self.craft_roll = StringVar(self.mc_frame)
+        self.craft_pitch = StringVar(self.mc_frame)
+        self.craft_yaw = StringVar(self.mc_frame)
+        self.craft_state = StringVar(self.mc_frame)
 
 		# Configures tracing for all variables. When these variables are written to,
 		# the corresponding method will run. (Allows for real time display updating)
@@ -97,8 +105,15 @@ class MC_Tab():
 		self.craft_longitude.set("-------")
 		self.craft_event.set("-------")
 		self.craft_speed.set("-------")
+        self.craft_roll.set("-------")
+        self.craft_pitch.set("-------")
+        self.craft_yaw.set("-------")
+        self.craft_state.set("-------")
 		self.radio_received_node_id.set("-------")
 		self.mission_control_time.set("-------")
+        self.manual_direction.set("-------")
+        self.craft_anchor.set("-------")
+        self.target_throttle.set("-------")
 
 
 	def create_entry_objects(self):
@@ -118,9 +133,11 @@ class MC_Tab():
 		self.entry_craft_longitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_longitude, justify='right', font='Helvtica 11')
 		self.entry_craft_event = Entry(self.mc_frame, state="readonly", textvariable=self.craft_event, justify='right', font='Helvtica 11')
 		self.entry_craft_speed = Entry(self.mc_frame, state="readonly", textvariable=self.craft_speed, justify='right', font='Helvtica 11')
-		self.entry_radio_received_node_id = Entry(self.mc_frame, state="readonly", textvariable=self.radio_received_node_id, justify='center', font='Helvtica 11')
 		self.entry_mission_control_time = Entry(self.mc_frame, state="readonly", textvariable=self.mission_control_time, justify='right', font='Helvtica 11')
-		self.entry_radio_last_received_node = Entry(self.mc_frame, state="readonly", justify='center', textvariable=self.radio_last_received_node, font='Helvetica 18 bold')
+        self.entry_manual_direction = Entry(self.mc_frame, state="readonly", textvariable=self.manual_direction, justify='right', font='Helvtica 11')
+        self.entry_craft_anchor = Entry(self.mc_frame, state="readonly", textvariable=self.craft_anchor, justify='right', font='Helvtica 11')
+        self.entry_target_throttle = Entry(self.mc_frame, state="readonly", textvariable=self.target_throttle, justify='right', font='Helvtica 11')
+		self.entry_target_throttle_set = Entry(self.mc_frame, textvariable=self.target_throttle_set, justify='right')
 
 
 	def create_button_objects(self):
@@ -172,7 +189,6 @@ class MC_Tab():
 		self.entry_radio_craft_rssi.grid(row=2, column=6, sticky='we')
 		self.create_label_east(2, 8, self.mc_frame, "Last Contact (s):")
 		self.entry_radio_craft_last_contact.grid(row=2, column=9, sticky='w')
-		self.entry_radio_last_received_node.grid(row=3, column=12, rowspan=2, columnspan=2, sticky='nsew')
 
 		# Terminal divider. KEEP AT THE BOTTOM OF THIS METHOD.
 		# This divider is a golden bar strecthing across the screen to provide
@@ -198,8 +214,6 @@ class MC_Tab():
 		self.entry_craft_latitude.grid(row=9, column=1, columnspan=2, sticky='we')
 		self.create_label_center(10, 0, self.mc_frame, "Longitude:   ")
 		self.entry_craft_longitude.grid(row=10, column=1, columnspan=2, sticky='we')
-		# self.create_label_center(11, 0, self.mc_frame, "Event:            ")
-		# self.entry_craft_event.grid(row=11, column=1, sticky='we')
 		self.create_label_center(11, 0, self.mc_frame, "Speed:            ")
 		self.entry_craft_speed.grid(row=11, column=1, columnspan=2, sticky='we')
 
@@ -489,40 +503,24 @@ class MC_Tab():
 		"""
 		
 		# Checksums '$' and non craft variables are thrown out.
-		junk, p_ts, p_alt, p_lat, p_lng, p_event, p_speed, junk, junk, junk, junk, node_reset, node_id, junk = str(radio_in).split(",")
+		junk, c_ts, c_roll, c_pitch, c_yaw, c_state, j_ts, j_md, j_as, j_th, junk = str(radio_in).split(",")
 		# Sets parsed values to their corresponding StringVar.
-		self.craft_time.set(p_ts)
-		self.craft_altitude.set(p_alt)
-		t_lat = (float(p_lat) / 10000)
-		t_lng = (float(p_lng) / 10000)
-		self.craft_latitude.set(str(t_lat))
-		self.craft_longitude.set(str(t_lng))
-		self.craft_event.set(p_event)
-		self.craft_speed.set(p_speed)
-		self.radio_received_node_id.set(str(node_id))
-		# Checks if the packet is from the craft.
-		print(self.radio_received_node_id.get())
-		# Checks if the packet was from craft.
-		if self.radio_received_node_id.get().count("2") is 1:
-			# Say you don't receive the a packet in a while. The mission control
-			# LoRa still sends you its last known packet each time it tries to
-			# update the gui (roughly 1.5 seconds). To prevent the gui from thinking
-			# each "gui update" is brand new information, we compare a previous
-			# variable value to the proclaimed to be new value. If they are the same, its most
-			# likely the same packet we already saw. If they are different, its 100%
-			# new.
-			if self.craft_time_previous != str(self.craft_time.get()):
-				# Node has not power cycled.
-				if node_reset.count("1") is 1:
-					self.node_craft.set("2")
-				# Node has power cycled.
-				else:
-					self.node_craft.set("1")
-				# Updates the appropriate variables.
-				self.craft_time_previous = str(self.craft_time.get())
-				# Updates the visual indicatior.
-				self.radio_last_received_node.set("Craft")
-				self.update_craft_rssi(rssi)
+		self.craft_time.set(craft_ts)
+        self.craft_roll.set(c_roll)
+        self.craft_pitch.set(c_pitch)
+        self.craft_yaw.set(c_yaw)
+        self.craft_state.set(c_state)
+        # Only reads in a new packet.
+        if self.craft_time_previous != str(self.craft_time.get()):
+            # Node has not power cycled.
+            if node_reset.count("1") is 1:
+                self.node_craft.set("2")
+            # Node has power cycled.
+            else:
+                self.node_craft.set("1")
+            # Updates the appropriate variables.
+            self.craft_time_previous = str(self.craft_time.get())
+            self.update_craft_rssi(rssi)
 		# Constructs a CSV string to be sent to the rotor.
 		telemetry = str(self.craft_latitude.get()) + "," + str(self.craft_longitude.get()) + "," + str(self.craft_altitude.get() + "\n\r")
 		# Sends data to rotor so it can compute turning angle.
@@ -576,29 +574,6 @@ class MC_Tab():
 		g.timer_craft_contact_timer.start()
 		# Increments the craft last contact timer on a 1 second interval.
 		self.radio_craft_last_contact.set(str(int(self.radio_craft_last_contact.get()) + 1))
-
-
-	def callback_release_balloon(self):
-		"""
-		Triggered by the press of SEND button next to the display_changed_commands entry.
-		@param self		- Instance of the class.
-		"""
-
-		try:
-			# Checks for non-null connection to mission control's lora microcontroller.
-			if g.PORT_MISSION_CONTROL_RADIO is not None:
-				# Manual creation of a serial packet to send to the mission control microcontroller.
-				injection_packet = self.create_injection_packet("L")
-				# If non-null, send transmission via serial port.
-				send(g.PORT_MISSION_CONTROL_RADIO.get_port(), injection_packet)
-				self.release_status.set("1")
-			else:
-				print("No connection to mission control's Radio\n")
-		# Null connection.
-		except Exception as e:
-			# Prints general error statement. (Used to tell which method errored out)
-			print("Invalid connection to mission control's Radio.")
-			print("Exception: " + str(e))
 
 
 	def create_injection_packet(self, to_be_sent):

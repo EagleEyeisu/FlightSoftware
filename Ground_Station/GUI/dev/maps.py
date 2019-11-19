@@ -73,7 +73,7 @@ def request_API_image(url, image_name):
     @param image_name - Name (including file type) to save the image as.
     """
 
-    urllib.request.urlretrieve(url, image_name)
+    #urllib.request.urlretrieve(url, image_name)
 
 
 def build_url_craft(map_center):
