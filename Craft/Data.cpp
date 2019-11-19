@@ -38,7 +38,6 @@ void DATA::initialize()
         // Invalid connection.
         while(1)
         {
-            //blink_error_led(); 
             Serial.println("SD Failed");
         }
     }

@@ -25,11 +25,11 @@ float RADIO::get_radio_timestamp(String selector)
 {
     if (selector == "craft")
     {
-        return (Data.Parse(1));
+        return (Data.Parse(1, Radio.radio_input));
     }
     else if (selector == "mc")
     {
-        return (Data.Parse(6));
+        return (Data.Parse(6, Radio.radio_input));
     }
 }
 
@@ -38,7 +38,7 @@ float RADIO::get_radio_timestamp(String selector)
  */
 float RADIO::get_radio_roll()
 {
-    return (Data.Parse(2));
+    return (Data.Parse(2, Radio.radio_input));
 }
 
 /**
@@ -46,7 +46,7 @@ float RADIO::get_radio_roll()
  */
 float RADIO::get_radio_pitch()
 {
-    return (Data.Parse(3));
+    return (Data.Parse(3, Radio.radio_input));
 }
 
 /**
@@ -54,7 +54,7 @@ float RADIO::get_radio_pitch()
  */
 float RADIO::get_radio_yaw()
 {
-    return (Data.Parse(4));
+    return (Data.Parse(4, Radio.radio_input));
 }
 
 /**
@@ -62,7 +62,7 @@ float RADIO::get_radio_yaw()
  */
 float RADIO::get_radio_craft_state()
 {
-    return (Data.Parse(5));
+    return (Data.Parse(5, Radio.radio_input));
 }
 
 /**
@@ -70,25 +70,7 @@ float RADIO::get_radio_craft_state()
  */
 float RADIO::get_radio_manual_direction()
 {
-    return (Data.Parse(7));
-}
-
-/**
- * Parses and returns the radio transmission's anchor variable.
- * 0.0 -> pause
- * 1.0 -> running
- */
-float RADIO::get_radio_craft_anchor()
-{
-    return (Data.Parse(8));
-}
-
-/**
- * Parses and returns the radio transmission's target throttle variable.
- */
-float RADIO::get_radio_target_throttle()
-{
-    return (Data.Parse(9));
+    return (Data.Parse(7, Radio.radio_input));
 }
 
 /**
@@ -172,10 +154,6 @@ String RADIO::construct_network_packet()
     temp += mission_control_ts;
     temp += ",";
     temp += manual_direction;
-    temp += ",";
-    temp += anchor_status;
-    temp += ",";
-    temp += target_throttle;
     temp += ",";
     temp += "$";
     radio_output = "";

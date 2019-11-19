@@ -100,8 +100,6 @@ class RADIO
     // 3 - Left
     // 4 - Right
     float manual_direction = 0.0;
-    // Anchor status of the craft. (Works as an E Brake)
-    float anchor_status = 0.0;
     // Max throttle of craft's edfs.
     float target_throttle = 0.0;
 };

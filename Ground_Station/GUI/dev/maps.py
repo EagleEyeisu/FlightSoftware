@@ -21,7 +21,7 @@ marker_base = "&markers="
 howe_hall_coords = "42.026695,-93.653384"
 # Used to compare previous map's coordinate to new coordinates to prevent
 # requesting the exact same map from Google's API.
-previous_craft_coords = "42.026695,-93.653384"
+previous_craft_coords = "0.0,0.0"
 # Toggled by buttons associated with the image objects.
 craft_zoom = "10"
 craft_maptype = "roadmap"
@@ -39,6 +39,8 @@ def generate_map(latitude, longitude):
     @param longitude - Longitude value to mark on the map image.
     """
 
+    global previous_craft_coords
+    
     # Combines the given lat & lng.
     map_center = str(latitude) + "," + str(longitude)    
     

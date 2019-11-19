@@ -83,7 +83,7 @@ class GUI_Terminal():
 		# position buttons and displays around the GUI. Weight of 1 just means no button possess more
 		# "importance" than other buttons. Just don't change the weight.
 		self.mc_frame.grid_columnconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14), weight=1, uniform="jared")
-		self.mc_frame.grid_rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16), weight=1, uniform="danner")
+		self.mc_frame.grid_rowconfigure((0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20), weight=1, uniform="danner")
 
 		if g.SYSTEM_USER is "mc":
 			# Adds frames to the GUI terminal.
@@ -104,7 +104,7 @@ class GUI_Terminal():
 			g.timer_mission_control_radio.cancel()
 		if g.timer_craft_radio is not None:
 			g.timer_craft_radio.cancel()
-		if g.timer_craft_contact_timer is not None:
-			g.timer_craft_contact_timer.cancel()
+		if g.timer_contact is not None:
+			g.timer_contact_.cancel()
 		# Shuts down the Tkinter GUI.
 		self.gui_window.quit()

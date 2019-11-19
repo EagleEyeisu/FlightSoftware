@@ -19,7 +19,7 @@ DATA::DATA()
  * Returns a parsed section of the read in parameter. The parameter 'objective' represents
  * the comma's position from the beginning of the character array.
  */
-float DATA::Parse(int objective)
+float DATA::Parse(int objective, String to_parse)
 {
     // Used to iterate through the passed in character array.
     int iter = 0;
@@ -28,10 +28,10 @@ float DATA::Parse(int objective)
     // Holds the desired data from the larger string.
     String wanted_data = "";
     // Iterators over the entire array.
-    for (iter = 0; iter < Radio.radio_input.length(); iter++)
+    for (iter = 0; iter < to_parse.length(); iter++)
     {
         // Checks to see if the current iterator's position is a comma.
-        if (Radio.radio_input[iter] == ',')
+        if (to_parse[iter] == ',')
         {
             // If so, it iterators the comma counter by 1.
             comma_counter++;
@@ -40,10 +40,10 @@ float DATA::Parse(int objective)
         else if (comma_counter == objective)
         {
             // Checks to see if the iterator's position is a comma, used to cause a stop in parsing.
-            if (Radio.radio_input[iter] != ',')
+            if (to_parse[iter] != ',')
             {
                 // Copies the message's character to the temporary array.
-                wanted_data += Radio.radio_input[iter];
+                wanted_data += to_parse[iter];
             }
             else
             {
@@ -55,14 +55,6 @@ float DATA::Parse(int objective)
     return wanted_data.toFloat();
 }
 
-/**
- * Responsible for all serial communication between the GUI and mission_control microcontroller.
- */
-void DATA::serial_comms()
-{
-    // Send useful information back to the python GUI.
-    update_gui();
-}
 
 /**
  * Sends mission_control & craft inforamtion back to the GUI.

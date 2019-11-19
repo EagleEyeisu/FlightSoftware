@@ -45,7 +45,7 @@ void loop()
     if (Data.gui_connection)
     {
         // Updates GUI/user with situational info.
-        Data.serial_comms();
+        Data.update_gui();
     }
     // Responsible for grabbing all of the craft's current information,
     // turning that data into an array that can be sent out via radio.
@@ -87,11 +87,15 @@ void serial_input()
         {
             // Responds to the gui with the microcontroller ID tag.
             Serial.write("mission_control");
+            // Start timer for serial writes.
+            Data.serial_timer = millis();
             // Updates connection status.
             Data.gui_connection = true;
         }
-        if (toParse[3] == 'L' && Data.gui_connection == true)
+        else if (new_input[0] == '$' && Data.gui_connection == true)
         {
+            Serial.println("forward detected");
+            Radio.manual_direction = Data.Parse(1, new_input);
         }
     }
 }

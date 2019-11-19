@@ -28,35 +28,15 @@ MOTOR::MOTOR()
  */ 
 void MOTOR::manager()
 {
-    /**
-     * The turn (right, left) variables are what the craft needs to do to correct its course. 
-     * The craft_state variable (left, right, etc..) is the action that the craft it currently preforming. 
-     */
-
-    // Checks for a positive anchor status. (E BREAK)
-    if(Data.anchor_status == true)
+    // Checks for flight mode "manual".
+    if(Data.authority_mode == 0.0)
     {
-        // Checks if the break is already applied. If so, no need to apply it again.
-        if(craft_state != NONE)
-        {
-            craft_state = NONE;
-            // Pulls the PDM Waveform below its cutoff to shut the motors off.
-            apply_break();
-        }
+        manual_flight();
     }
-    // Achor is not dropped. Craft is free to move.
-    else
+    // Checks for flight mode "auto".
+    else if(Data.authority_mode == 1.0)
     {
-        // Checks for flight mode "manual".
-        if(Data.authority_mode == 0.0)
-        {
-            manual_flight();
-        }
-        // Checks for flight mode "auto".
-        else if(Data.authority_mode == 1.0)
-        {
-            auto_pilot();
-        }
+        auto_pilot();
     }
 }
 
@@ -94,10 +74,10 @@ void MOTOR::manual_flight()
     if(command == 0)
     {
         // Check if the craft already in the No Command state.
-        if(craft_state != NONE)
+        if(craft_state != STOP)
         {
             // Updates craft to none state.
-            craft_state = NONE;
+            craft_state = STOP;
             // Shuts down EDFs.
             apply_break();
         }
@@ -236,7 +216,7 @@ void MOTOR::auto_pilot()
 void MOTOR::initialize()
 {
     // Initializes the crafts state to reflect its non moving state.
-    craft_state = NONE;
+    craft_state = STOP;
     // Digitially connects the ESCs to their respective pins.
     motor_front_right.attach(MOTOR_FRONT_RIGHT_PIN);
     motor_front_left.attach(MOTOR_FRONT_LEFT_PIN);
@@ -299,7 +279,7 @@ void MOTOR::move_forward()
     // Always throttles up from 0%. 
     current_throttle = 900;
     // Taks in a percentage value 0-100% from user and converts that to an appropriate milliseconds PWM value.
-    int max_throttle = convert_throttle(Radio.target_throttle);
+    int max_throttle = convert_throttle(1);//Radio.target_throttle);
     // While less than max throttle, increment the throttle up. 
     while(max_throttle > current_throttle)
     {
@@ -330,7 +310,7 @@ void MOTOR::move_backward()
     // Always throttles up from 0%. 
     current_throttle = 900;
     // Taks in a percentage value 0-100% from user and converts that to an appropriate milliseconds PWM value.
-    int max_throttle = convert_throttle(Radio.target_throttle);
+    int max_throttle = convert_throttle(1);//Radio.target_throttle);
     // While less than max throttle, increment the throttle up. 
     while(max_throttle > current_throttle)
     {
@@ -361,7 +341,7 @@ String MOTOR::get_movement_state()
 {  
     if(craft_state == 0)
     {
-        return "NONE";
+        return "STOP";
     }
     else if(craft_state == 1)
     {

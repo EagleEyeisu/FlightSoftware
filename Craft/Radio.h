@@ -21,10 +21,6 @@ class RADIO
     float get_radio_timestamp(String selector);
     // Returns the user's given direction.
     float get_radio_manual_direction();
-    // Returns the craft's anchor status.
-    float get_radio_craft_anchor();
-    // Returns the user's max throttle.
-    float get_radio_target_throttle();
 
     /*------------------------------General Methods------------------------------*/
     

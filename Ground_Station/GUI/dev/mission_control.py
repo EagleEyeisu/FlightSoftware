@@ -39,22 +39,22 @@ class MC_Tab():
 
 		# Eagle Eye Craft variables.
 		self.craft_time = None
-        self.craft_altitude = None
-        self.craft_latitude = None
-        self.craft_longitude = None
-        self.craft_event = None
-        self.craft_speed = None
-        self.craft_roll = None
-        self.craft_pitch = None
-        self.craft_yaw = None
-        self.craft_state = None
-        self.craft_map_image = None
+		self.craft_altitude = None
+		self.craft_latitude = None
+		self.craft_longitude = None
+		self.craft_event = None
+		self.craft_speed = None
+		self.craft_roll = None
+		self.craft_pitch = None
+		self.craft_yaw = None
+		self.craft_state = None
+		self.craft_map_image = None
 
 		# Mission Control variables.
 		self.mission_control_time = None
-        self.manual_direction = None
-        self.craft_anchor = None
-        self.target_throttle = None
+		self.manual_direction = None
+		self.craft_anchor = None
+		self.target_throttle = None
 		self.craft_time_previous = ""
 		self.network_map_image = None
 
@@ -69,9 +69,9 @@ class MC_Tab():
 		# their value is changed.
 		self.mission_control_time = StringVar(self.mc_frame)
 		self.node_mission_control = StringVar(self.mc_frame)
-        self.manual_direction = StringVar(self.mc_frame)
-        self.craft_anchor = StringVar(self.mc_frame)
-        self.target_throttle = StringVar(self.mc_frame)
+		self.manual_direction = StringVar(self.mc_frame)
+		self.craft_anchor = StringVar(self.mc_frame)
+		self.target_throttle = StringVar(self.mc_frame)
 		self.node_craft = StringVar(self.mc_frame)
 		self.radio_received = StringVar(self.mc_frame)
 		self.radio_sent = StringVar(self.mc_frame)
@@ -83,10 +83,10 @@ class MC_Tab():
 		self.craft_longitude = StringVar(self.mc_frame)
 		self.craft_event = StringVar(self.mc_frame)
 		self.craft_speed = StringVar(self.mc_frame)
-        self.craft_roll = StringVar(self.mc_frame)
-        self.craft_pitch = StringVar(self.mc_frame)
-        self.craft_yaw = StringVar(self.mc_frame)
-        self.craft_state = StringVar(self.mc_frame)
+		self.craft_roll = StringVar(self.mc_frame)
+		self.craft_pitch = StringVar(self.mc_frame)
+		self.craft_yaw = StringVar(self.mc_frame)
+		self.craft_state = StringVar(self.mc_frame)
 
 		# Configures tracing for all variables. When these variables are written to,
 		# the corresponding method will run. (Allows for real time display updating)
@@ -96,24 +96,22 @@ class MC_Tab():
 		# Initialization of varaible values on GUI startup.
 		self.radio_received.set("-------")
 		self.radio_sent.set("-------")
-		self.radio_craft_rssi.set("-------")
-		self.radio_craft_last_contact.set("-------")
-		self.radio_last_received_node.set("-------")
+		self.radio_rssi.set("-------")
+		self.radio_last_contact.set("-------")
 		self.craft_time.set("-------")
 		self.craft_altitude.set("-------")
 		self.craft_latitude.set("-------")
 		self.craft_longitude.set("-------")
 		self.craft_event.set("-------")
 		self.craft_speed.set("-------")
-        self.craft_roll.set("-------")
-        self.craft_pitch.set("-------")
-        self.craft_yaw.set("-------")
-        self.craft_state.set("-------")
-		self.radio_received_node_id.set("-------")
+		self.craft_roll.set("-------")
+		self.craft_pitch.set("-------")
+		self.craft_yaw.set("-------")
+		self.craft_state.set("-------")
 		self.mission_control_time.set("-------")
-        self.manual_direction.set("-------")
-        self.craft_anchor.set("-------")
-        self.target_throttle.set("-------")
+		self.manual_direction.set("-------")
+		self.craft_anchor.set("-------")
+		self.target_throttle.set("-------")
 
 
 	def create_entry_objects(self):
@@ -125,8 +123,8 @@ class MC_Tab():
 		# Creates entry widgets for each variable. (Text windows to be placed in the GUI)
 		self.entry_radio_received = Entry(self.mc_frame, state="readonly", textvariable=self.radio_received, font='Helvtica 11')
 		self.entry_radio_sent = Entry(self.mc_frame, state="readonly", textvariable=self.radio_sent, font='Helvtica 11')
-		self.entry_radio_craft_rssi = Entry(self.mc_frame, state="readonly", textvariable=self.radio_craft_rssi, font='Helvtica 11')
-		self.entry_radio_craft_last_contact = Entry(self.mc_frame, state="readonly", textvariable=self.radio_craft_last_contact, font='Helvtica 11')
+		self.entry_radio_rssi = Entry(self.mc_frame, state="readonly", textvariable=self.radio_rssi, font='Helvtica 11')
+		self.entry_radio_last_contact = Entry(self.mc_frame, state="readonly", textvariable=self.radio_last_contact, font='Helvtica 11')
 		self.entry_craft_time = Entry(self.mc_frame, state="readonly", textvariable=self.craft_time, justify='right', font='Helvtica 11')
 		self.entry_craft_altitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_altitude, justify='right', font='Helvtica 11')
 		self.entry_craft_latitude = Entry(self.mc_frame, state="readonly", textvariable=self.craft_latitude, justify='right', font='Helvtica 11')
@@ -134,10 +132,9 @@ class MC_Tab():
 		self.entry_craft_event = Entry(self.mc_frame, state="readonly", textvariable=self.craft_event, justify='right', font='Helvtica 11')
 		self.entry_craft_speed = Entry(self.mc_frame, state="readonly", textvariable=self.craft_speed, justify='right', font='Helvtica 11')
 		self.entry_mission_control_time = Entry(self.mc_frame, state="readonly", textvariable=self.mission_control_time, justify='right', font='Helvtica 11')
-        self.entry_manual_direction = Entry(self.mc_frame, state="readonly", textvariable=self.manual_direction, justify='right', font='Helvtica 11')
-        self.entry_craft_anchor = Entry(self.mc_frame, state="readonly", textvariable=self.craft_anchor, justify='right', font='Helvtica 11')
-        self.entry_target_throttle = Entry(self.mc_frame, state="readonly", textvariable=self.target_throttle, justify='right', font='Helvtica 11')
-		self.entry_target_throttle_set = Entry(self.mc_frame, textvariable=self.target_throttle_set, justify='right')
+		self.entry_manual_direction = Entry(self.mc_frame, state="readonly", textvariable=self.manual_direction, justify='right', font='Helvtica 11')
+		self.entry_craft_anchor = Entry(self.mc_frame, state="readonly", textvariable=self.craft_anchor, justify='right', font='Helvtica 11')
+		self.entry_target_throttle = Entry(self.mc_frame, state="readonly", textvariable=self.target_throttle, justify='right', font='Helvtica 11')
 
 
 	def create_button_objects(self):
@@ -153,7 +150,11 @@ class MC_Tab():
 		self.button_network_zoom_in = Button(self.mc_frame, text="Zoom In", command=self.callback_network_zoom_in)
 		self.button_network_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_network_zoom_out)
 		self.button_network_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_network_maptype)
-
+		self.button_manual_forward = Button(self.mc_frame, text="FORWARD", command=self.callback_manual_forward)
+		self.button_manual_backward = Button(self.mc_frame, text="BACKWARD", command=self.callback_manual_forward)
+		self.button_manual_left = Button(self.mc_frame, text="LEFT", command=self.callback_manual_left)
+		self.button_manual_right = Button(self.mc_frame, text="RIGHT", command=self.callback_manual_right)
+		self.button_manual_stop = Button(self.mc_frame, text="STOP", command=self.callback_manual_stop)
 
 
 	def create_label_objects(self):
@@ -182,19 +183,19 @@ class MC_Tab():
 		self.label_mission_control_node.grid(row=0, column=1, rowspan=2, sticky='nswe')
 		self.label_craft_node.grid(row=2, column=1, rowspan=2, sticky='nswe')
 		self.create_label_east(0, 5, self.mc_frame, "Received:")
-		self.entry_radio_received.grid(row=0, column=6, columnspan=9, sticky='we')
+		self.entry_radio_received.grid(row=0, column=6, columnspan=8, sticky='we')
 		self.create_label_east(1, 5, self.mc_frame, "Sent:")
-		self.entry_radio_sent.grid(row=1, column=6, columnspan=9, sticky='we')
+		self.entry_radio_sent.grid(row=1, column=6, columnspan=8, sticky='we')
 		self.create_label_east(2, 5, self.mc_frame, "RSSI Craft:")
-		self.entry_radio_craft_rssi.grid(row=2, column=6, sticky='we')
+		self.entry_radio_rssi.grid(row=2, column=6, sticky='we')
 		self.create_label_east(2, 8, self.mc_frame, "Last Contact (s):")
-		self.entry_radio_craft_last_contact.grid(row=2, column=9, sticky='w')
+		self.entry_radio_last_contact.grid(row=2, column=9, sticky='w')
 
 		# Terminal divider. KEEP AT THE BOTTOM OF THIS METHOD.
 		# This divider is a golden bar strecthing across the screen to provide
 		# distinction between variable sections.
 		terminal_divider_one = Label(self.mc_frame, background="#F1BE48")
-		terminal_divider_one.grid(row=5, column=0, columnspan=15, sticky='we')
+		terminal_divider_one.grid(row=5, column=0, columnspan=14, sticky='we')
 
 
 	def layout_nodes(self):
@@ -216,7 +217,8 @@ class MC_Tab():
 		self.entry_craft_longitude.grid(row=10, column=1, columnspan=2, sticky='we')
 		self.create_label_center(11, 0, self.mc_frame, "Speed:            ")
 		self.entry_craft_speed.grid(row=11, column=1, columnspan=2, sticky='we')
-
+		#self.create_label_center(11, 0, self.mc_frame, "Speed:            ")
+		#self.entry_craft_speed.grid(row=11, column=1, columnspan=2, sticky='we')
 
 		# MISSION CONTROL
 		self.create_label_center(11, 11, self.mc_frame, "GROUND")
@@ -240,7 +242,7 @@ class MC_Tab():
 		# Reassigns the label object with the image attribute.
 		self.craft_map_image.image = temp_image
 		# Places image into GUI.
-		self.craft_map_image.grid(row=17, column=0, columnspan=4, sticky='nswe')
+		self.craft_map_image.grid(row=17, column=0, columnspan=4, rowspan=4, sticky='nswe')
 		self.button_craft_zoom_in.grid(row=16, column=3, sticky="nsew")
 		self.button_craft_zoom_out.grid(row=16, column=0, sticky="nsew")
 		self.button_craft_map_type.grid(row=16, column=1, columnspan=2)
@@ -251,11 +253,25 @@ class MC_Tab():
 		# Reassigns the label object with the image attribute.
 		self.network_map_image.image = temp_image
 		# Places image into GUI.
-		self.network_map_image.grid(row=17, column=10, columnspan=4, sticky='nswe')
+		self.network_map_image.grid(row=17, column=10, columnspan=4, rowspan=4, sticky='nswe')
 		self.button_network_zoom_in.grid(row=16, column=13, sticky="nsew")
 		self.button_network_zoom_out.grid(row=16, column=10, sticky="nsew")
 		self.button_network_map_type.grid(row=16, column=11, columnspan=2)
 		self.create_label_center_2(15, 11, self.mc_frame, "ALL NODES")
+
+	
+	def layout_manual_controls(self):
+		"""
+		Lays out the buttons for the user to command the craft.
+		@param self - Instance of the Class.
+		"""
+
+		# Craft
+		self.button_manual_forward.grid(row=18, column=6, sticky="nsew")
+		self.button_manual_backward.grid(row=20, column=6, sticky="nsew")
+		self.button_manual_stop.grid(row=19, column=6, sticky="nsew")
+		self.button_manual_left.grid(row=19, column=5, sticky="nsew")
+		self.button_manual_right.grid(row=19, column=7, sticky="nsew")
 
 
 	def populate_mc_tab(self):
@@ -274,8 +290,36 @@ class MC_Tab():
 		self.layout_network()
 		self.layout_nodes()
 		self.layout_mission_maps()
+		self.layout_manual_controls()
 		# Update class instance stored as global.
 		g.mc_class_reference = self
+
+
+	def callback_manual_stop(self):
+		self.manual_direction.set("STOP")
+		self.send_to_ground_station()
+
+
+	def callback_manual_forward(self):
+		print("In callback forward")
+		self.manual_direction.set("FORWARD")
+		self.send_to_ground_station()
+		print("After sent")
+
+
+	def callback_manual_backward(self):
+		self.manual_direction.set("BACKWARD")
+		self.send_to_ground_station()
+
+
+	def callback_manual_left(self):
+		self.manual_direction.set("LEFT")
+		self.send_to_ground_station()
+
+
+	def callback_manual_right(self):
+		self.manual_direction.set("RIGHT")
+		self.send_to_ground_station()
 
 
 	def callback_craft_zoom_in(self, *args):
@@ -448,9 +492,9 @@ class MC_Tab():
 		# Ensure the memory is clear.
 		temp_input = ""
 		# Checks for a none null connection to mission_control microcontroller.
-		if g.PORT_MISSION_CONTROL_LORA is not None:
+		if g.PORT_MISSION_CONTROL_RADIO is not None:
 			# If valid connection, get its serial data input.
-			temp_input = g.PORT_MISSION_CONTROL_LORA.input.get()
+			temp_input = g.PORT_MISSION_CONTROL_RADIO.input.get()
 			self.node_mission_control.set("1")
 			if(temp_input.count("/") is 5):
 				# Splits the received serial data into two respective parts.
@@ -460,12 +504,12 @@ class MC_Tab():
 				self.radio_sent.set(radio_out)
 				self.radio_received.set(radio_in)
 				# Prints input.
-				print("---------------------------------------------------------------------------------------------")
-				print("Input: " + str(temp_input))
-				print("Local: " + str(local_vars) +"\n")
-				print("Pkt Received: " + str(radio_in) +"\n")
-				print("Pkt Sent: " + str(radio_out) +"\n")
-				print("RSSI: " + str(received_rssi) +"\n")
+				#print("---------------------------------------------------------------------------------------------")
+				#print("Input: " + str(temp_input))
+				#print("Local: " + str(local_vars))
+				#print("Pkt Received: " + str(radio_in))
+				#print("Pkt Sent: " + str(radio_out))
+				#print("RSSI: " + str(received_rssi))
 				# SD Card.
 				self.log_file = open('mc_data.txt','a') 
 				self.log_file.write("---------------------------------------------------------------------------------------------" +"\n")
@@ -502,38 +546,35 @@ class MC_Tab():
 		@param rssi - Relative Signal Strength Index for the received packet.
 		"""
 		
-		# Checksums '$' and non craft variables are thrown out.
-		junk, c_ts, c_roll, c_pitch, c_yaw, c_state, j_ts, j_md, j_as, j_th, junk = str(radio_in).split(",")
+		# Checks for radio in data. Parses if valid.
+		try:
+			# Checksums '$' and non craft variables are thrown out.
+			junk, c_ts, c_roll, c_pitch, c_yaw, c_state, j_ts, j_md, junk = str(radio_in).split(",")
+		# No Radio data yet.
+		except Exception as e:
+			# Skip rest of method.
+			return
 		# Sets parsed values to their corresponding StringVar.
-		self.craft_time.set(craft_ts)
-        self.craft_roll.set(c_roll)
-        self.craft_pitch.set(c_pitch)
-        self.craft_yaw.set(c_yaw)
-        self.craft_state.set(c_state)
-        # Only reads in a new packet.
-        if self.craft_time_previous != str(self.craft_time.get()):
-            # Node has not power cycled.
-            if node_reset.count("1") is 1:
-                self.node_craft.set("2")
-            # Node has power cycled.
-            else:
-                self.node_craft.set("1")
-            # Updates the appropriate variables.
-            self.craft_time_previous = str(self.craft_time.get())
-            self.update_craft_rssi(rssi)
-		# Constructs a CSV string to be sent to the rotor.
-		telemetry = str(self.craft_latitude.get()) + "," + str(self.craft_longitude.get()) + "," + str(self.craft_altitude.get() + "\n\r")
-		# Sends data to rotor so it can compute turning angle.
-		send_rotor_telemetry(telemetry)
+		self.craft_time.set(c_ts)
+		self.craft_roll.set(c_roll)
+		self.craft_pitch.set(c_pitch)
+		self.craft_yaw.set(c_yaw)
+		self.craft_state.set(c_state)
+		# Only reads in a new packet.
+		if self.craft_time_previous != str(self.craft_time.get()):
+			self.node_craft.set("1")
+			# Updates the appropriate variables.
+			self.craft_time_previous = str(self.craft_time.get())
+			self.update_craft_rssi(rssi)
 		# Configure a map image from Google Static Maps API.
-		new_map_flag = maps.generate_map(self.craft_latitude.get(), self.craft_longitude.get())
+		#new_map_flag = maps.generate_map(self.craft_latitude.get(), self.craft_longitude.get())
 		# If a new map was created (new GPS coords), places that image into the GUI.
 		# maps.
-		if new_map_flag is True:
+		#if new_map_flag is True:
 			# Reset flag.
-			new_map_flag = False
-			maps.place_craft(self.mc_frame)
-			maps.place_network(self.mc_frame)
+			#new_map_flag = False
+			#maps.place_craft(self.mc_frame)
+			#maps.place_network(self.mc_frame)
 			
 
 	def update_craft_rssi(self, received_rssi):
@@ -545,21 +586,21 @@ class MC_Tab():
 		"""
 
 		# Checks if timer is already running.
-		if g.timer_craft_contact_timer is not None:
+		if g.timer_contact is not None:
 			# If so, disable it to resync the 1sec timer.
-			g.timer_craft_contact_timer.cancel()
+			g.timer_contact_.cancel()
 		# If so, assign RSSI to the craft variables.
-		self.radio_craft_rssi.set(received_rssi)
+		self.radio_rssi.set(received_rssi)
 		# Reset the last contact timer.
-		self.radio_craft_last_contact.set("0")
+		self.radio_last_contact.set("0")
 		# Creates countdown timer that, upon hitting zero runs the associated method.
 		# Units are seconds.
-		g.timer_craft_contact_timer = threading.Timer(1.0, self.timer_increment_craft_last_contact)
+		g.timer_contact_ = threading.Timer(1.0, self.timer_increment_last_contact)
 		# Starts the countdown timer.
-		g.timer_craft_contact_timer.start()
+		g.timer_contact_.start()
 
 
-	def timer_increment_craft_last_contact(self):
+	def timer_increment_last_contact(self):
 		"""
 		Increments the craft node's last contact variable each second.
 		This timer is resynced each time a packet from the craft
@@ -567,20 +608,42 @@ class MC_Tab():
 		@param self  - Instance of the class.
 		"""
 
+		# Checks if timer is already running.
+		if g.timer_contact is not None:
+			# If so, disable it to resync the 1sec timer.
+			g.timer_contact_.cancel()
+		# Increments the craft last contact timer on a 1 second interval.
+		self.radio_last_contact.set(str(int(self.radio_last_contact.get()) + 1))
 		# Creates countdown timer that, upon hitting zero runs the associated method.
 		# Units are seconds.
-		g.timer_craft_contact_timer = threading.Timer(1.0, self.timer_increment_craft_last_contact)
+		g.timer_contact = threading.Timer(1.0, self.timer_increment_last_contact)
 		# Starts the countdown timer.
-		g.timer_craft_contact_timer.start()
-		# Increments the craft last contact timer on a 1 second interval.
-		self.radio_craft_last_contact.set(str(int(self.radio_craft_last_contact.get()) + 1))
+		g.timer_contact.start()
 
 
-	def create_injection_packet(self, to_be_sent):
+	def send_to_ground_station(self):
+		"""
+		Triggered by the press of a direction button. (Forward, backward, etc..)
+
+		@param self         - Instance of the class.
+		"""
+
+		try:
+			# Checks for non-null connection to mission control's lora microcontroller.
+			if g.PORT_MISSION_CONTROL_RADIO is not None:
+				# If non-null, send transmission via serial port.
+				send(g.PORT_MISSION_CONTROL_RADIO.get_port(), self.create_injection_packet())
+		# Null connection.
+		except Exception as e:
+			# Prints general error statement. (Used to tell which method errored out)
+			print("Invalid connection to mission control's uC.")
+			print("Exception: " + str(e))
+
+
+	def create_injection_packet(self):
 		"""
 		Creates a manually specified packet to be sent to the connected LoRa node.
 		@param self - Instance of the class.
-		@param to_be_sent - Info to be sent to the connected microcontroller.
 		"""
 
 		new_packet = ""
@@ -588,7 +651,7 @@ class MC_Tab():
 		try:
 			new_packet += "$"
 			new_packet += ","
-			new_packet += str(to_be_sent)
+			new_packet += str(self.convert_direction())
 			new_packet += ","
 			new_packet += "$"
 			# Returns new packet.
@@ -599,6 +662,25 @@ class MC_Tab():
 			# Prints general error statement. (Used to tell which method errored out)
 			print("Unable to create packet.")
 			print("Exception: " + str(e))
+
+
+	def convert_direction(self):
+		"""
+		Converts to correct integer value.
+
+		@param self - Instance of the class.
+		"""
+
+		if self.manual_direction.get() == "STOP":
+			return "0.00"
+		elif self.manual_direction.get() == "FORWARD":
+			return "1.00"
+		elif self.manual_direction.get() == "BACKWARD":
+			return "2.00"
+		elif self.manual_direction.get() == "LEFT":
+			return "3.00"
+		elif self.manual_direction.get() == "RIGHT":
+			return "4.00"
 
 
 	def create_label_east(self, r, c, frame, title):

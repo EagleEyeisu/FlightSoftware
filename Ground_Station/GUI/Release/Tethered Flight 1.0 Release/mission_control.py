@@ -186,7 +186,7 @@ class MC_Tab():
 		self.button_manual_left = Button(self.mc_frame, text="LEFT", command=self.callback_manual_left)
 		self.button_manual_right = Button(self.mc_frame, text="RIGHT", command=self.callback_manual_right)
 		self.button_manual_up = Button(self.mc_frame, text="UP", command=self.callback_manual_up)
-		self.button_manual_none = Button(self.mc_frame, text="NONE", command=self.callback_manual_none)
+		self.button_manual_none = Button(self.mc_frame, text="STOP", command=self.callback_manual_none)
 		self.button_manual_throttle_up = Button(self.mc_frame, text="^\n|", command=self.increment_throttle)
 		self.button_manual_throttle_down = Button(self.mc_frame, text="|\nv", command=self.decrement_throttle)
 		self.button_target_throttle_set = Button(self.mc_frame, text="Set", command=self.callback_target_throttle)

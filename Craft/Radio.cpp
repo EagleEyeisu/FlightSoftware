@@ -49,26 +49,6 @@ float RADIO::get_radio_manual_direction()
 
 
 /**
- * Parses and returns the radio transmission's anchor variable.
- * 0.0 -> pause
- * 1.0 -> running
- */
-float RADIO::get_radio_craft_anchor()
-{
-    return (Data.Parse(8));
-}
-
-
-/**
- * Parses and returns the radio transmission's target throttle variable.
- */
-float RADIO::get_radio_target_throttle()
-{
-    return (Data.Parse(9));
-}
-
-
-/**
  * Assigns correct pins to the radio output port. Tests connections and variables.
  */
 void RADIO::initialize()
@@ -151,10 +131,6 @@ String RADIO::construct_network_packet()
     temp += ",";
     temp += Data.manual_direction;
     temp += ",";
-    temp += Data.anchor_status;
-    temp += ",";
-    temp += target_throttle;
-    temp += ",";
     temp += "$";
     radio_output = "";
     // Copy contents.
@@ -214,8 +190,6 @@ void RADIO::radio_receive()
                     // the new ones.
                     mission_control_ts = temp_ts;
                     Data.manual_direction = Radio.get_radio_manual_direction();
-                    Data.anchor_status = Radio.get_radio_craft_anchor();
-                    target_throttle = Radio.get_radio_target_throttle();
                 }
             }
         }

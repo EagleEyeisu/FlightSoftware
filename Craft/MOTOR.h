@@ -71,8 +71,8 @@ class MOTOR
     int throttle_input = 0;
     // Movement state of the craft. This is what the craft is currently doing
     // and not necessarily what it wants to do.
-    enum Orientation {NONE,FORWARD,BACKWARD,LEFT,RIGHT};
-    enum Orientation craft_state = NONE;
+    enum Orientation {STOP,FORWARD,BACKWARD,LEFT,RIGHT};
+    enum Orientation craft_state = STOP;
 };
 
 #endif

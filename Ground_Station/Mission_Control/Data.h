@@ -13,16 +13,12 @@ class DATA
 
     // Constructor
     DATA();
-    // Responsible for all serial communication to python GUI.
-    void serial_comms();
     // Sends appropriate infomation back to the GUI via serial. 
     void update_gui();
     // Reads in input from the GUI via serial. 
     void serial_input();
     // Parses passed in message by using commas as the identifiers.
-    float Parse(int objective);
-    // Parses serial input and returns the operation state of the network.
-    void get_serial_op_mode(char buf[]);
+    float Parse(int objective, String to_parse);
 
     /*---------------------------------Variables---------------------------------*/ 
     
@@ -39,9 +35,6 @@ class DATA
     // Turns true after # seconds of running. Used to tell if the system started 
     // up correctly.
     bool system_boot_complete = false;
-    // When true, this will trigger the special "release" packet to be sent to the
-    // platform node.
-    bool platform_launch = false;    
 };
 
 #endif

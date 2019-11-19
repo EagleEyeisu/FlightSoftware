@@ -27,7 +27,7 @@ def setup_comms():
 	# Starets timer based tasks to check for incoming serial data.
 	config_scheduler()
 	# Terminal verbose message.
-	print("Comms setup complete.----------------------------------\n")
+	print("\nComms setup complete.----------------------------------\n")
 
 
 def get_serial_ports():
@@ -123,7 +123,7 @@ def validate_ports(ports):
 				if response in "mission_control":
 					# Creates a serial object instance with the temporary serial object.
 					# Class defined at bottom of file.
-					g.PORT_MISSION_CONTROL_LORA = serial_object(ser, response, port_description)
+					g.PORT_MISSION_CONTROL_RADIO = serial_object(ser, response, port_description)
 				# Unknown microcontroller connection.
 				else:
 					# Updates status to reflect parsing failure.
@@ -149,21 +149,12 @@ def config_scheduler():
 		# Checks for valid connection to the mission_control's Arduino LoRa.
 		if g.PORT_MISSION_CONTROL_RADIO is not None:
 			# Terminal verbose message.
-			print("Scheduling task for mc radio micro controller.\n")
+			print("Scheduling task for mc radio micro controller.")
 			# Creates countdown timer that, upon hitting zero runs the associated method.
 			# Units are seconds.
 			g.timer_mission_control_lora = threading.Timer(0.9, mission_control_receive)
 			# Starts the countdown timer.
 			g.timer_mission_control_lora.start()
-		# Checks for valid connection to the craft's Arduino LoRa.
-		if g.PORT_CRAFT_RADIO is not None:
-			# Terminal verbose message.
-			print("Scheduling task for craft radio micro controller.\n")
-			# Creates countdown timer that, upon hitting zero runs the associated method.
-			# Units are seconds.
-			g.timer_craft_lora = threading.Timer(0.9, craft_receive)
-			# Starts the countdown timer.
-			g.timer_craft_lora.start()
 	# Prints exception handler.
 	except Exception as e:
 		# Terminal verbose message.
@@ -280,46 +271,6 @@ def send(ser, message):
 		ser.open()
 	# Encode message to bits & send via serial (USB).
 	ser.write(message.encode())
-
-
-def send_rotor_telemetry(message):
-	"""
-	Sends passed in parameter over the serial port.
-
-	@param message - Parameter to be encoded and sent.
-	"""
-
-	if g.PORT_ROTOR_CONTROLLER is None:
-		try:
-			# Creates empty serial object.
-			ser = serial.Serial()
-			# Assigns the com port number to the serial object.
-			ser.port = "COM20"
-			# Assigns the baudrate to communicate with the rotor firmware.
-			ser.baudrate = 9600
-			# Sets the timeout of the serial port to 1 second.
-			ser.timeout = 1
-			# Opens configured serial port
-			ser.open()
-			# Creates a serial object bound to the COM port & global rotor controller object.
-			g.PORT_ROTOR_CONTROLLER = serial_object(ser, "Rotor Controller", "Rotor Controller Interface")
-		# Prints exception handler.
-		except Exception as e:
-			# Terminal verbose message to show the exact error that occurred.
-			print("Exception: " + str(e))
-			# Terminal verbose message displaying the port that failed.
-			print("Invalid connection to: " + str(ser.port))
-	# Connection to the COM port interfacing into the rotor controller firmware has 
-	# previously been established.
-	else:
-		# Attempt to send telemetry data to the rotor controller.
-		try:
-			send(g.PORT_ROTOR_CONTROLLER.get_port(), message)
-		except Exception as e:
-			# Terminal verbose message to show the exact error that occurred.
-			print("Exception: " + str(e))
-			# Terminal verbose message displaying the port that failed.
-			print("Unable to send telemetry data: " + str(g.PORT_ROTOR_CONTROLLER.get_port()))
 
 
 class serial_object():
