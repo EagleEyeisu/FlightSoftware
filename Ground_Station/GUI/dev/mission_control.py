@@ -151,7 +151,7 @@ class MC_Tab():
 		self.button_network_zoom_out = Button(self.mc_frame, text="Zoom Out", command=self.callback_network_zoom_out)
 		self.button_network_map_type = Button(self.mc_frame, text="Road/Hybrid", command=self.callback_network_maptype)
 		self.button_manual_forward = Button(self.mc_frame, text="FORWARD", command=self.callback_manual_forward)
-		self.button_manual_backward = Button(self.mc_frame, text="BACKWARD", command=self.callback_manual_forward)
+		self.button_manual_backward = Button(self.mc_frame, text="BACKWARD", command=self.callback_manual_backward)
 		self.button_manual_left = Button(self.mc_frame, text="LEFT", command=self.callback_manual_left)
 		self.button_manual_right = Button(self.mc_frame, text="RIGHT", command=self.callback_manual_right)
 		self.button_manual_stop = Button(self.mc_frame, text="STOP", command=self.callback_manual_stop)

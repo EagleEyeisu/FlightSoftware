@@ -36,7 +36,7 @@ void MOTOR::manager()
     // Checks for flight mode "auto".
     else if(Data.authority_mode == 1.0)
     {
-        auto_pilot();
+        //auto_pilot();
     }
 }
 
@@ -218,12 +218,15 @@ void MOTOR::initialize()
     // Initializes the crafts state to reflect its non moving state.
     craft_state = STOP;
     // Digitially connects the ESCs to their respective pins.
-    motor_front_right.attach(MOTOR_FRONT_RIGHT_PIN);
-    motor_front_left.attach(MOTOR_FRONT_LEFT_PIN);
-    motor_back_right.attach(MOTOR_BACK_RIGHT_PIN);
-    motor_front_left.attach(MOTOR_BACK_LEFT_PIN);
-    // Makes sure the craft starts at <0% throttle.
-    apply_break();
+    motor_front_right.attach(A1);
+    motor_front_left.attach(A2);
+    motor_back_right.attach(A3);
+    motor_back_left.attach(A4);
+    //Makes sure all motors are set to below 0%
+    motor_front_right.writeMicroseconds(700);
+    motor_front_left.writeMicroseconds(700);
+    motor_back_right.writeMicroseconds(700);
+    motor_front_left.writeMicroseconds(700);
 }
 
 
@@ -234,7 +237,7 @@ void MOTOR::rotate_left()
 {
     Serial.print("Turning Left: "); Serial.println(craft_state);
     // Ensures a max turning rate of 1%
-    int throttle = convert_throttle(1);
+    int throttle = 1010;//convert_throttle(1);
     // Ensures they have acheived the desired throttle and no higher.
     motor_front_right.writeMicroseconds(throttle);
     motor_back_left.writeMicroseconds(throttle);
@@ -248,7 +251,7 @@ void MOTOR::rotate_right()
 {
     Serial.print("Turning Left: "); Serial.println(craft_state); 
     // Ensures a max turning rate of 1%
-    int throttle = convert_throttle(1);
+    int throttle = 1010;//convert_throttle(1);
     // Ensures they have acheived the desired throttle and no higher.
     motor_front_left.writeMicroseconds(throttle);
     motor_back_right.writeMicroseconds(throttle);
@@ -264,7 +267,7 @@ void MOTOR::apply_break()
   motor_front_right.writeMicroseconds(900);
   motor_front_left.writeMicroseconds(900);
   motor_back_right.writeMicroseconds(900);
-  motor_front_left.writeMicroseconds(900);
+  motor_back_left.writeMicroseconds(900);
   // Allows the motors to stop before another potential command is sent to them.
   delay(50);
 }
@@ -277,9 +280,9 @@ void MOTOR::move_forward()
 {
     Serial.print("Moving Forward: "); Serial.println(craft_state); 
     // Always throttles up from 0%. 
-    current_throttle = 900;
+    current_throttle = 970;
     // Taks in a percentage value 0-100% from user and converts that to an appropriate milliseconds PWM value.
-    int max_throttle = convert_throttle(1);//Radio.target_throttle);
+    int max_throttle = 1010; //convert_throttle(1);//Radio.target_throttle);
     // While less than max throttle, increment the throttle up. 
     while(max_throttle > current_throttle)
     {
@@ -307,10 +310,10 @@ void MOTOR::move_forward()
 void MOTOR::move_backward()
 {
     Serial.print("Moving Backward: "); Serial.println(craft_state); 
-    // Always throttles up from 0%. 
-    current_throttle = 900;
+    // Always throttles up from 0%.
+    current_throttle = 970;
     // Taks in a percentage value 0-100% from user and converts that to an appropriate milliseconds PWM value.
-    int max_throttle = convert_throttle(1);//Radio.target_throttle);
+    int max_throttle = 1010;//Radio.target_throttle);
     // While less than max throttle, increment the throttle up. 
     while(max_throttle > current_throttle)
     {

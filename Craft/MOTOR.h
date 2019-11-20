@@ -48,10 +48,10 @@ class MOTOR
     /*---------------------------------Variables---------------------------------*/ 
 
     // Connection pins from Feather m0 to their respective ESC's.
-    #define MOTOR_FRONT_RIGHT_PIN 1
-    #define MOTOR_FRONT_LEFT_PIN 2
-    #define MOTOR_BACK_RIGHT_PIN 3
-    #define MOTOR_BACK_LEFT_PIN 4
+    #define MOTOR_FRONT_RIGHT_PIN A1
+    #define MOTOR_FRONT_LEFT_PIN A2
+    #define MOTOR_BACK_RIGHT_PIN A3
+    #define MOTOR_BACK_LEFT_PIN A4
     // Specific amount to increment/decrement the PWM waveform between each pulse. 
     // This ensures that each increment or decrement is suttle
     // and therefore does not burn the motors out.
