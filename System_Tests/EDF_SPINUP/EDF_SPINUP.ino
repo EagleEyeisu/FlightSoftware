@@ -14,12 +14,9 @@ int increment_amount = 10;
 // Unit = milliseconds
 #define INCREMENT_DELAY 320
 // PWM pin that goes to the ESC.
-#define MOTOR_PIN A1
+#define MOTOR_PIN 11
 // Software object that will interact with the Electronic Speed Controller. (We treat this as the EDF itself)
 Servo motor;
-Servo motor1;
-Servo motor2;
-Servo motor3;
 // Throttle value of the craft at any given point in time.
 // Unit = microseconds
 int current_throttle = 970;
@@ -51,22 +48,18 @@ void setup()
     // Serial communication between pins Rx & Tx of the microcontroller.
     Serial1.begin(9600);
     // Attaches pin to #.
-    motor.attach(A1);
-    motor1.attach(A2);
-    motor2.attach(A3);
-    motor3.attach(A4);
+    motor.attach(MOTOR_PIN);
     // Sends a PDM waveform that is below its cutoff value. So <0% throttle.
     motor.writeMicroseconds(700);
-    motor1.writeMicroseconds(700);
-    motor2.writeMicroseconds(700);
-    motor3.writeMicroseconds(700);
     // see if the card is present and can be initialized:
-    if (!SD.begin(chipSelect)) {
+    if(!SD.begin(chipSelect))
+    {
         Serial.println("Card failed, or not present");
         // don't do anything more:
         while (1);
     }
-    else{
+    else
+    {
         log_data(4);
     }
 }
@@ -87,8 +80,8 @@ void loop()
         edf_tests();
     }
     // Used when setting up motor. Not during live tests.
-    polarity_check();
-    delay(10000000);
+    //polarity_check();
+    //delay(10000000);
 }
 
 
@@ -97,10 +90,10 @@ void loop()
  */
 void polarity_check()
 {
-    Serial.println("Testing.");
     increment_amount = 10; // 1% throttle increment
-    run_test(1000); // 1%
+    run_test(990); // 5%
     delay(15000); // 15 second delay
+    Serial.println("Post run");
 }
 
 /**
@@ -210,20 +203,15 @@ void run_test(int max_throttle)
         //Serial.println(current_throttle);
         // Writes the new waveform to the ESC. (Increases the speed by ~1%)
         motor.writeMicroseconds(current_throttle);
-        motor1.writeMicroseconds(current_throttle);
-        motor2.writeMicroseconds(current_throttle);
-        motor3.writeMicroseconds(current_throttle);
         Serial.println(current_throttle);
         // There needs to be a certain delay between increases. 
         delay(INCREMENT_DELAY);
     }
     motor.writeMicroseconds(current_throttle);
-    motor1.writeMicroseconds(current_throttle);
-    motor2.writeMicroseconds(current_throttle);
-    motor3.writeMicroseconds(current_throttle);
-    // Holds max throttle for 5 seconds. 
-    delay(20000);
+    // Holds max throttle for 5 seconds.
+    delay(5000);
     // Shut down to below 0%.
+    motor.writeMicroseconds(900);
 }
 
 
@@ -232,7 +220,7 @@ void run_test(int max_throttle)
  */
 float get_external_temperature()
 {
-	return thermocouple.readCelsius();
+  return thermocouple.readCelsius();
 }
 
 
