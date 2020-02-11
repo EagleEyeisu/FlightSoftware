@@ -31,7 +31,7 @@ The beginner Integrated Development Environment (IDE) for Arduino micro controll
 
 3) Near the top left of the editor will be 2 buttons "verify" and "upload". "Verify" will simply run through your code and check for syntax and compile errors. It will report errors found in the terminal below. "Upload" does what "verify" does and assuming it compiles, it will flash it over to the micro controller. All of the software that goes on micro controllers is written in a very nice variant of C++ called .....Arduino, see a theme yet? Just refer to it as C++. 
 
-## Using the C
+## Using the Software (CRAFT)
 When you are ready to test something out on hardware, (you probably aren't as you're about to find out) you'll need to use POWER AND DATA micro-usb cable (blue tape coords) to connect to what ever micro controller you want. Arduino MEGA, Uno, Feather M0, etc.. Eagle Eye uses the Adafruit Feather M0 (think of this as a very powerful Arduino) to power the craft and the ground station micro controller which interacts with the python GUI. 
 1) To upload to the Feather M0, you'll need to download a package into Arduino that will tell the IDE how to talk to the Adafruit product. Follow the instructions at: [https://learn.adafruit.com/adafruit-feather-m0-basic-proto/setup](https://learn.adafruit.com/adafruit-feather-m0-basic-proto/setup) (Most of this is extra info, just follow the pictures along with the red url).
 2) Again follow the picture instructions at: [https://learn.adafruit.com/adafruit-feather-m0-basic-proto/using-with-arduino-ide](https://learn.adafruit.com/adafruit-feather-m0-basic-proto/using-with-arduino-ide) to install the package you just downloaded. (Ignore everything after the "Install Adafruit SAMD" section)
